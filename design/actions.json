@@ -1,0 +1,695 @@
+[
+ {
+  "name": "彻底删除",
+  "cat": null,
+  "desc": "不经过废纸篓,直接彻底删除所选文件(不可恢复)",
+  "scene": "顶层",
+  "emoji": "🗑"
+ },
+ {
+  "name": "隔空投送…",
+  "cat": null,
+  "desc": "通过隔空投送把文件发送到附近的 Apple 设备",
+  "scene": "顶层",
+  "emoji": "📡"
+ },
+ {
+  "name": "粘贴",
+  "cat": null,
+  "desc": "把之前「剪切」的文件移动到当前文件夹",
+  "scene": "顶层",
+  "emoji": "📋"
+ },
+ {
+  "name": "剪切",
+  "cat": null,
+  "desc": "剪切所选文件,之后在目标文件夹执行「粘贴」完成移动",
+  "scene": "顶层",
+  "emoji": "✂️"
+ },
+ {
+  "name": "移动到…",
+  "cat": null,
+  "desc": "弹窗选择文件夹,把所选文件移动过去",
+  "scene": "顶层",
+  "emoji": "✨"
+ },
+ {
+  "name": "复制到…",
+  "cat": null,
+  "desc": "弹窗选择文件夹,把所选文件复制过去",
+  "scene": "顶层",
+  "emoji": "✨"
+ },
+ {
+  "name": "新建 TXT 文档",
+  "cat": "organize",
+  "desc": "在当前文件夹新建空白文本文档",
+  "scene": "整理归档",
+  "emoji": "📥"
+ },
+ {
+  "name": "新建 Markdown 笔记",
+  "cat": "organize",
+  "desc": "在当前文件夹新建 Markdown 笔记",
+  "scene": "整理归档",
+  "emoji": "📥"
+ },
+ {
+  "name": "新建 RTF 文档",
+  "cat": "organize",
+  "desc": "在当前文件夹新建富文本文档",
+  "scene": "整理归档",
+  "emoji": "📥"
+ },
+ {
+  "name": "新建 Word 文档",
+  "cat": "organize",
+  "desc": "在当前文件夹新建 Word(.docx)文档",
+  "scene": "整理归档",
+  "emoji": "📥"
+ },
+ {
+  "name": "新建 Excel 工作簿",
+  "cat": "organize",
+  "desc": "在当前文件夹新建 Excel(.xlsx)工作簿",
+  "scene": "整理归档",
+  "emoji": "📥"
+ },
+ {
+  "name": "新建 PPT 演示文稿",
+  "cat": "organize",
+  "desc": "在当前文件夹新建 PowerPoint(.pptx)演示文稿",
+  "scene": "整理归档",
+  "emoji": "📥"
+ },
+ {
+  "name": "新建文件夹",
+  "cat": "organize",
+  "desc": "在当前文件夹新建文件夹",
+  "scene": "整理归档",
+  "emoji": "📥"
+ },
+ {
+  "name": "根据文件名新建文件夹",
+  "cat": "organize",
+  "desc": "以所选文件的名称新建同名文件夹",
+  "scene": "整理归档",
+  "emoji": "📥"
+ },
+ {
+  "name": "复制路径",
+  "cat": "utilities",
+  "desc": "复制文件的完整路径到剪贴板",
+  "scene": "实用工具",
+  "emoji": "🧰"
+ },
+ {
+  "name": "复制文件名",
+  "cat": "utilities",
+  "desc": "仅复制文件名(含扩展名)",
+  "scene": "实用工具",
+  "emoji": "🧰"
+ },
+ {
+  "name": "复制文件名(不含扩展名)",
+  "cat": "utilities",
+  "desc": "仅复制文件名,不带扩展名",
+  "scene": "实用工具",
+  "emoji": "🧰"
+ },
+ {
+  "name": "复制所在文件夹路径",
+  "cat": "utilities",
+  "desc": "复制文件所在文件夹的路径",
+  "scene": "实用工具",
+  "emoji": "🧰"
+ },
+ {
+  "name": "复制 file:// 链接",
+  "cat": "utilities",
+  "desc": "以 file:// URL 形式复制",
+  "scene": "实用工具",
+  "emoji": "🧰"
+ },
+ {
+  "name": "复制为 Markdown 链接",
+  "cat": "utilities",
+  "desc": "复制为 [文件名](file://…) 形式的 Markdown 链接",
+  "scene": "实用工具",
+  "emoji": "🧰"
+ },
+ {
+  "name": "在终端中打开",
+  "cat": "utilities",
+  "desc": "在终端中打开当前位置",
+  "scene": "实用工具",
+  "emoji": "🧰"
+ },
+ {
+  "name": "显示简介",
+  "cat": "utilities",
+  "desc": "查看文件大小、创建/修改时间和权限",
+  "scene": "实用工具",
+  "emoji": "🧰"
+ },
+ {
+  "name": "在 Finder 中显示",
+  "cat": "utilities",
+  "desc": "在新的 Finder 窗口中显示该项",
+  "scene": "实用工具",
+  "emoji": "🧰"
+ },
+ {
+  "name": "创建带时间戳的副本",
+  "cat": "utilities",
+  "desc": "复制一份并在名称中加入日期时间",
+  "scene": "实用工具",
+  "emoji": "🧰"
+ },
+ {
+  "name": "制作可执行文件",
+  "cat": "utilities",
+  "desc": "允许文件作为程序运行",
+  "scene": "实用工具",
+  "emoji": "🧰"
+ },
+ {
+  "name": "清理 .DS_Store 文件",
+  "cat": "utilities",
+  "desc": "清理文件夹内的 Mac 隐藏系统文件",
+  "scene": "实用工具",
+  "emoji": "🧰"
+ },
+ {
+  "name": "显示/隐藏隐藏文件",
+  "cat": "utilities",
+  "desc": "切换 Finder 中隐藏文件的显示状态",
+  "scene": "实用工具",
+  "emoji": "🧰"
+ },
+ {
+  "name": "在 iTerm2 中打开",
+  "cat": "dev",
+  "desc": "在 iTerm2 终端中打开当前位置",
+  "scene": "开发效率",
+  "emoji": "💻"
+ },
+ {
+  "name": "在 Warp 中打开",
+  "cat": "dev",
+  "desc": "在 Warp 终端中打开当前位置",
+  "scene": "开发效率",
+  "emoji": "💻"
+ },
+ {
+  "name": "在 VS Code 中打开",
+  "cat": "dev",
+  "desc": "用 Visual Studio Code 打开",
+  "scene": "开发效率",
+  "emoji": "💻"
+ },
+ {
+  "name": "在 Cursor 中打开",
+  "cat": "dev",
+  "desc": "用 Cursor 编辑器打开",
+  "scene": "开发效率",
+  "emoji": "💻"
+ },
+ {
+  "name": "在 Sublime Text 中打开",
+  "cat": "dev",
+  "desc": "用 Sublime Text 打开",
+  "scene": "开发效率",
+  "emoji": "💻"
+ },
+ {
+  "name": "在 Typora 中打开",
+  "cat": "dev",
+  "desc": "用 Typora 打开 Markdown 文件",
+  "scene": "开发效率",
+  "emoji": "💻"
+ },
+ {
+  "name": "在 Obsidian 中打开",
+  "cat": "dev",
+  "desc": "在 Obsidian 中打开笔记",
+  "scene": "开发效率",
+  "emoji": "💻"
+ },
+ {
+  "name": "在 IDEA 中打开",
+  "cat": "dev",
+  "desc": "用 IntelliJ IDEA 打开项目",
+  "scene": "开发效率",
+  "emoji": "💻"
+ },
+ {
+  "name": "在 PyCharm 中打开",
+  "cat": "dev",
+  "desc": "用 PyCharm 打开项目",
+  "scene": "开发效率",
+  "emoji": "💻"
+ },
+ {
+  "name": "在 CLion 中打开",
+  "cat": "dev",
+  "desc": "用 CLion 打开项目",
+  "scene": "开发效率",
+  "emoji": "💻"
+ },
+ {
+  "name": "在 WebStorm 中打开",
+  "cat": "dev",
+  "desc": "用 WebStorm 打开项目",
+  "scene": "开发效率",
+  "emoji": "💻"
+ },
+ {
+  "name": "在 GoLand 中打开",
+  "cat": "dev",
+  "desc": "用 GoLand 打开项目",
+  "scene": "开发效率",
+  "emoji": "💻"
+ },
+ {
+  "name": "在 DataGrip 中打开",
+  "cat": "dev",
+  "desc": "用 DataGrip 打开数据库目录",
+  "scene": "开发效率",
+  "emoji": "💻"
+ },
+ {
+  "name": "在 Android Studio 中打开",
+  "cat": "dev",
+  "desc": "用 Android Studio 打开项目",
+  "scene": "开发效率",
+  "emoji": "💻"
+ },
+ {
+  "name": "用其他应用打开…",
+  "cat": "dev",
+  "desc": "弹窗选择任意 App 打开所选文件",
+  "scene": "开发效率",
+  "emoji": "💻"
+ },
+ {
+  "name": "归类到新文件夹",
+  "cat": "organize",
+  "desc": "新建文件夹并把所选文件移入",
+  "scene": "整理归档",
+  "emoji": "📥"
+ },
+ {
+  "name": "解散文件夹",
+  "cat": "organize",
+  "desc": "删除文件夹本身,但把里面的文件保留到上一级",
+  "scene": "整理归档",
+  "emoji": "📥"
+ },
+ {
+  "name": "拍平嵌套文件",
+  "cat": "organize",
+  "desc": "把子文件夹里的文件全部移到顶层",
+  "scene": "整理归档",
+  "emoji": "📥"
+ },
+ {
+  "name": "按类型整理",
+  "cat": "organize",
+  "desc": "按扩展名自动分拣文件到子文件夹",
+  "scene": "整理归档",
+  "emoji": "📥"
+ },
+ {
+  "name": "按日期整理",
+  "cat": "organize",
+  "desc": "按「年-月」自动分拣文件到子文件夹",
+  "scene": "整理归档",
+  "emoji": "📥"
+ },
+ {
+  "name": "按序号重命名",
+  "cat": "organize",
+  "desc": "把所选文件重命名为 001、002、003…",
+  "scene": "整理归档",
+  "emoji": "📥"
+ },
+ {
+  "name": "文件名转小写",
+  "cat": "organize",
+  "desc": "把文件名转换为小写",
+  "scene": "整理归档",
+  "emoji": "📥"
+ },
+ {
+  "name": "空格替换为下划线",
+  "cat": "organize",
+  "desc": "把文件名中的空格替换为下划线",
+  "scene": "整理归档",
+  "emoji": "📥"
+ },
+ {
+  "name": "隐藏所选文件",
+  "cat": "organize",
+  "desc": "把所选文件(夹)标记为隐藏",
+  "scene": "整理归档",
+  "emoji": "📥"
+ },
+ {
+  "name": "取消隐藏",
+  "cat": "organize",
+  "desc": "取消所选文件(夹)的隐藏标记",
+  "scene": "整理归档",
+  "emoji": "📥"
+ },
+ {
+  "name": "发送快捷方式到桌面",
+  "cat": "share",
+  "desc": "在桌面创建指向所选文件的快捷方式",
+  "scene": "分享发送",
+  "emoji": "📤"
+ },
+ {
+  "name": "清除空文件夹",
+  "cat": "organize",
+  "desc": "删除所选文件夹内的所有空文件夹",
+  "scene": "整理归档",
+  "emoji": "📥"
+ },
+ {
+  "name": "复制图片中的文字",
+  "cat": "media",
+  "desc": "识别图片中的文字并复制",
+  "scene": "图片处理",
+  "emoji": "🖼"
+ },
+ {
+  "name": "导出图片中的文字",
+  "cat": "media",
+  "desc": "识别图片中的文字并保存为 .txt",
+  "scene": "图片处理",
+  "emoji": "🖼"
+ },
+ {
+  "name": "HEIC 转 JPG",
+  "cat": "media",
+  "desc": "把 iPhone 的 HEIC 照片转换为 JPG",
+  "scene": "图片处理",
+  "emoji": "🖼"
+ },
+ {
+  "name": "图片合并为 PDF",
+  "cat": "media",
+  "desc": "把所选图片合并成一个 PDF",
+  "scene": "图片处理",
+  "emoji": "🖼"
+ },
+ {
+  "name": "PDF 拆分为单页",
+  "cat": "media",
+  "desc": "把 PDF 的每一页拆分为单独文件",
+  "scene": "图片处理",
+  "emoji": "🖼"
+ },
+ {
+  "name": "PDF 转图片",
+  "cat": "media",
+  "desc": "把 PDF 每一页渲染为 PNG 图片",
+  "scene": "图片处理",
+  "emoji": "🖼"
+ },
+ {
+  "name": "转换为 PNG",
+  "cat": "media",
+  "desc": "转换为 PNG 格式(生成新文件)",
+  "scene": "图片处理",
+  "emoji": "🖼"
+ },
+ {
+  "name": "转换为 JPG",
+  "cat": "media",
+  "desc": "转换为 JPG 格式(生成新文件)",
+  "scene": "图片处理",
+  "emoji": "🖼"
+ },
+ {
+  "name": "转换为 ICNS",
+  "cat": "media",
+  "desc": "把图片转换为 Mac 图标格式 .icns",
+  "scene": "图片处理",
+  "emoji": "🖼"
+ },
+ {
+  "name": "转换为 WebP",
+  "cat": "media",
+  "desc": "转换为 WebP 格式(需要系统支持)",
+  "scene": "图片处理",
+  "emoji": "🖼"
+ },
+ {
+  "name": "缩小到 50%",
+  "cat": "media",
+  "desc": "把图片缩小为原来的一半(生成新文件)",
+  "scene": "图片处理",
+  "emoji": "🖼"
+ },
+ {
+  "name": "缩放到 1920px",
+  "cat": "media",
+  "desc": "把图片宽度缩放到 1920px(生成新文件)",
+  "scene": "图片处理",
+  "emoji": "🖼"
+ },
+ {
+  "name": "创建缩略图 (256px)",
+  "cat": "media",
+  "desc": "创建 256px 的缩略图版本",
+  "scene": "图片处理",
+  "emoji": "🖼"
+ },
+ {
+  "name": "移除照片隐私信息",
+  "cat": "media",
+  "desc": "去掉照片里的 GPS 定位和相机信息",
+  "scene": "图片处理",
+  "emoji": "🖼"
+ },
+ {
+  "name": "查看图片尺寸",
+  "cat": "media",
+  "desc": "查看图片的宽度和高度",
+  "scene": "图片处理",
+  "emoji": "🖼"
+ },
+ {
+  "name": "顺时针旋转 90°",
+  "cat": "media",
+  "desc": "把图片顺时针旋转 90 度(生成新文件)",
+  "scene": "图片处理",
+  "emoji": "🖼"
+ },
+ {
+  "name": "创建 @2x 副本",
+  "cat": "media",
+  "desc": "创建 @2x 视网膜屏尺寸副本",
+  "scene": "图片处理",
+  "emoji": "🖼"
+ },
+ {
+  "name": "设为桌面壁纸",
+  "cat": "media",
+  "desc": "把这张图片设为桌面壁纸",
+  "scene": "图片处理",
+  "emoji": "🖼"
+ },
+ {
+  "name": "用图片设置文件夹图标",
+  "cat": "media",
+  "desc": "选择一张图片,设置为文件夹的自定义图标",
+  "scene": "图片处理",
+  "emoji": "🖼"
+ },
+ {
+  "name": "导出为图标集",
+  "cat": "media",
+  "desc": "生成 Mac/iPhone/iPad/Watch 全尺寸 .iconset 和 .icns",
+  "scene": "图片处理",
+  "emoji": "🖼"
+ },
+ {
+  "name": "用 Xcode 打开",
+  "cat": "dev",
+  "desc": "用 Xcode 打开",
+  "scene": "开发效率",
+  "emoji": "💻"
+ },
+ {
+  "name": "执行 npm install",
+  "cat": "dev",
+  "desc": "在文件夹中执行 npm install",
+  "scene": "开发效率",
+  "emoji": "💻"
+ },
+ {
+  "name": "格式化 JSON",
+  "cat": "dev",
+  "desc": "美化 JSON 文件",
+  "scene": "开发效率",
+  "emoji": "💻"
+ },
+ {
+  "name": "压缩 JSON",
+  "cat": "dev",
+  "desc": "压缩为 .min.json",
+  "scene": "开发效率",
+  "emoji": "💻"
+ },
+ {
+  "name": "生成 UUID",
+  "cat": "dev",
+  "desc": "生成一个新 UUID 并复制",
+  "scene": "开发效率",
+  "emoji": "💻"
+ },
+ {
+  "name": "Base64 编码",
+  "cat": "dev",
+  "desc": "把文件编码为 Base64 并复制",
+  "scene": "开发效率",
+  "emoji": "💻"
+ },
+ {
+  "name": "统计代码行数",
+  "cat": "dev",
+  "desc": "统计常见源码文件的行数",
+  "scene": "开发效率",
+  "emoji": "💻"
+ },
+ {
+  "name": "创建 .gitignore",
+  "cat": "dev",
+  "desc": "创建常用的 .gitignore 模板",
+  "scene": "开发效率",
+  "emoji": "💻"
+ },
+ {
+  "name": "启动本地服务器",
+  "cat": "dev",
+  "desc": "在 8000 端口启动静态文件服务器",
+  "scene": "开发效率",
+  "emoji": "💻"
+ },
+ {
+  "name": "MD5 哈希",
+  "cat": "utilities",
+  "desc": "计算文件 MD5 并复制",
+  "scene": "实用工具",
+  "emoji": "🧰"
+ },
+ {
+  "name": "SHA1 哈希",
+  "cat": "utilities",
+  "desc": "计算文件 SHA1 并复制",
+  "scene": "实用工具",
+  "emoji": "🧰"
+ },
+ {
+  "name": "SHA256 哈希",
+  "cat": "utilities",
+  "desc": "计算文件 SHA256 并复制",
+  "scene": "实用工具",
+  "emoji": "🧰"
+ },
+ {
+  "name": "SHA512 哈希",
+  "cat": "utilities",
+  "desc": "计算文件 SHA512 并复制",
+  "scene": "实用工具",
+  "emoji": "🧰"
+ },
+ {
+  "name": "生成 .sha256 校验文件",
+  "cat": "utilities",
+  "desc": "在旁边生成 .sha256 校验文件",
+  "scene": "实用工具",
+  "emoji": "🧰"
+ },
+ {
+  "name": "压缩为 ZIP",
+  "cat": "share",
+  "desc": "把所选文件压缩为 ZIP",
+  "scene": "分享发送",
+  "emoji": "📤"
+ },
+ {
+  "name": "解压到当前文件夹",
+  "cat": "utilities",
+  "desc": "把 ZIP 解压到所在文件夹",
+  "scene": "实用工具",
+  "emoji": "🧰"
+ },
+ {
+  "name": "创建 TAR.GZ",
+  "cat": "utilities",
+  "desc": "创建 .tar.gz 压缩包",
+  "scene": "实用工具",
+  "emoji": "🧰"
+ },
+ {
+  "name": "解压 TAR.GZ",
+  "cat": "utilities",
+  "desc": "解压 .tar.gz / .tgz 压缩包",
+  "scene": "实用工具",
+  "emoji": "🧰"
+ },
+ {
+  "name": "压缩为 7Z",
+  "cat": "share",
+  "desc": "压缩为 7z(需要已安装 7zz)",
+  "scene": "分享发送",
+  "emoji": "📤"
+ },
+ {
+  "name": "锁定文件",
+  "cat": "utilities",
+  "desc": "锁定文件,防止被修改或删除",
+  "scene": "实用工具",
+  "emoji": "🧰"
+ },
+ {
+  "name": "解锁文件",
+  "cat": "utilities",
+  "desc": "解除文件的锁定状态",
+  "scene": "实用工具",
+  "emoji": "🧰"
+ },
+ {
+  "name": "查看文件十六进制",
+  "cat": "utilities",
+  "desc": "查看文件开头的十六进制数据",
+  "scene": "实用工具",
+  "emoji": "🧰"
+ },
+ {
+  "name": "强制解除文件占用",
+  "cat": "utilities",
+  "desc": "结束占用此文件的进程",
+  "scene": "实用工具",
+  "emoji": "🧰"
+ },
+ {
+  "name": "路径转二维码",
+  "cat": "share",
+  "desc": "把文件路径生成二维码图片并复制",
+  "scene": "分享发送",
+  "emoji": "📤"
+ },
+ {
+  "name": "恢复默认文件夹图标",
+  "cat": "utilities",
+  "desc": "清除自定义图标,还原系统默认文件夹外观",
+  "scene": "实用工具",
+  "emoji": "🧰"
+ }
+]

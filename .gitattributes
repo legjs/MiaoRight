@@ -1,0 +1,2 @@
+# Preserve the upstream notices byte-for-byte: their SHA-256 hashes are pinned.
+ThirdParty/7zip/*.txt -text -whitespace

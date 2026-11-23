@@ -1,0 +1,79 @@
+# AGENTS.md · 妙右 (MiaoRight)
+
+> 本文件供 AI 编码代理(Agent)阅读,建立项目上下文。请勿删除。
+
+## 项目是什么
+
+「妙右」是轻量的 macOS Finder 与剪贴板增强工具(仅支持 Apple Silicon,macOS 14+)。核心能力为复制路径、用本机应用打开、终端、文件剪切粘贴与剪贴板历史；原有 100 个内置动作保留，按需搜索添加。
+
+- **面向用户**:普通 Mac 用户的日常文件事务，主窗口承担低频偏好设置；其他需求通过添加功能满足
+- **核心交互**:稳定顺序的 Finder 右键菜单 + 全局剪贴板列表；主窗口仅「右键菜单 / 剪贴板 / 保险箱 / 通用」四个顶部胶囊导航，右键页四个核心设置行，其他已添加功能默认折叠。已有自建配置保留，无新建编排主入口
+- **设计契约**:见 `PRODUCT.md`、`DESIGN.md` 与 `.impeccable/design.json`；使用系统语义颜色、系统字体与单一蓝色强调。默认窗口 780×600、最小 680×540，64 点顶部栏，无侧栏。外观可选跟随系统/浅色/深色，原生毛玻璃遵循减少透明度与增加对比度；原创菜单+光标图标由 Packaging/Icons/GenerateIcons.swift 自动生成，品牌信息置于通用页底部。不要恢复彩色磁贴工作台或节点画布作为主入口
+- **双语**:全部文案走 `L10n.text(中文, English)`,支持跟随系统/中文/English 即时切换
+
+> 本项目基于 SaneClick 二次开发而来(PolyForm Shield 1.0.0 许可证),仅供个人学习与本地使用,不得分发。`LICENSE` 文件为上游许可证文本,保留作法律凭据。
+
+## 构建(无需完整 Xcode,CLT 即可)
+
+```bash
+swift build -c release          # 编译
+./scripts/build-app.sh release  # 组装 build/MiaoRight.app 并签名
+open build/MiaoRight.app        # ⚠️ 必须用 open 启动,直接执行二进制会绕过 LaunchServices
+```
+
+- 构建产物:`build/MiaoRight.app`(主程序 + 内嵌 MiaoRightFinder.appex)
+- `swift test` 需要 Xcode 的 XCTest,CLT 环境不可用
+
+### 签名(稳定开发身份)
+
+本机钥匙串中有自签代码签名证书 **「MiaoRight dev」**(10 年期),构建脚本自动检测并使用它;
+签名指定 `--identifier com.miaoright.app`,DR 为「证书哈希」,**跨重建稳定**,
+因此 TCC 授权(如 App Group 访问)一次授权永久有效,不会因重编译反复弹窗。
+
+- 证书丢失/换机:按 `MACOS_DEV_SIGNING.md` 第 1-2 步重建并信任(需用户级 codeSign 信任)
+- 证书不在时脚本自动回退 ad-hoc(每次重建需重新授权,不推荐)
+- 私钥只在本机钥匙串,绝不入库
+
+## 架构(SwiftPM 单包四模块)
+
+| 模块 | 职责 |
+|---|---|
+| `MiaoRightShared` | 主 App 与扩展共享:AppGroup、场景分类、动作名/emoji 映射、双语 L10n、常用数据存储、工作流模型 |
+| `MiaoRightKit` | 业务层:动作库(104 个内置动作)、原生执行器、工作流引擎、全部 SwiftUI 界面 |
+| `MiaoRightKit/Composer` | 原子能力层(阶段1基建):`AtomRegistry` 注册约 30 个原子积木,`PipelineEngine` 解释执行组合动作(步骤串联、产物传递、破坏性自动确认) |
+| `MiaoRightApp` | 主程序入口(@main),仅做装配 |
+| `MiaoRightFinder` | Finder Sync 扩展:右键菜单渲染、执行请求写入。**入口必须走 `main.swift` 的 NSExtensionMain**(SPM 构建的关键,勿删) |
+
+## 关键机制
+
+- **动作即数据**:内置动作定义在 `MiaoRightKit/DefaultScripts.swift` + `ScriptCatalog.swift`(name 为唯一键,中文)。执行器按动作名分发:`NativeAction`(原生 Swift 实现)优先,脚本类动作回退 shell
+- **压缩解压**:ZIP、7Z、TAR.GZ、旧组合动作与新建 Excel/PPT 的 ZIP 打包统一走 `SevenZipArchive`。官方 ARM64 `7zz` 固定在 `ThirdParty/7zip`，构建前校验 SHA-256，复制到 `Contents/Helpers` 并单独签名；许可和对应源码随包保留。先写入独立暂存目录，成功后发布；解压统一到旁边的新文件夹，不覆盖旧文件。TAR.GZ 分两步处理 TAR/gzip，ZIP 使用 Deflate；ZIP/7Z 解压密码通过 stdin 传递，不持久化。不得恢复系统 zip/ditto/tar 或依赖用户安装 Homebrew/Python 工具。
+- **跨进程协作**:扩展把执行请求写入 App Group 的 `pending_execution.json` → 主 App 的 `ScriptExecutor` 监听通知后认领执行;工作流请求带 `workflowId`
+- **菜单顺序**:Finder 与按需预览共用 `QuickMenuPlan`。核心顺序为复制路径、应用、终端、剪切、粘贴，再到更多操作；不按使用频率重排。`ActionUsage.record()` 仍记录成功执行，不能据此恢复自动置顶或最近使用主页面
+- **双语**:界面字符串一律 `L10n.text("中文", "English")`;动作名/描述经 `ActionNames` 映射(数据键为中文);语言偏好存 App Group,扩展构建菜单时读取
+- **工作流兼容**:`WorkflowStore` 保留旧工作流数据模型，`WorkflowMigrator` 将已有 workflows.json 迁移为组合动作，执行统一走 `PipelineEngine`。当前主窗口没有新建编排入口；不得因隐藏入口而清空用户配置
+- **应用管理**:从本机选择或拖入 App；图标由 `NSWorkspace` 获取，已保存但丢失的目标显示提示。终端仅列本机可用目标和需要修复的已启用目标
+- **剪贴板**:暂停采集与隐藏面板是不同操作。320 点面板固定在目标屏幕 visibleFrame 内裁剪滑动，遵循 Reduce Motion；搜索输入法优先，列表定位与多选状态分离。文件移动失败保留未完成状态
+- **常用文件操作**:目录与模板使用带 `miaorightShortcut` 标记的既有组合动作 JSON，由 `QuickFilePreferences` 管理；目录的打开/复制/移动各自启用，移动执行前确认。模板先保存独立快照。不能把无标记的历史组合动作识别成快捷目录。
+- **压缩与重命名**:`压缩…`、`批量重命名…` 先在主窗口内嵌表单，确认后执行；`解压` 自动识别格式及常见分卷。所有压缩解压走内置 7-Zip，密码仅经 stdin，禁止持久化或放入命令行参数。
+- **保险箱**:`VaultStore` 管理 hdiutil AES-256 加密 sparse bundle，解锁=挂载到 App Group 容器旁的固定挂载点(`VaultMount`)，锁定=卸载。密码只经 stdin 传给 hdiutil 且不带换行；「记住密码」为可选的登录钥匙串存储，忘记密码不可恢复。右键「加入保险箱」走内嵌确认表单(未创建先建、锁定先解锁后移入)，移入经 `FileOperationJournal` 支持撤销；创建、解锁与内容管理在主窗口独立「保险箱」导航页完成(与剪贴板并列)。空闲(默认 15 分钟)/睡眠/退出自动锁定。扩展凭 App Group 的 `vault.configured` 标记判断菜单可用性；异常退出后卷仍挂着时按已解锁处理。离屏测试禁止执行 hdiutil 命令。
+- **收藏与撤销**:剪贴板收藏不受普通历史条数、到期与清理影响。`FileOperationJournal` 记录本次会话最近 20 批移动/重命名，撤销前检查整个批次的文件元数据与原位置，不覆盖冲突文件；结果附输出位置和撤销 ID。
+- **离屏测试**:显式设置 `MIAORIGHT_OFFSCREEN_TESTING=1`、`MIAORIGHT_TEST_STORAGE`、`MIAORIGHT_CLIPBOARD_TEST_STORAGE`；隔离默认偏好/存储，禁止发送跨进程刷新、安装热键、采集剪贴板或激活窗口。构建使用 `MIAORIGHT_APP_OUTPUT`、`MIAORIGHT_SWIFT_BUILD_PATH`、`MIAORIGHT_ICON_OUTPUT` 写到临时目录，不能替换正在使用的 App。
+- **组合动作(Composer)**:ScriptType `.composed` 的动作,`content` 是 `ComposedAction` JSON(`{version, steps:[{op, params}]}`)。执行走 `PipelineEngine`:第一步吃选中文件,之后逐步传递产物;输出为「空」的旁路步骤(通知等)不改变数据流。**含破坏性原子(移动/删除/重命名)的组合自动要求执行前确认**,不依赖 confirmBeforeRun 字段。新增原子:`AtomRegistry` 加条目(id/中文名/输入输出槽/参数 schema/isDestructive/实现),参数值统一按 String 持久化
+
+## 约定
+
+- 新增动作:先在 `DefaultScripts/ScriptCatalog` 定义(中文名 + 描述),在 `NativeAction` 加同名 case 并接执行分支,在 `ActionNames`/`ActionEmoji` 补双语映射
+- 文案禁止硬编码中文,一律 `L10n.text`;动作用户可见名以中文为数据键
+- 涉及覆盖/移动/删除的动作必须 `confirmBeforeRun: true`
+- 业务详情、添加功能与执行结果统一内嵌主窗口；系统选择器、菜单预览 popover 与剪贴板面板按原生方式呈现
+- 新增界面沿用 `PreferenceHeader` / `PreferenceRow`，不让原子能力和编排术语进入普通用户主流程
+- 每次 Git 提交的标题和正文都必须使用英文。改完必须运行 `./scripts/build-app.sh release`，构建通过后再提交。
+
+## 已知边界
+
+- 设置里切语言:窗口内容即时生效;系统级菜单栏(文件/编辑等)由 macOS 渲染,重启 App 后跟随
+- 分隔线在 macOS 26 菜单中渲染为整行空白,右键菜单避免使用
+- 直接执行二进制(不经 `open`)会导致 AX/窗口注册异常,调试时注意
+
+- 本轮 16 个回归方法使用真实 release 模块与独立校验运行器，不能称为完整 XCTest；release 组装与深度签名校验已通过。最终重启后的 Finder 实机验证、VoiceOver、物理三屏与权限全链路未全面完成，不能将构建通过表述为这些检查通过。

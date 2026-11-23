@@ -1,0 +1,290 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-18T07:08:34.218329+00:00",
+  "title": "Design System: MiaoRight",
+  "extensions": {
+    "platform": "macOS SwiftUI / AppKit",
+    "units": "Native dimensions use pt; frontmatter px is a portable panel representation.",
+    "colorMeta": {
+      "primary": {
+        "role": "primary",
+        "displayName": "系统蓝",
+        "source": "SwiftUI.Color.blue",
+        "tonalRamp": [
+          "oklch(15% 0.12 255)",
+          "oklch(26% 0.12 255)",
+          "oklch(37% 0.12 255)",
+          "oklch(49% 0.12 255)",
+          "oklch(60% 0.12 255)",
+          "oklch(72% 0.12 255)",
+          "oklch(84% 0.12 255)",
+          "oklch(95% 0.12 255)"
+        ],
+        "previewOnly": true
+      },
+      "control-background": {
+        "role": "neutral",
+        "displayName": "控件表面",
+        "source": "NSColor.controlBackgroundColor",
+        "tonalRamp": [
+          "oklch(15% 0 0)",
+          "oklch(26% 0 0)",
+          "oklch(37% 0 0)",
+          "oklch(49% 0 0)",
+          "oklch(60% 0 0)",
+          "oklch(72% 0 0)",
+          "oklch(84% 0 0)",
+          "oklch(95% 0 0)"
+        ],
+        "previewOnly": true
+      },
+      "window-background": {
+        "role": "neutral",
+        "displayName": "无障碍实色回退表面",
+        "source": "NSColor.windowBackgroundColor",
+        "tonalRamp": [
+          "oklch(15% 0 0)",
+          "oklch(26% 0 0)",
+          "oklch(37% 0 0)",
+          "oklch(49% 0 0)",
+          "oklch(60% 0 0)",
+          "oklch(72% 0 0)",
+          "oklch(84% 0 0)",
+          "oklch(95% 0 0)"
+        ],
+        "previewOnly": true
+      },
+      "primary-text": {
+        "role": "neutral",
+        "displayName": "正文",
+        "source": "SwiftUI.Color.primary / NSColor.labelColor",
+        "tonalRamp": [
+          "oklch(15% 0 0)",
+          "oklch(26% 0 0)",
+          "oklch(37% 0 0)",
+          "oklch(49% 0 0)",
+          "oklch(60% 0 0)",
+          "oklch(72% 0 0)",
+          "oklch(84% 0 0)",
+          "oklch(95% 0 0)"
+        ],
+        "previewOnly": true
+      },
+      "secondary-text": {
+        "role": "neutral",
+        "displayName": "次要说明",
+        "source": "SwiftUI.Color.secondary / NSColor.secondaryLabelColor",
+        "tonalRamp": [
+          "oklch(15% 0 0)",
+          "oklch(26% 0 0)",
+          "oklch(37% 0 0)",
+          "oklch(49% 0 0)",
+          "oklch(60% 0 0)",
+          "oklch(72% 0 0)",
+          "oklch(84% 0 0)",
+          "oklch(95% 0 0)"
+        ],
+        "previewOnly": true
+      },
+      "separator": {
+        "role": "neutral",
+        "displayName": "分隔线",
+        "source": "SwiftUI.Divider / NSColor.separatorColor",
+        "tonalRamp": [
+          "oklch(15% 0 0)",
+          "oklch(26% 0 0)",
+          "oklch(37% 0 0)",
+          "oklch(49% 0 0)",
+          "oklch(60% 0 0)",
+          "oklch(72% 0 0)",
+          "oklch(84% 0 0)",
+          "oklch(95% 0 0)"
+        ],
+        "previewOnly": true
+      }
+    },
+    "typographyMeta": {
+      "title": {
+        "displayName": "页面标题",
+        "purpose": "偏好页标题",
+        "source": "SwiftUI.Font.system"
+      },
+      "body": {
+        "displayName": "正文",
+        "purpose": "导航和内容",
+        "source": "SwiftUI.Font.system"
+      },
+      "row-title": {
+        "displayName": "设置项",
+        "purpose": "设置行标题",
+        "source": "SwiftUI.Font.system"
+      },
+      "detail": {
+        "displayName": "说明",
+        "purpose": "辅助说明和副标题",
+        "source": "SwiftUI.Font.system"
+      }
+    },
+    "shadows": [
+      {
+        "name": "clipboard-window",
+        "value": "NSPanel.hasShadow = true (false during slide)",
+        "purpose": "系统管理的剪贴板窗口阴影，无自定义 blur token。"
+      },
+      {
+        "name": "navigation-selection",
+        "value": "black opacity 0.10, radius 2pt, y 1pt",
+        "purpose": "顶部选中胶囊的轻微层次。"
+      }
+    ],
+    "motion": [
+      {
+        "name": "navigation-selection",
+        "value": "spring(response: 0.25, dampingFraction: 1)",
+        "purpose": "matchedGeometryEffect选中胶囊；Reduce Motion时无动画。"
+      },
+      {
+        "name": "clipboard-enter",
+        "value": "0.28s easeOut",
+        "purpose": "固定窗口内裁剪滑入。"
+      },
+      {
+        "name": "clipboard-exit",
+        "value": "0.22s easeIn",
+        "purpose": "固定窗口内裁剪滑出。"
+      },
+      {
+        "name": "reduce-motion",
+        "value": "0s",
+        "purpose": "NSWorkspace.accessibilityDisplayShouldReduceMotion。"
+      }
+    ],
+    "breakpoints": [],
+    "nativeLayout": {
+      "defaultWindow": [
+        780,
+        600
+      ],
+      "minimumWindow": [
+        680,
+        540
+      ],
+      "clipboardWidth": 320,
+      "topbarHeight": 64,
+      "generalBrandIconSize": 36
+    },
+    "assets": {
+      "rasterArtwork": true,
+      "symbols": "SF Symbols",
+      "applicationIcons": "NSWorkspace.shared.icon(forFile:)",
+      "productIcons": {
+        "origin": "Original code vector: blue tile, white menu and cursor",
+        "source": "Packaging/Icons/GenerateIcons.swift",
+        "export": "scripts/generate-icons.sh; build-app.sh regenerates and embeds",
+        "outputs": "AppIcon/FinderIcon PNG, ten-entry iconsets and ICNS (16–1024 px); MenuBarTemplate 18/36 px transparent black, isTemplate = true",
+        "provenance": "impeccable:prompt PNG tEXt origin; 24 PNGs scanned, zero missing"
+      }
+    },
+    "previewNote": "HTML/CSS snippets and tonal ramps are illustrative native bridges, not production controls or normative macOS RGB values.",
+    "nativeAppearance": {
+      "modes": [
+        "system",
+        "light",
+        "dark"
+      ],
+      "storageKey": "appAppearance",
+      "applicationMapping": {
+        "system": "nil",
+        "light": "Aqua",
+        "dark": "DarkAqua"
+      },
+      "background": {
+        "material": "NSVisualEffectView.Material.underWindowBackground",
+        "blendingMode": "behindWindow",
+        "state": "active",
+        "alphaValue": 1,
+        "appearance": {
+          "light": "vibrantLight",
+          "dark": "vibrantDark"
+        },
+        "overlay": {
+          "light": "native white tint 0.60",
+          "dark": "native black tint 0.50"
+        },
+        "fallback": "NSColor.windowBackgroundColor when accessibilityReduceTransparency or colorSchemeContrast.increased",
+        "placement": "Main window: native sibling below NSHostingView. Clipboard: inside the sliding content viewport.",
+        "alphaNote": "Effect alpha is not the actual percentage of background transmission; never fade the blur to control tint."
+      }
+    }
+  },
+  "components": [
+    {
+      "name": "顶部胶囊导航",
+      "kind": "nav",
+      "description": "64点顶部栏居中的三页胶囊，选中表面随位置切换；原生实现为SF Symbols与文字，此网页样本仅示意排布。",
+      "html": "<nav class=\"ds-demo ds-nav\" aria-label=\"Settings Pages\"><button aria-current=\"page\">Context Menu</button><button>Clipboard</button><button>General</button></nav>",
+      "css": ".ds-demo{font-family:system-ui,-apple-system,sans-serif;font-size:12px;color:CanvasText;color-scheme:light dark}.ds-nav{display:inline-flex;gap:2px;padding:4px;border-radius:999px;background:light-dark(rgb(0 0 0 / 5.5%),rgb(255 255 255 / 5.5%));border:.5px solid light-dark(rgb(0 0 0 / 6%),rgb(255 255 255 / 6%))}.ds-nav button{font:inherit;font-weight:500;border:0;background:transparent;color:GrayText;padding:9px 14px;border-radius:999px;cursor:pointer}.ds-nav button[aria-current]{background:Field;color:CanvasText;font-weight:600;box-shadow:0 1px 2px rgb(0 0 0 / 10%)}.ds-nav button:hover{color:CanvasText}.ds-nav button:focus-visible{outline:2px solid light-dark(#007aff,#0a84ff);outline-offset:2px}.ds-nav button:active{opacity:.8}",
+      "refersTo": "navigation-item"
+    },
+    {
+      "name": "设置行",
+      "kind": "custom",
+      "description": "左侧名称和说明，右侧原生控件。",
+      "html": "<div class=\"ds-demo ds-row\"><div><strong>Copy File Path</strong><p>Copy the full path of selected files or folders</p></div><input type=\"checkbox\" checked aria-label=\"Copy File Path\"></div>",
+      "css": ".ds-demo{font-family:system-ui,-apple-system,sans-serif;font-size:13px;color:CanvasText;color-scheme:light dark}.ds-demo button:focus-visible,.ds-demo input:focus-visible{outline:2px solid #007aff;outline-offset:2px}.ds-row{display:flex;gap:12px;align-items:center;justify-content:space-between;padding:16px 0;border-bottom:1px solid rgb(128 128 128 / 25%)}.ds-row strong{font-weight:500}.ds-row p{font-size:12px;color:GrayText;margin:4px 0 0}.ds-row input{accent-color:#007aff}.ds-row input:hover{filter:brightness(1.08)}",
+      "refersTo": "preference-row"
+    },
+    {
+      "name": "搜索框",
+      "kind": "input",
+      "description": "添加功能时按名称或用途搜索。",
+      "html": "<div class=\"ds-demo\"><input class=\"ds-search\" type=\"search\" placeholder=\"Search by name or purpose\" aria-label=\"Search actions\"></div>",
+      "css": ".ds-demo{font-family:system-ui,-apple-system,sans-serif;font-size:13px;color:CanvasText;color-scheme:light dark}.ds-demo button:focus-visible,.ds-demo input:focus-visible{outline:2px solid #007aff;outline-offset:2px}.ds-search{font:inherit;color:CanvasText;background:Field;border:1px solid rgb(128 128 128 / 40%);border-radius:5px;padding:5px 8px;width:260px}.ds-search:hover{border-color:GrayText}"
+    },
+    {
+      "name": "主要操作按钮",
+      "kind": "button",
+      "description": "剪贴板设置中呼出历史记录，原生 borderedProminent 对应样本。",
+      "html": "<div class=\"ds-demo\"><button class=\"ds-primary\">Show History</button></div>",
+      "css": ".ds-demo{font-family:system-ui,-apple-system,sans-serif;font-size:13px;color:CanvasText;color-scheme:light dark}.ds-demo button:focus-visible,.ds-demo input:focus-visible{outline:2px solid #007aff;outline-offset:2px}.ds-primary{font:inherit;background:#007aff;color:white;border:0;border-radius:5px;padding:6px 12px}.ds-primary:hover{filter:brightness(1.08)}.ds-primary:active{filter:brightness(.9)}"
+    },
+    {
+      "name": "应用选择区",
+      "kind": "custom",
+      "description": "使用本机应用，图标由 NSWorkspace 提供；网页样本仅示意文字结构。",
+      "html": "<div class=\"ds-demo ds-apps\"><label>Preview <input type=\"checkbox\" checked aria-label=\"Use Preview\"></label><button>Add Apps…</button><small>You can also drop apps here.</small></div>",
+      "css": ".ds-demo{font-family:system-ui,-apple-system,sans-serif;font-size:13px;color:CanvasText;color-scheme:light dark}.ds-demo button:focus-visible,.ds-demo input:focus-visible{outline:2px solid #007aff;outline-offset:2px}.ds-apps{padding:14px;background:Canvas;border-radius:8px;display:flex;flex-direction:column;gap:12px;width:260px}.ds-apps label{display:flex;justify-content:space-between}.ds-apps input{accent-color:#007aff}.ds-apps button{font:inherit;align-self:start}.ds-apps button:hover{filter:brightness(1.08)}.ds-apps small{font-size:11px;color:GrayText}",
+      "refersTo": "application-group"
+    },
+    {
+      "name": "剪贴板焦点行",
+      "kind": "custom",
+      "description": "定位和勾选是独立状态，摘要与时间分层。",
+      "html": "<div class=\"ds-demo ds-clip\"><input type=\"checkbox\" aria-label=\"Pick Record\"><button><span>Recently copied text</span><small>Text · Just now</small></button></div>",
+      "css": ".ds-demo{font-family:system-ui,-apple-system,sans-serif;font-size:13px;color:CanvasText;color-scheme:light dark}.ds-demo button:focus-visible,.ds-demo input:focus-visible{outline:2px solid #007aff;outline-offset:2px}.ds-clip{display:flex;gap:10px;align-items:start;width:280px;padding:12px 10px;background:rgb(0 122 255 / 12%);border-radius:7px}.ds-clip input{accent-color:#007aff}.ds-clip button{font:inherit;border:0;color:CanvasText;background:transparent;text-align:left;display:flex;flex-direction:column;gap:4px}.ds-clip small{font-size:11px;color:GrayText}.ds-clip button:hover{color:#007aff}",
+      "refersTo": "clipboard-row"
+    }
+  ],
+  "narrative": {
+    "northStar": "轻量原生工具",
+    "overview": "妙右采用轻量原生 macOS 工具的视觉语言。Finder 右键与剪贴板是日常入口，主窗口承担低频偏好设置；用系统字体、语义颜色、短列表与必要分隔线建立秩序。\n\n系统蓝只强调选择与操作，图标以单色 SF Symbols 为主。本机 App 使用 NSWorkspace 提供的真实图标。妙右自身使用蓝底白色菜单与光标的原创矢量图标，由代码自动导出 PNG / ICNS。外观可选跟随系统、浅色或深色，三种模式均使用原生毛玻璃，错误和待处理状态同时给出文字说明。",
+    "keyCharacteristics": [
+      "顶部居中三页胶囊导航，设置按行呈现。",
+      "原生控件、单一蓝色强调、浅深色语义颜色。",
+      "更多能力按需添加，历史配置保留。"
+    ],
+    "rules": [],
+    "dos": [
+      "使用 L10n.text 提供中文与 English，检查英文长度和最小窗口。",
+      "复用 PreferenceHeader、PreferenceRow 与系统控件。",
+      "保留输入法编辑优先级、键盘焦点与多选各自的状态。",
+      "使用系统语义颜色、Reduce Motion与透明度/对比度回退；本机App图标来自NSWorkspace，妙右图标由原创矢量导出。"
+    ],
+    "donts": [
+      "不要恢复彩色磁贴墙、功能数量指标或工作流编排主入口。",
+      "不要以大面积装饰渐变或光晕替代原生材质；浅深遮罩用于保证文字对比度。",
+      "不要将结果展示到独立窗口，或让健康状态占据首屏。",
+      "不要用隐藏剪贴板面板代替暂停采集，或按频率重排原生菜单。"
+    ]
+  }
+}

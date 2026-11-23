@@ -1,0 +1,1239 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>妙右 · 菜单工作台 — 高保真原型</title>
+<style>
+:root{
+  --accent1:#14B8A6; --accent2:#6366F1; --accent3:#EC4899;
+  --c-organize:#14B8A6; --c-media:#EC4899; --c-share:#F59E0B; --c-dev:#8B5CF6; --c-util:#6366F1;
+  --bg:#f2f3f9;
+  --win-bg:rgba(255,255,255,.42);
+  --glass:rgba(255,255,255,.55);
+  --glass-strong:rgba(255,255,255,.78);
+  --glass-border:rgba(255,255,255,.65);
+  --text:#1a1c26; --text2:rgba(26,28,38,.62); --text3:rgba(26,28,38,.40);
+  --menu-bg:rgba(252,252,254,.92);
+  --menu-item:#2a2c36;
+  --hover:rgba(10,120,255,.1);
+  --tile:rgba(255,255,255,.6);
+  --shadow:0 20px 60px rgba(30,30,60,.18);
+  --kbd:rgba(0,0,0,.06);
+}
+.dark{
+  --bg:#07080f;
+  --win-bg:rgba(16,18,30,.55);
+  --glass:rgba(22,24,38,.55);
+  --glass-strong:rgba(24,26,42,.82);
+  --glass-border:rgba(255,255,255,.10);
+  --text:#f0f1f7; --text2:rgba(240,241,247,.62); --text3:rgba(240,241,247,.38);
+  --menu-bg:rgba(32,34,50,.94);
+  --menu-item:#e8e9f2;
+  --hover:rgba(120,160,255,.16);
+  --tile:rgba(255,255,255,.07);
+  --shadow:0 30px 90px rgba(0,0,0,.6);
+  --kbd:rgba(255,255,255,.10);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-font-smoothing:antialiased}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Helvetica Neue",sans-serif;
+  min-height:100vh;display:flex;align-items:center;justify-content:center;padding:28px;
+  background:
+    radial-gradient(900px 600px at 12% 8%, #c7d2fe 0%, transparent 55%),
+    radial-gradient(800px 600px at 88% 12%, #fbcfe8 0%, transparent 55%),
+    radial-gradient(900px 700px at 50% 100%, #99f6e4 0%, transparent 60%),
+    var(--bg);
+  color:var(--text);transition:background .4s;
+}
+.dark body{background:
+    radial-gradient(900px 600px at 12% 8%, #1e1b4b 0%, transparent 55%),
+    radial-gradient(800px 600px at 88% 12%, #4a1942 0%, transparent 55%),
+    radial-gradient(900px 700px at 50% 100%, #062e2a 0%, transparent 60%),
+    var(--bg);}
+/* ---------- 窗口 ---------- */
+.window{
+  width:1340px;height:860px;border-radius:18px;overflow:hidden;position:relative;
+  background:var(--win-bg);backdrop-filter:blur(40px) saturate(1.6);-webkit-backdrop-filter:blur(40px) saturate(1.6);
+  border:1px solid var(--glass-border);box-shadow:var(--shadow);display:flex;flex-direction:column;
+}
+.aurora{position:absolute;inset:-20%;pointer-events:none;z-index:0}
+.aurora i{position:absolute;border-radius:50%;filter:blur(90px);opacity:.34;animation:drift 26s ease-in-out infinite alternate}
+.dark .aurora i{opacity:.26}
+.aurora i:nth-child(1){width:480px;height:480px;background:#8B5CF6;top:4%;left:6%}
+.aurora i:nth-child(2){width:420px;height:420px;background:#EC4899;top:10%;right:8%;animation-delay:-8s}
+.aurora i:nth-child(3){width:520px;height:460px;background:#14B8A6;bottom:2%;left:30%;animation-delay:-16s}
+.aurora i:nth-child(4){width:380px;height:380px;background:#38BDF8;bottom:10%;right:20%;animation-delay:-4s}
+@keyframes drift{from{transform:translate(0,0) scale(1)}to{transform:translate(60px,40px) scale(1.15)}}
+/* ---------- 顶栏 ---------- */
+.titlebar{position:relative;z-index:5;display:flex;align-items:center;padding:14px 18px 0;gap:14px}
+.lights{display:flex;gap:8px;margin-right:2px}
+.lights i{width:12px;height:12px;border-radius:50%}
+.lights i:nth-child(1){background:#ff5f57}.lights i:nth-child(2){background:#febc2e}.lights i:nth-child(3){background:#28c840}
+.brand{display:flex;align-items:center;gap:8px;font-weight:800;font-size:15px;letter-spacing:.5px}
+.brand b{background:linear-gradient(120deg,var(--accent1),var(--accent2) 55%,var(--accent3));-webkit-background-clip:text;background-clip:text;color:transparent;font-size:17px}
+.cmdbar{
+  flex:1;max-width:560px;margin:0 auto;display:flex;align-items:center;gap:10px;
+  background:var(--glass);border:1px solid var(--glass-border);border-radius:12px;padding:9px 14px;
+  cursor:pointer;transition:.2s;
+}
+.cmdbar:hover{box-shadow:0 6px 24px rgba(90,90,180,.15)}
+.cmdbar .ph{color:var(--text3);font-size:13px;flex:1}
+kbd{font-family:inherit;font-size:10.5px;color:var(--text2);background:var(--kbd);border-radius:5px;padding:2px 6px}
+.top-right{display:flex;align-items:center;gap:10px}
+.pill{display:flex;align-items:center;gap:6px;font-size:11.5px;padding:5px 11px;border-radius:99px;background:var(--glass);border:1px solid var(--glass-border)}
+.pill .dot{width:7px;height:7px;border-radius:50%}
+.icon-btn{width:32px;height:32px;border-radius:10px;border:1px solid var(--glass-border);background:var(--glass);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px;transition:.2s}
+.icon-btn:hover{transform:translateY(-1px)}
+/* ---------- 药丸导航 ---------- */
+.nav{position:relative;z-index:5;display:flex;justify-content:center;margin:12px 0 4px}
+.nav .tabs{display:flex;gap:4px;background:var(--glass);border:1px solid var(--glass-border);border-radius:99px;padding:4px}
+.nav .tab{border:none;background:transparent;padding:7px 20px;border-radius:99px;font-size:13px;font-weight:600;color:var(--text2);cursor:pointer;font-family:inherit;transition:.18s}
+.nav .tab:hover{color:var(--text)}
+.nav .tab.on{color:#fff;background:linear-gradient(120deg,var(--accent1),var(--accent2));box-shadow:0 4px 14px rgba(80,110,230,.35)}
+/* ---------- 主体布局 ---------- */
+.stage{position:relative;z-index:2;flex:1;overflow:hidden}
+.screen{position:absolute;inset:0;padding:14px 26px 24px;overflow-y:auto;display:none}
+.screen.on{display:block;animation:fadein .25s}
+@keyframes fadein{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.screen::-webkit-scrollbar{width:8px}
+.screen::-webkit-scrollbar-thumb{background:var(--kbd);border-radius:4px}
+/* ---------- 工作台 ---------- */
+.studio{display:grid;grid-template-columns:1fr 350px;gap:20px;align-items:start}
+.sec-head{display:flex;align-items:baseline;gap:10px;margin:4px 2px 10px}
+.sec-head h3{font-size:13px;font-weight:800;letter-spacing:.3px}
+.sec-head span{font-size:11.5px;color:var(--text3)}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
+.chip{display:flex;align-items:center;gap:6px;font-size:12px;padding:7px 13px;border-radius:99px;background:var(--tile);border:1px solid var(--glass-border);cursor:pointer;transition:.15s;font-family:inherit;color:var(--text)}
+.chip:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(90,90,180,.14)}
+.chip b{color:var(--text3);font-weight:600;font-size:10.5px}
+.scenes{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:20px}
+.scene-card{border:1px solid var(--glass-border);background:var(--tile);border-radius:18px;padding:14px;cursor:pointer;text-align:center;transition:.2s;font-family:inherit;color:var(--text)}
+.scene-card:hover{transform:translateY(-3px);box-shadow:0 10px 30px rgba(90,90,180,.18)}
+.scene-card .sc-emoji{width:46px;height:46px;border-radius:14px;display:inline-flex;align-items:center;justify-content:center;font-size:23px;margin-bottom:8px;color:#fff}
+.scene-card .sc-name{font-size:13px;font-weight:700}
+.scene-card .sc-count{font-size:10.5px;color:var(--text3);margin-top:3px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(168px,1fr));gap:10px}
+.tile{
+  position:relative;border:1px solid var(--glass-border);background:var(--tile);border-radius:16px;padding:12px;cursor:pointer;
+  transition:.18s;font-family:inherit;color:var(--text);text-align:left;display:flex;flex-direction:column;gap:8px;
+}
+.tile:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(90,90,180,.16)}
+.tile .t-row{display:flex;align-items:center;gap:9px}
+.tile .t-emoji{width:36px;height:36px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:19px;color:#fff;flex:none}
+.tile .t-name{font-size:12.5px;font-weight:700;line-height:1.25}
+.tile .t-desc{font-size:10.5px;color:var(--text3);line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:28px}
+.tile .t-foot{display:flex;align-items:center;justify-content:space-between}
+.tile .t-usage{font-size:10px;color:var(--text3)}
+.tile.on{border-color:rgba(20,184,166,.5)}
+/* 开关 */
+.sw{width:34px;height:20px;border-radius:99px;background:var(--kbd);position:relative;transition:.2s;flex:none;border:none;cursor:pointer}
+.sw::after{content:"";position:absolute;width:16px;height:16px;border-radius:50%;background:#fff;top:2px;left:2px;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.25)}
+.sw.on{background:linear-gradient(120deg,var(--accent1),var(--accent2))}
+.sw.on::after{left:16px}
+/* ---------- 菜单预览 ---------- */
+.menu-panel{
+  position:sticky;top:0;border:1px solid var(--glass-border);background:var(--glass-strong);
+  border-radius:20px;padding:16px;box-shadow:var(--shadow);
+}
+.menu-panel .mp-head{display:flex;align-items:center;gap:8px;margin-bottom:4px}
+.menu-panel .mp-head h3{font-size:13px;font-weight:800}
+.menu-panel .mp-head .live{font-size:9.5px;color:var(--accent1);font-weight:800;letter-spacing:1px;background:rgba(20,184,166,.12);padding:2px 8px;border-radius:99px}
+.menu-panel .mp-sub{font-size:10.5px;color:var(--text3);margin-bottom:12px}
+.macmenu{background:var(--menu-bg);border-radius:12px;padding:5px;box-shadow:0 12px 40px rgba(0,0,0,.22),inset 0 1px 0 rgba(255,255,255,.35);border:1px solid rgba(0,0,0,.06)}
+.dark .macmenu{border-color:rgba(255,255,255,.08)}
+.mi{display:flex;align-items:center;gap:9px;font-size:12.5px;color:var(--menu-item);padding:5px 10px;border-radius:7px;transition:background .1s}
+.mi .m-emoji{width:17px;text-align:center;font-size:13px}
+.mi .m-label{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mi .m-sub{font-size:10px;color:var(--text3)}
+.mi:hover{background:linear-gradient(120deg,var(--accent1),var(--accent2));color:#fff}
+.mi:hover .m-sub{color:rgba(255,255,255,.8)}
+.msep{height:1px;background:rgba(128,128,140,.22);margin:4px 8px}
+.mgroup{font-size:10px;color:var(--text3);padding:4px 10px 2px;font-weight:700;letter-spacing:.4px}
+.mi.red{color:#e5484d}
+.mi.red:hover{background:#e5484d;color:#fff}
+.mi.dim{opacity:.4}
+@keyframes pop{0%{background:rgba(20,184,166,.35)}100%{background:transparent}}
+.mi.flash{animation:pop 1s ease-out}
+/* ---------- 全库 ---------- */
+.lib-head{display:flex;align-items:center;gap:14px;margin-bottom:14px}
+.lib-head h2{font-size:20px;font-weight:800}
+.lib-head .cnt{font-size:12px;color:var(--text3)}
+.lib-filters{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;align-items:center}
+.fchip{font-size:12px;padding:7px 14px;border-radius:99px;border:1px solid var(--glass-border);background:var(--tile);cursor:pointer;font-family:inherit;color:var(--text);transition:.15s}
+.fchip.on{background:linear-gradient(120deg,var(--accent1),var(--accent2));color:#fff;border-color:transparent;font-weight:700}
+.lib-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(168px,1fr));gap:10px}
+/* ---------- 工作流 ---------- */
+.wf-toolbar{display:flex;align-items:center;gap:10px;background:var(--glass);border:1px solid var(--glass-border);border-radius:14px;padding:10px 14px;margin-bottom:14px}
+.wf-toolbar input{background:transparent;border:none;outline:none;color:var(--text);font-size:14px;font-weight:700;width:200px;font-family:inherit}
+.btn{border:none;border-radius:99px;padding:8px 16px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;transition:.15s}
+.btn.ghost{background:var(--tile);color:var(--text);border:1px solid var(--glass-border)}
+.btn.primary{background:linear-gradient(120deg,var(--accent1),var(--accent2));color:#fff;box-shadow:0 4px 14px rgba(80,110,230,.35)}
+.btn:hover{transform:translateY(-1px)}
+.wf-wrap{display:grid;grid-template-columns:230px 1fr;gap:14px}
+.wf-palette{background:var(--glass);border:1px solid var(--glass-border);border-radius:16px;padding:12px;max-height:560px;overflow:auto}
+.wf-palette h4{font-size:11px;color:var(--text3);margin:10px 2px 6px;font-weight:800}
+.wf-palette h4:first-child{margin-top:0}
+.wf-p-item{display:flex;align-items:center;gap:8px;font-size:12px;padding:6px 8px;border-radius:9px;cursor:grab;color:var(--text)}
+.wf-p-item:hover{background:var(--hover)}
+.wf-p-item i{width:18px;height:18px;border-radius:5px;display:inline-flex;align-items:center;justify-content:center;font-size:9px;color:#fff;font-style:normal}
+.canvas{
+  position:relative;border:1px solid var(--glass-border);border-radius:16px;overflow:hidden;min-height:560px;
+  background:
+    radial-gradient(var(--kbd) 1px, transparent 1px) 0 0/22px 22px,
+    var(--tile);
+}
+.cnode{
+  position:absolute;width:190px;border-radius:14px;padding:11px 12px;
+  background:var(--glass-strong);border:1.5px solid var(--glass-border);box-shadow:0 8px 28px rgba(30,30,80,.16);
+}
+.cnode .cn-head{display:flex;align-items:center;gap:8px}
+.cnode .cn-emoji{width:28px;height:28px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:15px;color:#fff}
+.cnode .cn-name{font-size:12px;font-weight:800}
+.cnode .cn-sub{font-size:10px;color:var(--text3);margin-top:5px}
+.cnode .cn-x{position:absolute;top:7px;right:9px;color:var(--text3);font-size:11px;cursor:pointer}
+.port{position:absolute;width:11px;height:11px;border-radius:50%;background:var(--accent2);border:2px solid #fff;box-shadow:0 0 0 2px rgba(99,102,241,.3)}
+.port.in{left:-6px;top:50%;transform:translateY(-50%)}
+.port.out{right:-6px;top:50%;transform:translateY(-50%)}
+.wf-hint{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);font-size:11px;color:var(--text3);background:var(--glass);padding:6px 14px;border-radius:99px;border:1px solid var(--glass-border)}
+/* ---------- 设置 ---------- */
+.settings{max-width:640px;margin:0 auto}
+.set-card{background:var(--glass);border:1px solid var(--glass-border);border-radius:18px;padding:4px 18px;margin-bottom:16px}
+.set-row{display:flex;align-items:center;gap:12px;padding:13px 0;border-bottom:1px solid rgba(128,128,140,.14)}
+.set-row:last-child{border-bottom:none}
+.set-row .s-main{flex:1}
+.set-row .s-title{font-size:13px;font-weight:700}
+.set-row .s-hint{font-size:11px;color:var(--text3);margin-top:2px}
+.seg{display:flex;background:var(--kbd);border-radius:9px;padding:2px}
+.seg i{font-style:normal;font-size:11.5px;padding:4px 12px;border-radius:7px;color:var(--text2);cursor:pointer}
+.seg i.on{background:var(--glass-strong);color:var(--text);font-weight:700;box-shadow:0 1px 4px rgba(0,0,0,.12)}
+h2.pagetitle{font-size:20px;font-weight:800;margin:6px 2px 16px}
+/* ---------- 命令面板 ---------- */
+.overlay{position:absolute;inset:0;background:rgba(10,10,20,.35);backdrop-filter:blur(6px);z-index:50;display:none;align-items:flex-start;justify-content:center;padding-top:90px}
+.overlay.on{display:flex;animation:fadein .15s}
+.palette{width:600px;background:var(--glass-strong);backdrop-filter:blur(30px);border:1px solid var(--glass-border);border-radius:18px;box-shadow:var(--shadow);overflow:hidden}
+.palette input{width:100%;border:none;outline:none;background:transparent;padding:16px 18px;font-size:15px;color:var(--text);font-family:inherit;border-bottom:1px solid rgba(128,128,140,.15)}
+.palette .pl-list{max-height:380px;overflow-y:auto;padding:6px}
+.pl-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:10px;cursor:pointer}
+.pl-item:hover,.pl-item.hl{background:var(--hover)}
+.pl-item .p-emoji{width:30px;height:30px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:16px;color:#fff;flex:none}
+.pl-item .p-name{font-size:13px;font-weight:700}
+.pl-item .p-desc{font-size:11px;color:var(--text3)}
+.pl-item .p-tag{font-size:9.5px;padding:2px 8px;border-radius:99px;font-weight:700}
+.pl-empty{padding:30px;text-align:center;color:var(--text3);font-size:13px}
+.pl-foot{display:flex;gap:14px;padding:8px 16px;border-top:1px solid rgba(128,128,140,.15);font-size:10.5px;color:var(--text3)}
+.note{position:absolute;bottom:10px;right:18px;z-index:6;font-size:10.5px;color:var(--text3)}
+</style>
+</head>
+<body>
+<div class="window" id="win">
+  <div class="aurora"><i></i><i></i><i></i><i></i></div>
+
+  <div class="titlebar">
+    <div class="lights"><i></i><i></i><i></i></div>
+    <div class="brand"><b>● 妙右</b></div>
+    <div class="cmdbar" onclick="openPalette()">
+      <span style="color:var(--text3)">🔍</span>
+      <span class="ph">搜索动作、工作流、设置…</span>
+      <kbd>⌘K</kbd>
+    </div>
+    <div class="top-right">
+      <div class="pill"><span class="dot" style="background:#30d158"></span>右键菜单可用</div>
+      <div class="icon-btn" id="themeBtn" onclick="toggleTheme()" title="明暗切换">🌙</div>
+    </div>
+  </div>
+
+  <div class="nav">
+    <div class="tabs">
+      <button class="tab on" data-s="studio" onclick="go('studio')">工作台</button>
+      <button class="tab" data-s="library" onclick="go('library')">动作全库</button>
+      <button class="tab" data-s="workflow" onclick="go('workflow')">工作流</button>
+      <button class="tab" data-s="settings" onclick="go('settings')">设置</button>
+    </div>
+  </div>
+
+  <div class="stage">
+
+    <!-- ═══════ 工作台 ═══════ -->
+    <div class="screen on" id="s-studio">
+      <div class="studio">
+        <div>
+          <div class="sec-head"><h3>⚡ 常用</h3><span>按使用频率自动置顶</span></div>
+          <div class="chips" id="frequentChips"></div>
+
+          <div class="sec-head"><h3>🧭 动作宇宙</h3><span>点击场景进入全库</span></div>
+          <div class="scenes" id="sceneCards"></div>
+
+          <div class="sec-head"><h3>✨ 为你推荐</h3><span>开启后立即出现在右键菜单</span></div>
+          <div class="tiles" id="featuredTiles"></div>
+        </div>
+
+        <div class="menu-panel">
+          <div class="mp-head"><h3>我的右键菜单</h3><span class="live">● 实时</span></div>
+          <div class="mp-sub" id="menuContext">在「下载」文件夹中右键 3 个文件时 —</div>
+          <div class="macmenu" id="menuPreview"></div>
+          <div class="mp-sub" style="margin:10px 2px 0">↖ 任意开关一个动作,看菜单即时变化</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════ 动作全库 ═══════ -->
+    <div class="screen" id="s-library">
+      <div class="lib-head"><h2>动作全库</h2><span class="cnt" id="libCount"></span></div>
+      <div class="lib-filters" id="libFilters"></div>
+      <div class="lib-grid" id="libGrid"></div>
+    </div>
+
+    <!-- ═══════ 工作流 ═══════ -->
+    <div class="screen" id="s-workflow">
+      <div class="wf-toolbar">
+        <span style="font-size:17px">📸</span>
+        <input value="照片归档">
+        <span style="font-size:11px;color:var(--text3)">3 个步骤 · 已启用</span>
+        <span style="flex:1"></span>
+        <button class="btn ghost">▶ 试运行</button>
+        <button class="btn primary">保存并启用</button>
+      </div>
+      <div class="wf-wrap">
+        <div class="wf-palette" id="wfPalette"></div>
+        <div class="canvas">
+          <svg style="position:absolute;inset:0;width:100%;height:100%" >
+            <path d="M 250 130 C 300 130, 300 240, 350 240" fill="none" stroke="#6366F1" stroke-width="2.5" opacity=".8"/>
+            <path d="M 560 240 C 610 240, 610 350, 660 350" fill="none" stroke="#6366F1" stroke-width="2.5" opacity=".8" stroke-dasharray="1 0"/>
+          </svg>
+          <div class="cnode" style="left:60px;top:95px">
+            <span class="cn-x">✕</span>
+            <div class="cn-head"><span class="cn-emoji" style="background:linear-gradient(135deg,#14B8A6,#0d9488)">🔗</span><span class="cn-name">复制路径</span></div>
+            <div class="cn-sub">输入:Finder 选中项</div>
+            <span class="port in"></span><span class="port out"></span>
+          </div>
+          <div class="cnode" style="left:350px;top:205px">
+            <span class="cn-x">✕</span>
+            <div class="cn-head"><span class="cn-emoji" style="background:linear-gradient(135deg,#EC4899,#be185d)">🖼</span><span class="cn-name">转换为 JPEG</span></div>
+            <div class="cn-sub">输入:上游产物</div>
+            <span class="port in"></span><span class="port out"></span>
+          </div>
+          <div class="cnode" style="left:660px;top:315px">
+            <span class="cn-x">✕</span>
+            <div class="cn-head"><span class="cn-emoji" style="background:linear-gradient(135deg,#8B5CF6,#6d28d9)">📦</span><span class="cn-name">压缩为 ZIP</span></div>
+            <div class="cn-sub">输入:上游产物</div>
+            <span class="port in"></span><span class="port out"></span>
+          </div>
+          <div class="wf-hint">从左侧动作库点击加入 · 拖动出端口连线 · 保存后出现在右键「我的工作流」</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════ 设置 ═══════ -->
+    <div class="screen" id="s-settings">
+      <div class="settings">
+        <h2 class="pagetitle">设置</h2>
+        <div class="set-card">
+          <div class="set-row">
+            <div class="s-main"><div class="s-title">应用语言</div></div>
+            <div class="seg"><i class="on">简体中文</i><i>English</i><i>跟随系统</i></div>
+          </div>
+          <div class="set-row">
+            <div class="s-main"><div class="s-title">外观</div><div class="s-hint">原型右上角 🌙 也能切</div></div>
+            <div class="seg"><i class="on">跟随系统</i><i>浅色</i><i>深色</i></div>
+          </div>
+        </div>
+        <div class="set-card">
+          <div class="set-row">
+            <div class="s-main"><div class="s-title">在所有文件夹生效</div><div class="s-hint">关闭后仅在监控的文件夹内出现</div></div>
+            <button class="sw on" onclick="this.classList.toggle('on')"></button>
+          </div>
+          <div class="set-row">
+            <div class="s-main"><div class="s-title">按分类折叠右键菜单</div><div class="s-hint">关闭后动作平铺在菜单顶层</div></div>
+            <button class="sw on" onclick="this.classList.toggle('on')"></button>
+          </div>
+          <div class="set-row">
+            <div class="s-main"><div class="s-title">常用动作置顶</div><div class="s-hint">高频动作自动排到菜单最前</div></div>
+            <button class="sw on" onclick="this.classList.toggle('on')"></button>
+          </div>
+        </div>
+        <div class="set-card">
+          <div class="set-row">
+            <div class="s-main"><div class="s-title">监控文件夹</div><div class="s-hint">图片 · 文稿 · 下载 · 影片 · 桌面</div></div>
+            <button class="btn ghost">＋ 添加</button>
+          </div>
+          <div class="set-row">
+            <div class="s-main"><div class="s-title">登录时启动</div></div>
+            <button class="sw on" onclick="this.classList.toggle('on')"></button>
+          </div>
+          <div class="set-row">
+            <div class="s-main"><div class="s-title">菜单栏图标</div></div>
+            <button class="sw on" onclick="this.classList.toggle('on')"></button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ═══════ 命令面板 ═══════ -->
+  <div class="overlay" id="paletteOverlay" onclick="if(event.target===this)closePalette()">
+    <div class="palette">
+      <input id="plInput" placeholder="输入即筛选 — 动作名、描述、场景…" oninput="renderPalette()">
+      <div class="pl-list" id="plList"></div>
+      <div class="pl-foot"><span>↩ 开关动作</span><span>esc 关闭</span><span id="plCount"></span></div>
+    </div>
+  </div>
+
+  <div class="note">妙右 · 菜单工作台 概念原型 — 数据为真实内置动作库</div>
+</div>
+
+<script>
+const ACTIONS = [
+ {
+  "name": "彻底删除",
+  "cat": null,
+  "desc": "不经过废纸篓,直接彻底删除所选文件(不可恢复)",
+  "scene": "顶层",
+  "emoji": "🗑"
+ },
+ {
+  "name": "隔空投送…",
+  "cat": null,
+  "desc": "通过隔空投送把文件发送到附近的 Apple 设备",
+  "scene": "顶层",
+  "emoji": "📡"
+ },
+ {
+  "name": "粘贴",
+  "cat": null,
+  "desc": "把之前「剪切」的文件移动到当前文件夹",
+  "scene": "顶层",
+  "emoji": "📋"
+ },
+ {
+  "name": "剪切",
+  "cat": null,
+  "desc": "剪切所选文件,之后在目标文件夹执行「粘贴」完成移动",
+  "scene": "顶层",
+  "emoji": "✂️"
+ },
+ {
+  "name": "移动到…",
+  "cat": null,
+  "desc": "弹窗选择文件夹,把所选文件移动过去",
+  "scene": "顶层",
+  "emoji": "✨"
+ },
+ {
+  "name": "复制到…",
+  "cat": null,
+  "desc": "弹窗选择文件夹,把所选文件复制过去",
+  "scene": "顶层",
+  "emoji": "✨"
+ },
+ {
+  "name": "新建 TXT 文档",
+  "cat": "organize",
+  "desc": "在当前文件夹新建空白文本文档",
+  "scene": "整理归档",
+  "emoji": "📥"
+ },
+ {
+  "name": "新建 Markdown 笔记",
+  "cat": "organize",
+  "desc": "在当前文件夹新建 Markdown 笔记",
+  "scene": "整理归档",
+  "emoji": "📥"
+ },
+ {
+  "name": "新建 RTF 文档",
+  "cat": "organize",
+  "desc": "在当前文件夹新建富文本文档",
+  "scene": "整理归档",
+  "emoji": "📥"
+ },
+ {
+  "name": "新建 Word 文档",
+  "cat": "organize",
+  "desc": "在当前文件夹新建 Word(.docx)文档",
+  "scene": "整理归档",
+  "emoji": "📥"
+ },
+ {
+  "name": "新建 Excel 工作簿",
+  "cat": "organize",
+  "desc": "在当前文件夹新建 Excel(.xlsx)工作簿",
+  "scene": "整理归档",
+  "emoji": "📥"
+ },
+ {
+  "name": "新建 PPT 演示文稿",
+  "cat": "organize",
+  "desc": "在当前文件夹新建 PowerPoint(.pptx)演示文稿",
+  "scene": "整理归档",
+  "emoji": "📥"
+ },
+ {
+  "name": "新建文件夹",
+  "cat": "organize",
+  "desc": "在当前文件夹新建文件夹",
+  "scene": "整理归档",
+  "emoji": "📥"
+ },
+ {
+  "name": "根据文件名新建文件夹",
+  "cat": "organize",
+  "desc": "以所选文件的名称新建同名文件夹",
+  "scene": "整理归档",
+  "emoji": "📥"
+ },
+ {
+  "name": "复制路径",
+  "cat": "utilities",
+  "desc": "复制文件的完整路径到剪贴板",
+  "scene": "实用工具",
+  "emoji": "🧰"
+ },
+ {
+  "name": "复制文件名",
+  "cat": "utilities",
+  "desc": "仅复制文件名(含扩展名)",
+  "scene": "实用工具",
+  "emoji": "🧰"
+ },
+ {
+  "name": "复制文件名(不含扩展名)",
+  "cat": "utilities",
+  "desc": "仅复制文件名,不带扩展名",
+  "scene": "实用工具",
+  "emoji": "🧰"
+ },
+ {
+  "name": "复制所在文件夹路径",
+  "cat": "utilities",
+  "desc": "复制文件所在文件夹的路径",
+  "scene": "实用工具",
+  "emoji": "🧰"
+ },
+ {
+  "name": "复制 file:// 链接",
+  "cat": "utilities",
+  "desc": "以 file:// URL 形式复制",
+  "scene": "实用工具",
+  "emoji": "🧰"
+ },
+ {
+  "name": "复制为 Markdown 链接",
+  "cat": "utilities",
+  "desc": "复制为 [文件名](file://…) 形式的 Markdown 链接",
+  "scene": "实用工具",
+  "emoji": "🧰"
+ },
+ {
+  "name": "在终端中打开",
+  "cat": "utilities",
+  "desc": "在终端中打开当前位置",
+  "scene": "实用工具",
+  "emoji": "🧰"
+ },
+ {
+  "name": "显示简介",
+  "cat": "utilities",
+  "desc": "查看文件大小、创建/修改时间和权限",
+  "scene": "实用工具",
+  "emoji": "🧰"
+ },
+ {
+  "name": "在 Finder 中显示",
+  "cat": "utilities",
+  "desc": "在新的 Finder 窗口中显示该项",
+  "scene": "实用工具",
+  "emoji": "🧰"
+ },
+ {
+  "name": "创建带时间戳的副本",
+  "cat": "utilities",
+  "desc": "复制一份并在名称中加入日期时间",
+  "scene": "实用工具",
+  "emoji": "🧰"
+ },
+ {
+  "name": "制作可执行文件",
+  "cat": "utilities",
+  "desc": "允许文件作为程序运行",
+  "scene": "实用工具",
+  "emoji": "🧰"
+ },
+ {
+  "name": "清理 .DS_Store 文件",
+  "cat": "utilities",
+  "desc": "清理文件夹内的 Mac 隐藏系统文件",
+  "scene": "实用工具",
+  "emoji": "🧰"
+ },
+ {
+  "name": "显示/隐藏隐藏文件",
+  "cat": "utilities",
+  "desc": "切换 Finder 中隐藏文件的显示状态",
+  "scene": "实用工具",
+  "emoji": "🧰"
+ },
+ {
+  "name": "在 iTerm2 中打开",
+  "cat": "dev",
+  "desc": "在 iTerm2 终端中打开当前位置",
+  "scene": "开发效率",
+  "emoji": "💻"
+ },
+ {
+  "name": "在 Warp 中打开",
+  "cat": "dev",
+  "desc": "在 Warp 终端中打开当前位置",
+  "scene": "开发效率",
+  "emoji": "💻"
+ },
+ {
+  "name": "在 VS Code 中打开",
+  "cat": "dev",
+  "desc": "用 Visual Studio Code 打开",
+  "scene": "开发效率",
+  "emoji": "💻"
+ },
+ {
+  "name": "在 Cursor 中打开",
+  "cat": "dev",
+  "desc": "用 Cursor 编辑器打开",
+  "scene": "开发效率",
+  "emoji": "💻"
+ },
+ {
+  "name": "在 Sublime Text 中打开",
+  "cat": "dev",
+  "desc": "用 Sublime Text 打开",
+  "scene": "开发效率",
+  "emoji": "💻"
+ },
+ {
+  "name": "在 Typora 中打开",
+  "cat": "dev",
+  "desc": "用 Typora 打开 Markdown 文件",
+  "scene": "开发效率",
+  "emoji": "💻"
+ },
+ {
+  "name": "在 Obsidian 中打开",
+  "cat": "dev",
+  "desc": "在 Obsidian 中打开笔记",
+  "scene": "开发效率",
+  "emoji": "💻"
+ },
+ {
+  "name": "在 IDEA 中打开",
+  "cat": "dev",
+  "desc": "用 IntelliJ IDEA 打开项目",
+  "scene": "开发效率",
+  "emoji": "💻"
+ },
+ {
+  "name": "在 PyCharm 中打开",
+  "cat": "dev",
+  "desc": "用 PyCharm 打开项目",
+  "scene": "开发效率",
+  "emoji": "💻"
+ },
+ {
+  "name": "在 CLion 中打开",
+  "cat": "dev",
+  "desc": "用 CLion 打开项目",
+  "scene": "开发效率",
+  "emoji": "💻"
+ },
+ {
+  "name": "在 WebStorm 中打开",
+  "cat": "dev",
+  "desc": "用 WebStorm 打开项目",
+  "scene": "开发效率",
+  "emoji": "💻"
+ },
+ {
+  "name": "在 GoLand 中打开",
+  "cat": "dev",
+  "desc": "用 GoLand 打开项目",
+  "scene": "开发效率",
+  "emoji": "💻"
+ },
+ {
+  "name": "在 DataGrip 中打开",
+  "cat": "dev",
+  "desc": "用 DataGrip 打开数据库目录",
+  "scene": "开发效率",
+  "emoji": "💻"
+ },
+ {
+  "name": "在 Android Studio 中打开",
+  "cat": "dev",
+  "desc": "用 Android Studio 打开项目",
+  "scene": "开发效率",
+  "emoji": "💻"
+ },
+ {
+  "name": "用其他应用打开…",
+  "cat": "dev",
+  "desc": "弹窗选择任意 App 打开所选文件",
+  "scene": "开发效率",
+  "emoji": "💻"
+ },
+ {
+  "name": "归类到新文件夹",
+  "cat": "organize",
+  "desc": "新建文件夹并把所选文件移入",
+  "scene": "整理归档",
+  "emoji": "📥"
+ },
+ {
+  "name": "解散文件夹",
+  "cat": "organize",
+  "desc": "删除文件夹本身,但把里面的文件保留到上一级",
+  "scene": "整理归档",
+  "emoji": "📥"
+ },
+ {
+  "name": "拍平嵌套文件",
+  "cat": "organize",
+  "desc": "把子文件夹里的文件全部移到顶层",
+  "scene": "整理归档",
+  "emoji": "📥"
+ },
+ {
+  "name": "按类型整理",
+  "cat": "organize",
+  "desc": "按扩展名自动分拣文件到子文件夹",
+  "scene": "整理归档",
+  "emoji": "📥"
+ },
+ {
+  "name": "按日期整理",
+  "cat": "organize",
+  "desc": "按「年-月」自动分拣文件到子文件夹",
+  "scene": "整理归档",
+  "emoji": "📥"
+ },
+ {
+  "name": "按序号重命名",
+  "cat": "organize",
+  "desc": "把所选文件重命名为 001、002、003…",
+  "scene": "整理归档",
+  "emoji": "📥"
+ },
+ {
+  "name": "文件名转小写",
+  "cat": "organize",
+  "desc": "把文件名转换为小写",
+  "scene": "整理归档",
+  "emoji": "📥"
+ },
+ {
+  "name": "空格替换为下划线",
+  "cat": "organize",
+  "desc": "把文件名中的空格替换为下划线",
+  "scene": "整理归档",
+  "emoji": "📥"
+ },
+ {
+  "name": "隐藏所选文件",
+  "cat": "organize",
+  "desc": "把所选文件(夹)标记为隐藏",
+  "scene": "整理归档",
+  "emoji": "📥"
+ },
+ {
+  "name": "取消隐藏",
+  "cat": "organize",
+  "desc": "取消所选文件(夹)的隐藏标记",
+  "scene": "整理归档",
+  "emoji": "📥"
+ },
+ {
+  "name": "发送快捷方式到桌面",
+  "cat": "share",
+  "desc": "在桌面创建指向所选文件的快捷方式",
+  "scene": "分享发送",
+  "emoji": "📤"
+ },
+ {
+  "name": "清除空文件夹",
+  "cat": "organize",
+  "desc": "删除所选文件夹内的所有空文件夹",
+  "scene": "整理归档",
+  "emoji": "📥"
+ },
+ {
+  "name": "复制图片中的文字",
+  "cat": "media",
+  "desc": "识别图片中的文字并复制",
+  "scene": "图片处理",
+  "emoji": "🖼"
+ },
+ {
+  "name": "导出图片中的文字",
+  "cat": "media",
+  "desc": "识别图片中的文字并保存为 .txt",
+  "scene": "图片处理",
+  "emoji": "🖼"
+ },
+ {
+  "name": "HEIC 转 JPG",
+  "cat": "media",
+  "desc": "把 iPhone 的 HEIC 照片转换为 JPG",
+  "scene": "图片处理",
+  "emoji": "🖼"
+ },
+ {
+  "name": "图片合并为 PDF",
+  "cat": "media",
+  "desc": "把所选图片合并成一个 PDF",
+  "scene": "图片处理",
+  "emoji": "🖼"
+ },
+ {
+  "name": "PDF 拆分为单页",
+  "cat": "media",
+  "desc": "把 PDF 的每一页拆分为单独文件",
+  "scene": "图片处理",
+  "emoji": "🖼"
+ },
+ {
+  "name": "PDF 转图片",
+  "cat": "media",
+  "desc": "把 PDF 每一页渲染为 PNG 图片",
+  "scene": "图片处理",
+  "emoji": "🖼"
+ },
+ {
+  "name": "转换为 PNG",
+  "cat": "media",
+  "desc": "转换为 PNG 格式(生成新文件)",
+  "scene": "图片处理",
+  "emoji": "🖼"
+ },
+ {
+  "name": "转换为 JPG",
+  "cat": "media",
+  "desc": "转换为 JPG 格式(生成新文件)",
+  "scene": "图片处理",
+  "emoji": "🖼"
+ },
+ {
+  "name": "转换为 ICNS",
+  "cat": "media",
+  "desc": "把图片转换为 Mac 图标格式 .icns",
+  "scene": "图片处理",
+  "emoji": "🖼"
+ },
+ {
+  "name": "转换为 WebP",
+  "cat": "media",
+  "desc": "转换为 WebP 格式(需要系统支持)",
+  "scene": "图片处理",
+  "emoji": "🖼"
+ },
+ {
+  "name": "缩小到 50%",
+  "cat": "media",
+  "desc": "把图片缩小为原来的一半(生成新文件)",
+  "scene": "图片处理",
+  "emoji": "🖼"
+ },
+ {
+  "name": "缩放到 1920px",
+  "cat": "media",
+  "desc": "把图片宽度缩放到 1920px(生成新文件)",
+  "scene": "图片处理",
+  "emoji": "🖼"
+ },
+ {
+  "name": "创建缩略图 (256px)",
+  "cat": "media",
+  "desc": "创建 256px 的缩略图版本",
+  "scene": "图片处理",
+  "emoji": "🖼"
+ },
+ {
+  "name": "移除照片隐私信息",
+  "cat": "media",
+  "desc": "去掉照片里的 GPS 定位和相机信息",
+  "scene": "图片处理",
+  "emoji": "🖼"
+ },
+ {
+  "name": "查看图片尺寸",
+  "cat": "media",
+  "desc": "查看图片的宽度和高度",
+  "scene": "图片处理",
+  "emoji": "🖼"
+ },
+ {
+  "name": "顺时针旋转 90°",
+  "cat": "media",
+  "desc": "把图片顺时针旋转 90 度(生成新文件)",
+  "scene": "图片处理",
+  "emoji": "🖼"
+ },
+ {
+  "name": "创建 @2x 副本",
+  "cat": "media",
+  "desc": "创建 @2x 视网膜屏尺寸副本",
+  "scene": "图片处理",
+  "emoji": "🖼"
+ },
+ {
+  "name": "设为桌面壁纸",
+  "cat": "media",
+  "desc": "把这张图片设为桌面壁纸",
+  "scene": "图片处理",
+  "emoji": "🖼"
+ },
+ {
+  "name": "用图片设置文件夹图标",
+  "cat": "media",
+  "desc": "选择一张图片,设置为文件夹的自定义图标",
+  "scene": "图片处理",
+  "emoji": "🖼"
+ },
+ {
+  "name": "导出为图标集",
+  "cat": "media",
+  "desc": "生成 Mac/iPhone/iPad/Watch 全尺寸 .iconset 和 .icns",
+  "scene": "图片处理",
+  "emoji": "🖼"
+ },
+ {
+  "name": "用 Xcode 打开",
+  "cat": "dev",
+  "desc": "用 Xcode 打开",
+  "scene": "开发效率",
+  "emoji": "💻"
+ },
+ {
+  "name": "执行 npm install",
+  "cat": "dev",
+  "desc": "在文件夹中执行 npm install",
+  "scene": "开发效率",
+  "emoji": "💻"
+ },
+ {
+  "name": "格式化 JSON",
+  "cat": "dev",
+  "desc": "美化 JSON 文件",
+  "scene": "开发效率",
+  "emoji": "💻"
+ },
+ {
+  "name": "压缩 JSON",
+  "cat": "dev",
+  "desc": "压缩为 .min.json",
+  "scene": "开发效率",
+  "emoji": "💻"
+ },
+ {
+  "name": "生成 UUID",
+  "cat": "dev",
+  "desc": "生成一个新 UUID 并复制",
+  "scene": "开发效率",
+  "emoji": "💻"
+ },
+ {
+  "name": "Base64 编码",
+  "cat": "dev",
+  "desc": "把文件编码为 Base64 并复制",
+  "scene": "开发效率",
+  "emoji": "💻"
+ },
+ {
+  "name": "统计代码行数",
+  "cat": "dev",
+  "desc": "统计常见源码文件的行数",
+  "scene": "开发效率",
+  "emoji": "💻"
+ },
+ {
+  "name": "创建 .gitignore",
+  "cat": "dev",
+  "desc": "创建常用的 .gitignore 模板",
+  "scene": "开发效率",
+  "emoji": "💻"
+ },
+ {
+  "name": "启动本地服务器",
+  "cat": "dev",
+  "desc": "在 8000 端口启动静态文件服务器",
+  "scene": "开发效率",
+  "emoji": "💻"
+ },
+ {
+  "name": "MD5 哈希",
+  "cat": "utilities",
+  "desc": "计算文件 MD5 并复制",
+  "scene": "实用工具",
+  "emoji": "🧰"
+ },
+ {
+  "name": "SHA1 哈希",
+  "cat": "utilities",
+  "desc": "计算文件 SHA1 并复制",
+  "scene": "实用工具",
+  "emoji": "🧰"
+ },
+ {
+  "name": "SHA256 哈希",
+  "cat": "utilities",
+  "desc": "计算文件 SHA256 并复制",
+  "scene": "实用工具",
+  "emoji": "🧰"
+ },
+ {
+  "name": "SHA512 哈希",
+  "cat": "utilities",
+  "desc": "计算文件 SHA512 并复制",
+  "scene": "实用工具",
+  "emoji": "🧰"
+ },
+ {
+  "name": "生成 .sha256 校验文件",
+  "cat": "utilities",
+  "desc": "在旁边生成 .sha256 校验文件",
+  "scene": "实用工具",
+  "emoji": "🧰"
+ },
+ {
+  "name": "压缩为 ZIP",
+  "cat": "share",
+  "desc": "把所选文件压缩为 ZIP",
+  "scene": "分享发送",
+  "emoji": "📤"
+ },
+ {
+  "name": "解压到当前文件夹",
+  "cat": "utilities",
+  "desc": "把 ZIP 解压到所在文件夹",
+  "scene": "实用工具",
+  "emoji": "🧰"
+ },
+ {
+  "name": "创建 TAR.GZ",
+  "cat": "utilities",
+  "desc": "创建 .tar.gz 压缩包",
+  "scene": "实用工具",
+  "emoji": "🧰"
+ },
+ {
+  "name": "解压 TAR.GZ",
+  "cat": "utilities",
+  "desc": "解压 .tar.gz / .tgz 压缩包",
+  "scene": "实用工具",
+  "emoji": "🧰"
+ },
+ {
+  "name": "压缩为 7Z",
+  "cat": "share",
+  "desc": "压缩为 7z(需要已安装 7zz)",
+  "scene": "分享发送",
+  "emoji": "📤"
+ },
+ {
+  "name": "锁定文件",
+  "cat": "utilities",
+  "desc": "锁定文件,防止被修改或删除",
+  "scene": "实用工具",
+  "emoji": "🧰"
+ },
+ {
+  "name": "解锁文件",
+  "cat": "utilities",
+  "desc": "解除文件的锁定状态",
+  "scene": "实用工具",
+  "emoji": "🧰"
+ },
+ {
+  "name": "查看文件十六进制",
+  "cat": "utilities",
+  "desc": "查看文件开头的十六进制数据",
+  "scene": "实用工具",
+  "emoji": "🧰"
+ },
+ {
+  "name": "强制解除文件占用",
+  "cat": "utilities",
+  "desc": "结束占用此文件的进程",
+  "scene": "实用工具",
+  "emoji": "🧰"
+ },
+ {
+  "name": "路径转二维码",
+  "cat": "share",
+  "desc": "把文件路径生成二维码图片并复制",
+  "scene": "分享发送",
+  "emoji": "📤"
+ },
+ {
+  "name": "恢复默认文件夹图标",
+  "cat": "utilities",
+  "desc": "清除自定义图标,还原系统默认文件夹外观",
+  "scene": "实用工具",
+  "emoji": "🧰"
+ }
+];
+const SCENES = ["整理归档","图片处理","分享发送","开发效率","实用工具"];
+const SCENE_EMOJI = {"整理归档":"📥","图片处理":"🖼","分享发送":"📤","开发效率":"💻","实用工具":"🧰"};
+const SCENE_COLOR = {"整理归档":"#14B8A6","图片处理":"#EC4899","分享发送":"#F59E0B","开发效率":"#8B5CF6","实用工具":"#6366F1","顶层":"#14B8A6"};
+const DEFAULT_ON = ["剪切","粘贴","移动到…","复制到…","隔空投送…","复制路径","复制文件名","在终端中打开","新建 TXT 文档","新建 Markdown 笔记","新建文件夹","在 VS Code 中打开","创建带时间戳的副本"];
+const FREQUENT_SEED = ["复制路径","剪切","粘贴","新建 TXT 文档"];
+const WORKFLOWS = ["照片归档","清理下载文件夹","发给别人"];
+const DANGER = "彻底删除";
+
+let enabled = new Set(JSON.parse(localStorage.getItem("miao_proto_on") || "null") || DEFAULT_ON);
+let libFilter = "全部", libKeyword = "";
+const byName = Object.fromEntries(ACTIONS.map(a => [a.name, a]));
+const usage = {};
+ACTIONS.forEach(a => usage[a.name] = (a.name === "复制路径" ? 4 : a.name === "彻底删除" ? 5 : 0));
+
+function save(){ localStorage.setItem("miao_proto_on", JSON.stringify([...enabled])); }
+function grad(hex){ return `linear-gradient(135deg, ${hex}, ${hex}CC)`; }
+function sceneOf(a){ return a.scene === "顶层" ? "顶层" : a.scene; }
+
+function toggle(name){
+  enabled.has(name) ? enabled.delete(name) : enabled.add(name);
+  save(); renderAll();
+  const row = document.querySelector(`[data-menu="${CSS.escape(name)}"]`);
+  if(row){ row.classList.remove("flash"); void row.offsetWidth; row.classList.add("flash"); }
+}
+
+/* ---------- 菜单预览 ---------- */
+function renderMenu(){
+  const m = document.getElementById("menuPreview");
+  const on = ACTIONS.filter(a => enabled.has(a.name));
+  const loose = on.filter(a => a.scene === "顶层" && a.name !== DANGER && !FREQUENT_SEED.includes(a.name));
+  const frequent = [...FREQUENT_SEED].filter(n => enabled.has(n)).map(n => byName[n]).filter(Boolean);
+  let h = "";
+  if(frequent.length){
+    h += `<div class="mgroup">常用</div>`;
+    frequent.forEach(a => h += mi(a));
+    h += `<div class="msep"></div>`;
+  }
+  loose.forEach(a => h += mi(a));
+  if(loose.length) h += `<div class="msep"></div>`;
+  SCENES.forEach(s => {
+    const n = on.filter(a => a.scene === s).length;
+    if(!n) return;
+    h += `<div class="mi" data-menu="scene:${s}"><span class="m-emoji">${SCENE_EMOJI[s]}</span><span class="m-label">${s}</span><span class="m-sub">${n} 项 ▸</span></div>`;
+  });
+  if(WORKFLOWS.length){
+    h += `<div class="mi"><span class="m-emoji">⛓</span><span class="m-label">我的工作流</span><span class="m-sub">${WORKFLOWS.length} 项 ▸</span></div>`;
+  }
+  h += `<div class="msep"></div>`;
+  h += `<div class="mi"><span class="m-emoji">⚙️</span><span class="m-label">打开妙右设置…</span></div>`;
+  const danger = on.find(a => a.name === DANGER);
+  if(danger) h += `<div class="mi red" data-menu="${DANGER}"><span class="m-emoji">🗑</span><span class="m-label">${DANGER}</span></div>`;
+  m.innerHTML = h;
+}
+function mi(a){
+  return `<div class="mi" data-menu="${a.name.replace(/"/g,"&quot;")}"><span class="m-emoji">${a.emoji}</span><span class="m-label">${a.name}</span></div>`;
+}
+
+/* ---------- 常用 chips ---------- */
+function renderFrequent(){
+  const el = document.getElementById("frequentChips");
+  const names = [...new Set([...FREQUENT_SEED, "复制路径","隔空投送…","根据文件名新建文件夹"])].filter(n => enabled.has(n) && n !== DANGER);
+  el.innerHTML = names.map(n => {
+    const a = byName[n]; if(!a) return "";
+    return `<button class="chip" onclick="toggle('${n.replace(/'/g,"\\'")}')">${a.emoji} ${n} <b>已启用</b></button>`;
+  }).join("");
+}
+
+/* ---------- 场景卡 ---------- */
+function renderScenes(){
+  document.getElementById("sceneCards").innerHTML = SCENES.map(s => {
+    const all = ACTIONS.filter(a => a.scene === s);
+    const on = all.filter(a => enabled.has(a.name)).length;
+    return `<button class="scene-card" onclick="libFilter='${s}';go('library')">
+      <span class="sc-emoji" style="background:${grad(SCENE_COLOR[s])}">${SCENE_EMOJI[s]}</span>
+      <div class="sc-name">${s}</div>
+      <div class="sc-count">${on}/${all.length} 已启用</div>
+    </button>`;
+  }).join("");
+}
+
+/* ---------- 推荐tiles ---------- */
+function renderFeatured(){
+  const picks = ["按类型整理","压缩为 ZIP","隔空投送…","新建文件夹","复制 file:// 链接","显示简介","在终端中打开","制作可执行文件","生成 UUID 并复制","初始化 Git 仓库"].filter(n => byName[n]).slice(0, 10);
+  document.getElementById("featuredTiles").innerHTML = picks.map(n => byName[n]).filter(Boolean).map(tile).join("");
+}
+function tile(a){
+  const on = enabled.has(a.name);
+  return `<div class="tile ${on?"on":""}" onclick="toggle('${a.name.replace(/'/g,"\\'")}')">
+    <div class="t-row"><span class="t-emoji" style="background:${grad(SCENE_COLOR[sceneOf(a)])}">${a.emoji}</span><span class="t-name">${a.name}</span></div>
+    <div class="t-desc">${a.desc}</div>
+    <div class="t-foot"><span class="t-usage">${a.scene === "顶层" ? "顶层动作" : a.scene}</span><span class="sw ${on?"on":""}" onclick="event.stopPropagation();toggle('${a.name.replace(/'/g,"\\'")}')"></span></div>
+  </div>`;
+}
+
+/* ---------- 全库 ---------- */
+function renderLib(){
+  const filters = ["全部",...SCENES,"自定义"];
+  document.getElementById("libFilters").innerHTML = filters.map(f =>
+    `<button class="fchip ${libFilter===f?"on":""}" onclick="libFilter='${f}';renderLib()">${f==="全部"?"⭐ ":f==="自定义"?"🛠 ":SCENE_EMOJI[f]?SCENE_EMOJI[f]+" ":""}${f}</button>`
+  ).join("") + `<input placeholder="筛选…" value="${libKeyword}" oninput="libKeyword=this.value;renderLib()" style="flex:1;min-width:160px;border:1px solid var(--glass-border);background:var(--tile);border-radius:99px;padding:7px 14px;font-size:12px;color:var(--text);outline:none;font-family:inherit">`;
+
+  let list = ACTIONS;
+  if(libFilter !== "全部" && libFilter !== "自定义") list = list.filter(a => a.scene === libFilter);
+  if(libFilter === "自定义") list = [];
+  if(libKeyword) list = list.filter(a => (a.name + a.desc).includes(libKeyword));
+
+  document.getElementById("libCount").textContent = `${enabled.size} 个已启用 · ${list.length} 个显示`;
+  document.getElementById("libGrid").innerHTML = list.map(tile).join("") ||
+    `<div style="grid-column:1/-1;text-align:center;padding:60px;color:var(--text3);font-size:13px">还没有自定义动作 — 正式版里在这里新建 Shell / AppleScript / Automator 动作</div>`;
+}
+
+/* ---------- 工作流侧栏(装饰) ---------- */
+function renderPaletteSidebar(){
+  const dev = ACTIONS.filter(a => a.scene === "开发效率").slice(0,6);
+  const org = ACTIONS.filter(a => a.scene === "整理归档").slice(0,5);
+  const item = a => `<div class="wf-p-item"><i style="background:${SCENE_COLOR[sceneOf(a)]}">${a.emoji}</i>${a.name}</div>`;
+  document.getElementById("wfPalette").innerHTML =
+    `<h4>整理归档</h4>` + org.map(item).join("") + `<h4>开发效率</h4>` + dev.map(item).join("");
+}
+
+/* ---------- 命令面板 ---------- */
+function openPalette(){ document.getElementById("paletteOverlay").classList.add("on"); const i = document.getElementById("plInput"); i.value=""; renderPalette(); setTimeout(()=>i.focus(),30); }
+function closePalette(){ document.getElementById("paletteOverlay").classList.remove("on"); }
+document.addEventListener("keydown", e => {
+  if((e.metaKey||e.ctrlKey) && e.key.toLowerCase()==="k"){ e.preventDefault(); document.getElementById("paletteOverlay").classList.contains("on") ? closePalette() : openPalette(); }
+  if(e.key==="Escape") closePalette();
+});
+function renderPalette(){
+  const q = document.getElementById("plInput").value.trim();
+  const list = ACTIONS.filter(a => !q || (a.name + a.desc + a.scene).includes(q)).slice(0, 12);
+  document.getElementById("plCount").textContent = list.length ? `${list.length} / ${ACTIONS.length} 个动作` : "";
+  document.getElementById("plList").innerHTML = list.map(a => {
+    const on = enabled.has(a.name);
+    return `<div class="pl-item" onclick="toggle('${a.name.replace(/'/g,"\\'")}')">
+      <span class="p-emoji" style="background:${grad(SCENE_COLOR[sceneOf(a)])}">${a.emoji}</span>
+      <div style="flex:1"><div class="p-name">${a.name}</div><div class="p-desc">${a.desc}</div></div>
+      <span class="p-tag" style="background:${SCENE_COLOR[sceneOf(a)]}22;color:${SCENE_COLOR[sceneOf(a)]}">${a.scene}</span>
+      <span class="sw ${on?"on":""}"></span>
+    </div>`;
+  }).join("") || `<div class="pl-empty">没有匹配「${q}」的动作</div>`;
+}
+
+/* ---------- 框架 ---------- */
+function go(s){
+  document.querySelectorAll(".tab").forEach(t => t.classList.toggle("on", t.dataset.s === s));
+  document.querySelectorAll(".screen").forEach(sc => sc.classList.toggle("on", sc.id === "s-" + s));
+}
+function toggleTheme(){
+  document.body.classList.toggle("dark");
+  const dark = document.body.classList.contains("dark");
+  document.getElementById("themeBtn").textContent = dark ? "☀️" : "🌙";
+}
+function renderAll(){ renderMenu(); renderFrequent(); renderScenes(); renderFeatured(); renderLib(); }
+renderPaletteSidebar();
+renderAll();
+</script>
+</body>
+</html>
