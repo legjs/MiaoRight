@@ -3,6 +3,8 @@
 > 目的:让 macOS 开发版应用拥有**稳定的代码签名身份**和**绑定应用自身的权限授权**(如完全磁盘访问、屏幕录制、辅助功能),避免"每次重新编译就要重新授权"或"权限跟启动者走"的问题。
 > 适用:所有在 macOS 上做本地开发、且需要 TCC 保护权限(磁盘/屏幕/辅助功能/摄像头等)的项目。
 
+妙右的 `./scripts/build-app.sh release` 使用本机的 `MiaoRight dev` 身份签名，缺少证书时使用 ad-hoc 签名。内置 7-Zip、Finder Sync 和 Quick Look 扩展先分别签名，再签名主程序。用 `codesign --verify --deep --strict build/MiaoRight.app` 验证整个 App，然后通过 `open build/MiaoRight.app` 启动。
+
 ## 背景规则(AI 必须知道的 macOS 行为)
 
 1. **TCC 责任进程归因**:对"裸可执行文件"(非 .app 包),macOS 把权限判定主体归给**启动它的应用**(终端/IDE 等),而不是二进制本身。用户给二进制授权是无效的。

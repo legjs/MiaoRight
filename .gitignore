@@ -1,6 +1,4 @@
-# SaneApps Canonical .gitignore
-# Source of truth: infra/SaneProcess/templates/gitignore
-# Sync via: ruby scripts/sync_check.rb --fix
+# MiaoRight repository ignore rules
 
 # ═══════════════════════════════════════════════════════════════
 # Build artifacts
@@ -213,7 +211,7 @@ scripts/*.swift
 # Project-specific additions
 # Keep repo-only ignore rules inside this block so sync_check can preserve them.
 # BEGIN PROJECT-SPECIFIC .gitignore
-# SaneProcess gate/breaker state — transient per-machine, like the other .claude/ state above.
+# Local tool state
 # (Belongs in the canonical template alongside sop-verify-state.json; mirror there via sync_check.)
 .claude/gate-*.json
 .claude/gate-*.jsonl

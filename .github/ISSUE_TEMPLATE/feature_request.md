@@ -9,7 +9,7 @@ labels: enhancement
 
 <!-- Describe the pain point in plain language -->
 
-## What would you like SaneClick to do?
+## What would you like MiaoRight to do?
 
 <!-- Describe the behavior you want -->
 
@@ -25,4 +25,4 @@ labels: enhancement
 
 - [ ] Nice to have
 - [ ] Would significantly improve my workflow
-- [ ] Blocking my use of SaneClick
+- [ ] Blocking my use of MiaoRight

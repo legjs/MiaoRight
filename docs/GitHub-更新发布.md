@@ -6,8 +6,8 @@
 
 ## 版本发布准备
 
-1. 同步修改 `Packaging/Info-App.plist` 和 `Packaging/Info-FinderSync.plist` 的 `CFBundleShortVersionString`（例如 `1.0.1`），并递增 `CFBundleVersion`。
-2. 执行 `./scripts/build-app.sh release` 构建和签名，验证最终 App。
+1. 同步更新主程序、Finder Sync 和 Quick Look 的版本号。对应文件为 `Packaging/Info-App.plist`、`Packaging/Info-FinderSync.plist` 和 `Packaging/Info-ArchivePreview.plist`。同时递增各自的 `CFBundleVersion`。
+2. 执行 `./scripts/build-app.sh release` 构建和签名，再用 `codesign --verify --deep --strict build/MiaoRight.app` 校验最终 App 与嵌入的扩展和工具。
 3. 在具备发布权利和相应签名、分发条件后，为对应提交创建 GitHub Release，例如标签 `v1.0.1`，填写版本说明并附上可供下载的安装包。仅创建 Git 标签不会生成可检查的发行版。
 4. 发行版须公开且不标记为 Draft 或 Pre-release；仓库尚未公开或还没有 Release 时，App 显示「暂未找到可用的公开发行版」，不会误报已经是最新版。
 

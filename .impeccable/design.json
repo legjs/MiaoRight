@@ -221,8 +221,8 @@
     {
       "name": "顶部胶囊导航",
       "kind": "nav",
-      "description": "64点顶部栏居中的三页胶囊，选中表面随位置切换；原生实现为SF Symbols与文字，此网页样本仅示意排布。",
-      "html": "<nav class=\"ds-demo ds-nav\" aria-label=\"Settings Pages\"><button aria-current=\"page\">Context Menu</button><button>Clipboard</button><button>General</button></nav>",
+      "description": "64 点顶部栏居中的四页胶囊。原生界面用 SF Symbols 和文字，选中表面随位置切换。",
+      "html": "<nav class=\"ds-demo ds-nav\" aria-label=\"Settings Pages\"><button aria-current=\"page\">Context Menu</button><button>Clipboard</button><button>Vault</button><button>General</button></nav>",
       "css": ".ds-demo{font-family:system-ui,-apple-system,sans-serif;font-size:12px;color:CanvasText;color-scheme:light dark}.ds-nav{display:inline-flex;gap:2px;padding:4px;border-radius:999px;background:light-dark(rgb(0 0 0 / 5.5%),rgb(255 255 255 / 5.5%));border:.5px solid light-dark(rgb(0 0 0 / 6%),rgb(255 255 255 / 6%))}.ds-nav button{font:inherit;font-weight:500;border:0;background:transparent;color:GrayText;padding:9px 14px;border-radius:999px;cursor:pointer}.ds-nav button[aria-current]{background:Field;color:CanvasText;font-weight:600;box-shadow:0 1px 2px rgb(0 0 0 / 10%)}.ds-nav button:hover{color:CanvasText}.ds-nav button:focus-visible{outline:2px solid light-dark(#007aff,#0a84ff);outline-offset:2px}.ds-nav button:active{opacity:.8}",
       "refersTo": "navigation-item"
     },
@@ -269,7 +269,7 @@
     "northStar": "轻量原生工具",
     "overview": "妙右采用轻量原生 macOS 工具的视觉语言。Finder 右键与剪贴板是日常入口，主窗口承担低频偏好设置；用系统字体、语义颜色、短列表与必要分隔线建立秩序。\n\n系统蓝只强调选择与操作，图标以单色 SF Symbols 为主。本机 App 使用 NSWorkspace 提供的真实图标。妙右自身使用蓝底白色菜单与光标的原创矢量图标，由代码自动导出 PNG / ICNS。外观可选跟随系统、浅色或深色，三种模式均使用原生毛玻璃，错误和待处理状态同时给出文字说明。",
     "keyCharacteristics": [
-      "顶部居中三页胶囊导航，设置按行呈现。",
+      "顶部居中四页胶囊导航，设置按行呈现。",
       "原生控件、单一蓝色强调、浅深色语义颜色。",
       "更多能力按需添加，历史配置保留。"
     ],

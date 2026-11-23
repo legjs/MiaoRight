@@ -2,13 +2,13 @@
 
 ## 设计概念:「玻璃流光」
 
-轻快的浅色渐变打底(场景五色 teal/粉/橙/紫/靛融入背景),内容全部坐在半透明玻璃卡片上;视觉与上游 SaneClick 的深海军蓝完全不同。信息架构从「上游式场景侧栏」转为「首页驱动 + 搜索即达 + 紧凑列表」。**功能一项不减**,交互全部内嵌主窗口(遵守 AGENTS.md)。
+这份早期方案以浅色渐变和半透明卡片组织内容，计划采用首页、搜索与紧凑列表承载原有功能。交互在主窗口内完成。当前设计见 [DESIGN.md](../../DESIGN.md)。
 
 ## 一、设计系统基建(新建 `Sources/MiaoRightKit/Theme/`)
 
-- **MiaoTheme.swift**:背景渐变(浅色:窗口底色上叠 teal→indigo→pink 低饱和三段 LinearGradient;深色自动降亮度)、`sceneColor`(以 `BuiltInMenuCategory.colorHex` 为唯一色源,收编 ContentView 私有 hex 解析)、品牌强调渐变(替代系统蓝/SaneUI teal 双轨并存)
+- **MiaoTheme.swift**：浅色使用低饱和的 teal、indigo、pink 线性渐变，深色降低亮度。场景颜色统一由 `BuiltInMenuCategory.colorHex` 提供，主题另设统一的强调色。
 - **MiaoComponents.swift**:`GlassCard`(材质卡+细描边)、`SectionHeader`、`StatusPill`(三态状态胶囊)、`EmptyStateView`、`SearchField`(⌘K 聚焦)、`MiaoButtonStyle`(渐变胶囊主按钮/玻璃次按钮)、`ActionRow`(紧凑动作行)
-- macOS 14 最低版本不变,不依赖 macOS 15 MeshGradient;SaneUI 仅保留策略类用法不动
+- 最低版本为 macOS 14。
 
 ## 二、信息架构(ContentView 重构)
 
@@ -49,7 +49,8 @@
 
 ## 五、实施与验证
 
-分 4 次提交(每次 `./scripts/build-app.sh release` 通过后提交,中文提交信息):
+实施分为四个阶段，每阶段运行 `./scripts/build-app.sh release` 验证构建。
+
 1. 主题基建 + 窗口壳 + 首页
 2. 动作库页(含自定义动作/编辑器/导入导出迁入)
 3. 工作流/扩展/设置重绘

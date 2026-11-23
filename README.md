@@ -1,64 +1,71 @@
-# 妙右 MiaoRight
+# MiaoRight
 
-轻量的 macOS Finder 与剪贴板工具。日常操作放在右键菜单，复制过的文字、图片和文件可从剪贴板历史找回。仅支持 Apple Silicon、macOS 14+；支持简体中文 / English，外观可选跟随系统 / 浅色 / 深色。
+English · [简体中文](README.zh-CN.md)
 
-> 本项目基于 SaneClick 二次开发（PolyForm Shield 1.0.0 许可证），仅供个人学习与本地使用，不可分发。`LICENSE` 为上游许可证文本。本轮界面改造不改变此约束。
+MiaoRight is a lightweight Finder and clipboard utility for Apple silicon Macs running macOS 14 or later. Use Finder’s context menu to open, move, and organize files, and use the clipboard panel to find, paste, or save items you copied earlier.
 
-## 日常使用
+The app uses SwiftUI and AppKit with native Finder Sync and Quick Look extensions. It supports English and Simplified Chinese and can follow the system language. Appearance can follow the system or use Light or Dark mode.
 
-在 Finder 里选中压缩包，可在侧栏预览区或按空格查看包内目录。妙右预览显示文件名、大小、修改时间和目录统计，支持 ZIP、7Z、RAR、TAR 及常见 TAR 压缩格式。预览为只读，遇到目录加密的压缩包时可通过妙右的解压功能输入密码。如果系统使用其他 App 的压缩包预览，可在「系统设置 → 通用 → 登录项与扩展」的 Quick Look 扩展中切换。
+## Build and get started
 
-- **复制文件路径**：在 Finder 选中文件或文件夹，右键复制完整路径。
-- **用应用打开**：在设置中选本机常用 App，右键从“用应用打开”选择；也可将 App 拖入应用选择区。
-- **在终端打开**：选择已安装的终端；选中文件时使用其所在文件夹。
-- **剪切与粘贴**：右键剪切，在目标文件夹右键“粘贴到此处”；主窗口可查看待移动数量或取消剪切。移动失败时保留未完成状态。
-- **剪贴板历史**：默认用 ⇧⌘V 呼出右侧列表，在设置中可修改快捷键。支持搜索、键盘定位、多选与固定面板。直接粘贴需要辅助功能权限；未授权时仍可复制后按 ⌘V。
-
-剪贴板每次呼出都默认定位第一条可见记录并清空上次多选；搜索和筛选保留。当前选中行有描边、左侧标记和文字提示，前十条显示数字快捷键帽。直接粘贴默认开启，已有明确关闭的偏好保留；确认后先交还键盘焦点，再向呼出前的目标应用发送粘贴，固定面板也会释放键盘焦点。未获辅助功能授权时提供授权入口，并保留复制能力。真实目标应用仍须支持对应内容的粘贴。
-
-- **常用文件夹与模板**：展开右键菜单页对应设置行，添加常用目录并分别启用打开、复制到、移动到；添加模板文件后，在目标文件夹右键从模板新建。模板保存独立副本，重名时自动递增。
-- **批量重命名**：在“添加功能”启用“批量重命名…”，预览替换文字、前后缀、编号、大小写或空格转换；有名称冲突时无法确认。
-- **结果与撤销**：文件操作结果提供位置入口，菜单栏可打开上次结果；移动和重命名可在本次 App 会话内撤销。原位置被占用或文件已变化时拒绝撤销，不覆盖已有文件。
-
-主窗口有“右键菜单 / 剪贴板 / 通用”三个顶部胶囊入口，无侧栏，初始尺寸 780 × 600，最小 680 × 540。右键菜单页优先显示四个核心设置行；其他已添加功能默认折叠，菜单预览按需打开。菜单保持稳定顺序。主窗口与剪贴板采用轻微的原生毛玻璃；系统减少透明度或增加对比度时回退实色。程序图标、名称与版本位于通用页底部。
-
-原有 100 个内置动作仍保留，可通过“添加功能”搜索名称或用途后启用，包括文件整理、图片转换、压缩、校验等。已有脚本、组合动作及工作流配置保留；当前主界面不提供新建编排入口，也不以工作流作为日常使用前提。
-
-压缩与解压统一使用内置官方 ARM64 版 7-Zip，无需安装 Homebrew 或其他工具。在“添加功能 → 压缩与解压”启用“压缩…”后，可选择 ZIP、7Z、TAR.GZ，并为 ZIP / 7Z 设置密码；旧压缩菜单和启用状态保留。“解压”统一识别 ZIP、7Z、RAR、TAR、GZ、BZ2、XZ 及 TAR 组合格式，支持常见 ZIP/7Z 数字分卷和 RAR 分卷，所有分卷须放在同一文件夹；菜单以首个分卷为主要入口。输出到压缩包旁边的新文件夹，重名自动递增；加密包可输入密码。密码不保存。旧组合动作和新建 Excel/PPT 的 ZIP 容器打包也共用此后端。7-Zip 的版本、许可与对应源码见 [ThirdParty/7zip](ThirdParty/7zip/README.md)，构建时一并打包和签名。
-
-剪贴板设置中可以暂停记录、选择保留时间、调整条数上限和清理历史。记录菜单可以收藏条目，侧边栏可切换“全部 / 收藏”；设置中还可直接保存常用文字。收藏不受普通历史的到期、条数上限和清理影响，主动删除收藏仍会删除该条目。关闭面板仍会记录，关闭“记录剪贴板历史”才会暂停；重新开启后只记录新的复制内容。更改保存位置不会搬迁旧历史。
-
-## 构建与启动
+Use the Xcode Command Line Tools with Swift 6 to build and launch the app.
 
 ```bash
-swift build -c release
 ./scripts/build-app.sh release
 open build/MiaoRight.app
 ```
 
-无需完整 Xcode，Command Line Tools 即可构建。脚本组装主程序与 `MiaoRightFinder.appex`，优先使用本机稳定开发证书“MiaoRight dev”签名；证书缺失时回退 ad-hoc。必须通过 `open` 启动，让 LaunchServices 正确注册。开发与签名约束见 [AGENTS.md](AGENTS.md) 和 [MACOS_DEV_SIGNING.md](MACOS_DEV_SIGNING.md)。
+The script builds and signs the app, the Finder Sync and Quick Look extensions, and the bundled 7-Zip helper. It uses the local `MiaoRight dev` signing identity when available and falls back to ad-hoc signing. Launch the app with `open` so LaunchServices registers its extensions. See the [development signing guide](MACOS_DEV_SIGNING.md) for setup.
 
-程序图标由 `Packaging/Icons/GenerateIcons.swift` 的原创菜单与光标矢量源生成。构建脚本自动导出并打包 PNG、16–1024 像素完整 ICNS 与 18/36 像素菜单栏模板；也可单独运行 `./scripts/generate-icons.sh` 重新生成。
+- **Finder actions.** In System Settings, enable MiaoRight under **Login Items & Extensions → Finder Extensions**. MiaoRight’s main window offers an **Open System Settings** shortcut when the extension is disabled.
+- **Clipboard history.** On first use, turn on **Clipboard → Record Clipboard History**. Copy an item and press `⇧⌘V` to open the panel.
+- **Preferences.** The four tabs in the main window are **Context Menu**, **Clipboard**, **Vault**, and **General**. In General you can change the interface language and appearance, choose where Finder actions appear, and configure **Launch at Login**.
 
-启动后，在系统设置的“登录项与扩展 / Finder 扩展”中启用妙右；不同 macOS 版本的路径可能不同，可使用“通用”页的系统设置入口。回到 Finder 选中文件或文件夹后右键操作；在“通用”中可限定生效文件夹、切换语言、选择外观并检查扩展连接。
+## Clipboard history
 
-“通用 → 登录时启动”通过系统登录项服务注册，等待系统批准或注册失败时会显示原因。“通用 → 软件更新”和 App 菜单“检查更新…”通过 `legjs/MiaoRight` 的 GitHub Releases 手动检查稳定版，发现新版后可查看发行说明并前往下载。发布配置见 [GitHub 更新发布](docs/GitHub-更新发布.md)。
+| Action | How to use it |
+| --- | --- |
+| Find a record | Open the panel with `⇧⌘V`. Search copied text or the displayed file name, or type a word you remember seeing in a screenshot. The app recognizes text in recorded images on your Mac. |
+| Save a record | Choose **… → Save…** on any record. Text and links become UTF-8 TXT files, images become PNGs, and files and folders are copied to a folder you choose. Original files must still be accessible. Name conflicts during file copies get a numbered suffix. |
+| Paste the second-most-recent item | Press `⌃⇧⌘V` by default. For example, copy a title and then a link. Use the shortcut to paste the title, then use `⌘V` to paste the link. Both global shortcuts can be changed in Clipboard settings. |
+| Keep useful items | Mark a record as a favorite or save frequently used text in Clipboard settings. Favorites survive expiration, item limits, and **Clear Unfavorited History**. |
 
-## 验证范围
+The panel supports keyboard navigation, number shortcuts, multiple selection, filtering, and pinning. Automatic pasting, including the shortcut for the second-most-recent item, needs Accessibility permission. The panel can also copy a selected item for you to paste with `⌘V`.
 
-2026-11-19 日常功能补齐采用独立临时存储与 release 模块，63 项针对性 XCTest 通过，其中 1 项离屏界面测试生成 6 张中英文、浅深色与最小窗口截图。覆盖真实 RAR、分卷与加密压缩、收藏迁移/清理、重命名预览冲突、移动失败回滚、撤销及执行入口。测试不启动 App/Finder、不激活窗口、不写系统剪贴板，也不替换正在使用的 App。该轮未进行新增功能的 Finder 前台操作与物理多屏实测；执行记录见 [日常功能补齐](docs/日常功能补齐-执行记录.md)。以下为此前版本的验证记录。
+History stays on your Mac. In Clipboard settings you can pause recording, choose a retention period, and set an item limit. Closing the panel leaves recording active. The current recorder caps text at 10,000 characters per item and skips images larger than 5 MB.
 
-本轮 release 构建、App 组装与 `codesign --verify --deep --strict` 已通过。此前 16 个回归方法通过真实 release 模块的独立校验运行器执行；这不等同于完整 XCTest。仅安装 CLT 时无法运行 `swift test` 所需的 Xcode XCTest。登录启动与更新检查新增的 7 项测试已在完整 Xcode 环境通过 `swift test -c release --filter 'AppUpdateTests|LoginItemTests'`，覆盖版本比较、接口异常、更新地址与登录项状态；不代表完整测试套件验收。
+## Finder actions
 
-统一压缩后端的 13 项文件回归与 4 项动作库冒烟测试已通过 `swift test -c release --filter 'SevenZipArchiveTests|SmokeTests'`；测试直接调用 App 中已签名的 `Contents/Helpers/7zz`，覆盖三个格式的特殊文件名、嵌套内容、同名保护、损坏包、7Z/ZIP 密码重试、取消、批量部分失败、目录越界条目、组合动作产物和 OOXML 根目录结构。ZIP、TAR.GZ 同时验证了与系统 `unzip`、`zip`、`tar` 的互读；这些系统工具只用于测试夹具，App 运行时均使用内置 7-Zip。
+- **Copy File Path** copies the full path of a selected file or folder.
+- **Open with App** uses apps you choose in the Context Menu tab. You can also drag apps into the list. **Open in Terminal** uses an installed terminal and opens the enclosing folder when you select a file.
+- **Cut** marks files for a move. Use **Paste Here** in the destination folder. If the move cannot finish, any pending items stay available to retry.
+- **Favorite Folders** lets you open, copy to, or move to your usual folders. **File Templates** stores a snapshot that you can use to create a new file in the destination folder.
+- Open **Context Menu → Add Action** for optional tools such as **Batch Rename…**, image conversion, PDF operations, and checksums. Batch Rename previews the new names and checks for conflicts before applying them.
 
-最终 App 重启后，在独立临时目录中实际通过 Finder「更多操作 → 压缩为 ZIP」生成压缩包，并用独立 ZIP 读取器确认中文文件名、标准 ZIP 编码和解压后内容一致。小文件可能由 7-Zip 自动选择 Store，其他数据使用所选 Deflate 方法。此项实机检查覆盖 ZIP 压缩入口，其他格式、解压与密码处理由上述文件回归覆盖。
+The result view can reveal output files in Finder. During the current app session, eligible moves and renames can be undone if their original paths are free and the items still match the recorded file information.
 
-已观察重启后的原生主窗口、剪贴板与通用设置，并留存隔离数据的中英文、浅深色截图。已在独立测试文件上确认实际 Finder 菜单顺序、应用子菜单、更多操作，以及无待剪切文件时粘贴置灰。剪贴板搜索与多选的本轮实机复核受自动化焦点切换影响未完成，由回归方法覆盖；VoiceOver、物理三屏和系统权限全链路也未作全面验收。本轮顶部胶囊与材质调整已通过最终 release 构建、深度签名检查及同源原生 fixture 的三种外观/材质参数断言；实机确认三种外观切换与 Finder 扩展连接，测试后恢复跟随系统。通用页底部图标与版本由原生 fixture 核对，未完成实机滚动全链路或辅助显示选项的全面验证。详细状态见 [重设计记录](docs/MiaoRight-轻量工具重设计.md)。视觉系统见 [DESIGN.md](DESIGN.md)。
+## Archives
 
-## 致谢与许可
+- **Preview an archive.** Select it in Finder and press Space or use the Preview pane. The read-only Quick Look view shows the file tree, sizes, modification dates when available, and a summary. It supports ZIP, 7Z, RAR, TAR, common compressed TAR formats, GZ, BZ2, XZ, and CPIO. Large archives may show a partial listing. If another previewer opens the file, check the Quick Look extensions in System Settings.
+- **Create an archive.** Enable **Compress…** under **Context Menu → Add Action → Compression and Extraction**. Choose ZIP, 7Z, or TAR.GZ. ZIP and 7Z support encryption. Use 7Z for passwords containing non-ASCII characters.
+- **Extract an archive.** Enable **Extract Archive** in the same group. It recognizes ZIP, 7Z, RAR, TAR, GZ, BZ2, XZ, compressed TAR archives, and common multipart archives. Put all parts in the same folder and select the first part. Output goes to a new folder beside the archive. Use this action if an encrypted directory cannot be previewed.
 
-- 执行引擎等底层架构参考 [SaneClick](https://github.com/sane-apps/SaneClick)，上游许可为 [PolyForm Shield 1.0.0](LICENSE)。
-- 功能设计参考超级右键（iRightMouse），未使用其代码与资源。
+Compression and extraction use the [bundled ARM64 7-Zip helper](ThirdParty/7zip/README.md) and keep passwords in memory for the current operation. The Quick Look preview uses the system libarchive to read metadata.
 
-**仅供个人学习与本地使用，请勿分发编译产物或作为竞争产品发布。**
+## Encrypted Vault
+
+Open **Vault** to create a local AES-256 encrypted disk image. Add files from the Vault tab, or enable **Add to Vault** in **Context Menu → Add Action** and use it in Finder after creating the vault. Adding files moves them into the vault. **Extract…** copies an item out.
+
+The vault locks when the Mac sleeps, when you quit MiaoRight, or after the configured idle period, which defaults to 15 minutes. You can opt to remember the password in the login Keychain. Keep the password somewhere safe. It is required to recover the vault contents.
+
+## Development and verification
+
+- Running XCTest requires full Xcode. See the [isolated test setup](AGENTS.md), [product context](PRODUCT.md), and [design system](DESIGN.md).
+- **General → Software Update** checks for stable GitHub Releases when requested. See the [update-check setup](docs/GitHub-更新发布.md).
+- The latest feature verification covered the Release build, deep signature validation, and 58 targeted offscreen tests for clipboard, archive, and menu behavior. The live Save dialog, Finder and Quick Look workflows, VoiceOver, and physical multi-display setups still need end-to-end verification. See the [earlier implementation notes](docs/日常功能补齐-执行记录.md) for historical test results.
+
+## Credits and license
+
+The Finder action catalog takes inspiration from iRightMouse.
+
+This project is for personal learning and local use only. See the [license and notices](LICENSE).
