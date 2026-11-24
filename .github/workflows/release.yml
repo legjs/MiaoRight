@@ -74,6 +74,7 @@ jobs:
           security import "$RUNNER_TEMP/miaoright-signing.p12" \
             -k "$keychain" \
             -P "$MIAORIGHT_SIGNING_P12_PASSWORD" \
+            -A \
             -T /usr/bin/codesign
           rm -f "$RUNNER_TEMP/miaoright-signing.p12"
           security set-key-partition-list -S apple-tool:,apple:,codesign: \
