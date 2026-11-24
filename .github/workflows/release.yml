@@ -79,8 +79,6 @@ jobs:
           security set-key-partition-list -S apple-tool:,apple:,codesign: \
             -s -k "$keychain_password" "$keychain"
 
-          security find-certificate -c "$MIAORIGHT_SIGNING_IDENTITY" -p "$keychain" > "$RUNNER_TEMP/miaoright-release.pem"
-          security add-trusted-cert -r trustRoot -p codeSign -k "$keychain" "$RUNNER_TEMP/miaoright-release.pem"
           security list-keychains -d user -s "$keychain"
           identities="$(security find-identity -v -p codesigning "$keychain")"
           [[ "$identities" == *"\"$MIAORIGHT_SIGNING_IDENTITY\""* ]]
@@ -138,7 +136,6 @@ jobs:
         shell: bash
         run: |
           security delete-keychain "$RUNNER_TEMP/miaoright-signing.keychain-db" 2>/dev/null || true
-          rm -f "$RUNNER_TEMP/miaoright-release.pem"
 
   publish:
     if: github.event.repository.private
