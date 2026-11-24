@@ -1,0 +1,118 @@
+name: Build and release MiaoRight
+
+on:
+  push:
+    tags:
+      - 'v[0-9]*'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    if: github.event.repository.private
+    name: Build (${{ matrix.arch }})
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: arm64
+            runner: macos-15
+          - arch: x86_64
+            runner: macos-15-intel
+    env:
+      MIAORIGHT_BUILD_ARCH: ${{ matrix.arch }}
+      MIAORIGHT_OFFSCREEN_TESTING: '1'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Verify the tag and build architecture
+        shell: bash
+        run: |
+          if [[ ! "$GITHUB_REF_NAME" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Expected a stable version tag such as v0.1.1." >&2
+            exit 1
+          fi
+          test "$(uname -m)" = "$MIAORIGHT_BUILD_ARCH"
+          for plist in Packaging/Info-{App,FinderSync,ArchivePreview}.plist; do
+            test "$(plutil -extract CFBundleShortVersionString raw "$plist")" = "${GITHUB_REF_NAME#v}"
+          done
+          swift --version
+          {
+            echo "MIAORIGHT_APP_OUTPUT=$RUNNER_TEMP/MiaoRight.app"
+            echo "MIAORIGHT_SWIFT_BUILD_PATH=$RUNNER_TEMP/swift-build"
+            echo "MIAORIGHT_ICON_OUTPUT=$RUNNER_TEMP/icons"
+            echo "MIAORIGHT_TEST_STORAGE=$RUNNER_TEMP/test-storage"
+            echo "MIAORIGHT_CLIPBOARD_TEST_STORAGE=$RUNNER_TEMP/test-clipboard"
+            echo "MIAORIGHT_TEST_7ZZ_PATH=$RUNNER_TEMP/MiaoRight.app/Contents/Helpers/7zz"
+          } >> "$GITHUB_ENV"
+      - name: Build and verify the signed app
+        shell: bash
+        run: |
+          ./scripts/build-app.sh release
+          codesign --verify --deep --strict "$MIAORIGHT_APP_OUTPUT"
+      - name: Run archive, update, and smoke tests
+        shell: bash
+        run: swift test -c release --scratch-path "$RUNNER_TEMP/swift-test" --filter 'Archive|AppUpdateTests|SmokeTests'
+      - name: Package and verify the release ZIP
+        shell: bash
+        working-directory: ${{ runner.temp }}
+        run: |
+          mkdir -p release
+          archive="$RUNNER_TEMP/release/MiaoRight-$GITHUB_REF_NAME-$MIAORIGHT_BUILD_ARCH.zip"
+          "$MIAORIGHT_TEST_7ZZ_PATH" a -tzip -mm=Deflate -snl -bd "$archive" MiaoRight.app
+          "$MIAORIGHT_TEST_7ZZ_PATH" x -bd -o"$RUNNER_TEMP/unpacked" "$archive"
+          codesign --verify --deep --strict "$RUNNER_TEMP/unpacked/MiaoRight.app"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: miaoright-${{ matrix.arch }}
+          path: ${{ runner.temp }}/release/*.zip
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 7
+
+  publish:
+    if: github.event.repository.private
+    name: Publish both builds
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          pattern: miaoright-*
+          path: release
+          merge-multiple: true
+      - name: Publish the private GitHub release
+        shell: bash
+        working-directory: release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          arm="MiaoRight-$GITHUB_REF_NAME-arm64.zip"
+          intel="MiaoRight-$GITHUB_REF_NAME-x86_64.zip"
+          sha256sum "$arm" "$intel" > SHA256SUMS
+
+          if existing=$(gh release view "$GITHUB_REF_NAME" --json isDraft,assets 2>/dev/null); then
+            if [[ "$(jq -r '.isDraft' <<< "$existing")" = true ]]; then
+              gh release upload "$GITHUB_REF_NAME" "$arm" "$intel" SHA256SUMS --clobber
+              gh release edit "$GITHUB_REF_NAME" --draft=false
+            else
+              jq -e --arg arm "$arm" --arg intel "$intel" \
+                '[.assets[].name] | contains([$arm, $intel, "SHA256SUMS"])' <<< "$existing"
+            fi
+          else
+            gh release create "$GITHUB_REF_NAME" "$arm" "$intel" SHA256SUMS \
+              --verify-tag --title "MiaoRight ${GITHUB_REF_NAME#v}" \
+              --notes "Separate Apple silicon (arm64) and Intel (x86_64) builds for macOS 14 and later. Use SHA256SUMS to verify your download."
+          fi

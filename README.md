@@ -2,7 +2,7 @@
 
 English · [简体中文](README.zh-CN.md)
 
-MiaoRight is a lightweight Finder and clipboard utility for Apple silicon Macs running macOS 14 or later. Use Finder’s context menu to open, move, and organize files, and use the clipboard panel to find, paste, or save items you copied earlier.
+MiaoRight is a lightweight Finder and clipboard utility for Apple silicon and Intel Macs running macOS 14 or later. Use Finder’s context menu to open, move, and organize files, and use the clipboard panel to find, paste, or save items you copied earlier.
 
 The app uses SwiftUI and AppKit with native Finder Sync and Quick Look extensions. It supports English and Simplified Chinese and can follow the system language. Appearance can follow the system or use Light or Dark mode.
 
@@ -16,6 +16,8 @@ open build/MiaoRight.app
 ```
 
 The script builds and signs the app, the Finder Sync and Quick Look extensions, and the bundled 7-Zip helper. It uses the local `MiaoRight dev` signing identity when available and falls back to ad-hoc signing. Launch the app with `open` so LaunchServices registers its extensions. See the [development signing guide](MACOS_DEV_SIGNING.md) for setup.
+
+The build defaults to your Mac’s architecture. For a private release, choose the `arm64` ZIP for Apple silicon or the `x86_64` ZIP for Intel. GitHub Actions packages both versions with ad-hoc signatures and a SHA-256 checksum file. [Release workflow guide](docs/GitHub-更新发布.md)
 
 - **Finder actions.** In System Settings, enable MiaoRight under **Login Items & Extensions → Finder Extensions**. MiaoRight’s main window offers an **Open System Settings** shortcut when the extension is disabled.
 - **Clipboard history.** On first use, turn on **Clipboard → Record Clipboard History**. Copy an item and press `⇧⌘V` to open the panel.
@@ -50,7 +52,7 @@ The result view can reveal output files in Finder. During the current app sessio
 - **Create an archive.** Enable **Compress…** under **Context Menu → Add Action → Compression and Extraction**. Choose ZIP, 7Z, or TAR.GZ. ZIP and 7Z support encryption. Use 7Z for passwords containing non-ASCII characters.
 - **Extract an archive.** Enable **Extract Archive** in the same group. It recognizes ZIP, 7Z, RAR, TAR, GZ, BZ2, XZ, compressed TAR archives, and common multipart archives. Put all parts in the same folder and select the first part. Output goes to a new folder beside the archive. Use this action if an encrypted directory cannot be previewed.
 
-Compression and extraction use the [bundled ARM64 7-Zip helper](ThirdParty/7zip/README.md) and keep passwords in memory for the current operation. The Quick Look preview uses the system libarchive to read metadata.
+Compression and extraction use the bundled 7-Zip helper for the app’s architecture and keep passwords in memory for the current operation. The Quick Look preview uses the system libarchive to read metadata. [Bundled 7-Zip](ThirdParty/7zip/README.md)
 
 ## Encrypted Vault
 

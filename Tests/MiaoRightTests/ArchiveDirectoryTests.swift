@@ -12,8 +12,7 @@ final class ArchiveDirectoryTests: XCTestCase {
         try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
         try Data([1, 2, 3]).write(to: folder.appendingPathComponent("总结.txt"))
         try Data([4, 5]).write(to: folder.appendingPathComponent("报告.txt"))
-        let repo = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
-        try check(root, folder, SevenZipArchive(executableURL: repo.appendingPathComponent("ThirdParty/7zip/7zz")))
+        try check(root, folder, SevenZipArchive(executableURL: ArchiveTestTool.executableURL))
     }
 
     func testDirectoryMetadataAcrossZipSevenZipAndTarGzip() throws {

@@ -146,7 +146,7 @@ public final class AppUpdateService {
     private(set) var preferencesRequestID = 0
     private var preferencesRequested = false
     let repository: UpdateRepository?
-    static var currentVersion: String { Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0.0" }
+    static var currentVersion: String { Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "0.0.0" }
     var isChecking: Bool { state == .checking }
 
     private init() {

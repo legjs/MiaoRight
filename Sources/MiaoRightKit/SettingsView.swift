@@ -193,7 +193,7 @@ struct SettingsView: View {
                 }
                 VStack(alignment: .leading, spacing: 3) {
                     Text(L10n.text("妙右", "MiaoRight")).font(.system(size: 13, weight: .medium))
-                    Text(L10n.text("版本 \(Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0.0")", "Version \(Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0.0")"))
+                    Text(L10n.text("版本 \(AppUpdateService.currentVersion)", "Version \(AppUpdateService.currentVersion)"))
                         .font(.system(size: 11)).foregroundStyle(.secondary)
                 }
                 Spacer()

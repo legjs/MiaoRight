@@ -1,6 +1,7 @@
 #!/bin/bash
 # Build MiaoRight.app from SwiftPM targets and assemble the bundle.
 # Usage: scripts/build-app.sh [debug|release]
+# Set MIAORIGHT_BUILD_ARCH to build for a different Mac architecture.
 set -euo pipefail
 
 CONFIG="${1:-release}"
@@ -11,10 +12,17 @@ esac
 
 cd "$(dirname "$0")/.."
 
-# 固定官方 ARM64 7-Zip 版本，离线构建时校验随库提供的文件。
+ARCH="${MIAORIGHT_BUILD_ARCH:-$(uname -m)}"
+case "$ARCH" in
+  arm64) SEVEN_ZIP="ThirdParty/7zip/7zz" ;;
+  x86_64) SEVEN_ZIP="ThirdParty/7zip/7zz-x86_64" ;;
+  *) echo "Unsupported macOS architecture: $ARCH" >&2; exit 1 ;;
+esac
+
+# Verify the pinned 7-Zip binaries and notices before building.
 (cd ThirdParty/7zip && shasum -a 256 -c SHA256SUMS)
 
-SWIFT_BUILD_ARGS=(-c "$CONFIG")
+SWIFT_BUILD_ARGS=(-c "$CONFIG" --triple "$ARCH-apple-macosx14.0")
 if [[ -n "${MIAORIGHT_BUILD_JOBS:-}" ]]; then
   [[ "$MIAORIGHT_BUILD_JOBS" =~ ^[1-9][0-9]*$ ]] || { echo "Build jobs must be a positive integer" >&2; exit 1; }
   SWIFT_BUILD_ARGS+=(--jobs "$MIAORIGHT_BUILD_JOBS")
@@ -24,6 +32,13 @@ if [[ -n "${MIAORIGHT_SWIFT_BUILD_PATH:-}" ]]; then
 fi
 swift build "${SWIFT_BUILD_ARGS[@]}"
 BUILD_DIR="$(swift build "${SWIFT_BUILD_ARGS[@]}" --show-bin-path)"
+
+for binary in "$BUILD_DIR"/{MiaoRightApp,MiaoRightFinder,MiaoRightArchivePreview} "$SEVEN_ZIP"; do
+  if [[ "$(xcrun lipo -archs "$binary")" != "$ARCH" ]]; then
+    echo "Expected a $ARCH binary: $binary" >&2
+    exit 1
+  fi
+done
 
 APP="${MIAORIGHT_APP_OUTPUT:-build/MiaoRight.app}"
 case "$APP" in
@@ -39,7 +54,7 @@ mkdir -p "$APP/Contents/Helpers" "$APP/Contents/Resources/ThirdParty/7zip"
 mkdir -p "$PREVIEW_APPEX/Contents/MacOS"
 cp "$BUILD_DIR/MiaoRightArchivePreview" "$PREVIEW_APPEX/Contents/MacOS/"
 cp Packaging/Info-ArchivePreview.plist "$PREVIEW_APPEX/Contents/Info.plist"
-cp ThirdParty/7zip/7zz "$APP/Contents/Helpers/7zz"
+cp "$SEVEN_ZIP" "$APP/Contents/Helpers/7zz"
 chmod 755 "$APP/Contents/Helpers/7zz"
 cp ThirdParty/7zip/{License.txt,COPYING.LGPL.txt,readme.txt,README.md,SHA256SUMS,7z2606-src.tar.xz} "$APP/Contents/Resources/ThirdParty/7zip/"
 

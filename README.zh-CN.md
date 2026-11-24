@@ -2,7 +2,7 @@
 
 [English](README.md) · 简体中文
 
-妙右是轻量的 Finder 与剪贴板工具，支持 Apple 芯片和 macOS 14 或更新版本。在 Finder 里右键打开、移动和整理文件，也可以从剪贴板面板找回、粘贴或保存之前复制的内容。
+妙右是轻量的 Finder 与剪贴板工具，支持 Apple 芯片和 Intel 芯片的 Mac，最低版本为 macOS 14。在 Finder 里右键打开、移动和整理文件，也可以从剪贴板面板找回、粘贴或保存之前复制的内容。
 
 妙右使用 SwiftUI 和 AppKit，配有原生 Finder Sync 与 Quick Look 扩展。界面支持简体中文和英文，可以跟随系统语言。外观可跟随系统，也可选择浅色或深色。
 
@@ -16,6 +16,8 @@ open build/MiaoRight.app
 ```
 
 脚本会构建并签名主程序、Finder Sync 与 Quick Look 扩展，以及内置的 7-Zip 工具。它优先使用本机的 `MiaoRight dev` 签名身份，找不到时回退到 ad-hoc 签名。请通过 `open` 启动，让 LaunchServices 注册扩展。证书配置见[开发签名指南](MACOS_DEV_SIGNING.md)。
+
+本地构建默认使用当前 Mac 的架构。私有发行版中，Apple 芯片请选择 `arm64` ZIP，Intel 芯片请选择 `x86_64` ZIP。GitHub Actions 会打包两种架构的 ad-hoc 签名版本，并附上 SHA-256 校验文件。 [发布流程](docs/GitHub-更新发布.md)
 
 - **Finder 右键。** 在系统设置的「登录项与扩展 → Finder 扩展」中启用妙右。扩展未启用时，妙右主窗口会显示「打开系统设置」按钮。
 - **剪贴板历史。** 首次使用时，开启「剪贴板 → 记录剪贴板历史」，复制一条内容后按 `⇧⌘V` 呼出面板。
@@ -50,7 +52,7 @@ open build/MiaoRight.app
 - **创建压缩包。** 在「右键菜单 → 添加功能 → 压缩与解压」启用「压缩…」，可选 ZIP、7Z 或 TAR.GZ。ZIP 与 7Z 支持加密，密码含中文等非 ASCII 字符时请选择 7Z。
 - **解压文件。** 在同一分组启用「解压」。支持 ZIP、7Z、RAR、TAR、GZ、BZ2、XZ、TAR 压缩格式与常见分卷。将各分卷放在同一目录，选中首个分卷操作。内容解压到压缩包旁的新文件夹。如果加密目录无法预览，可用这个入口输入密码并解压。
 
-压缩和解压使用[内置 ARM64 版 7-Zip](ThirdParty/7zip/README.md)，密码只在当次操作中使用。Quick Look 扩展使用系统 libarchive 读取目录信息。
+压缩和解压使用与 App 架构匹配的内置 7-Zip，密码只在当次操作中使用。Quick Look 扩展使用系统 libarchive 读取目录信息。 [内置 7-Zip](ThirdParty/7zip/README.md)
 
 ## 加密保险箱
 

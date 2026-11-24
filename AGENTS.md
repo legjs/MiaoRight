@@ -4,7 +4,7 @@
 
 ## 项目是什么
 
-「妙右」是轻量的 macOS Finder 与剪贴板增强工具(仅支持 Apple Silicon,macOS 14+)。核心能力为复制路径、用本机应用打开、终端、文件剪切粘贴与剪贴板历史；原有 100 个内置动作保留，按需搜索添加。
+「妙右」是轻量的 macOS Finder 与剪贴板增强工具，支持 Apple 芯片和 Intel 芯片的 Mac，最低版本为 macOS 14。核心能力为复制路径、用本机应用打开、终端、文件剪切粘贴与剪贴板历史；原有 100 个内置动作保留，按需搜索添加。
 
 - **面向用户**:普通 Mac 用户的日常文件事务，主窗口承担低频偏好设置；其他需求通过添加功能满足
 - **核心交互**:稳定顺序的 Finder 右键菜单 + 全局剪贴板列表；主窗口仅「右键菜单 / 剪贴板 / 保险箱 / 通用」四个顶部胶囊导航，右键页四个核心设置行，其他已添加功能默认折叠。已有自建配置保留，无新建编排主入口
@@ -22,6 +22,7 @@ open build/MiaoRight.app        # ⚠️ 必须用 open 启动,直接执行二�
 ```
 
 - 构建产物为 `build/MiaoRight.app`，包含主程序、`MiaoRightFinder.appex`、`MiaoRightArchivePreview.appex` 与独立签名的 7-Zip 工具。
+- 构建默认使用本机架构。可通过 `MIAORIGHT_BUILD_ARCH=arm64` 或 `MIAORIGHT_BUILD_ARCH=x86_64` 指定目标。推送版本标签后，私有仓库的发布工作流在两种原生架构的运行器上分别构建、测试并打包。操作见 [GitHub 发布和更新检查](docs/GitHub-更新发布.md)。
 - `swift test` 需要 Xcode 的 XCTest,CLT 环境不可用
 
 ### 签名(稳定开发身份)
@@ -49,7 +50,7 @@ open build/MiaoRight.app        # ⚠️ 必须用 open 启动,直接执行二�
 ## 关键机制
 
 - **动作即数据**:内置动作定义在 `MiaoRightKit/DefaultScripts.swift` + `ScriptCatalog.swift`(name 为唯一键,中文)。执行器按动作名分发:`NativeAction`(原生 Swift 实现)优先,脚本类动作回退 shell
-- **压缩解压**:ZIP、7Z、TAR.GZ、旧组合动作与新建 Excel/PPT 的 ZIP 打包统一走 `SevenZipArchive`。官方 ARM64 `7zz` 固定在 `ThirdParty/7zip`，构建前校验 SHA-256，复制到 `Contents/Helpers` 并单独签名；许可和对应源码随包保留。先写入独立暂存目录，成功后发布；解压统一到旁边的新文件夹，不覆盖旧文件。TAR.GZ 分两步处理 TAR/gzip，ZIP 使用 Deflate；ZIP/7Z 解压密码通过 stdin 传递，不持久化。不得恢复系统 zip/ditto/tar 或依赖用户安装 Homebrew/Python 工具。
+- **压缩解压**:ZIP、7Z、TAR.GZ、旧组合动作与新建 Excel/PPT 的 ZIP 打包统一走 `SevenZipArchive`。官方 arm64 与 x86_64 的 `7zz` 固定在 `ThirdParty/7zip`，构建前校验 SHA-256，按目标架构复制到 `Contents/Helpers` 并单独签名；许可和对应源码随包保留。先写入独立暂存目录，成功后发布；解压统一到旁边的新文件夹，不覆盖旧文件。TAR.GZ 分两步处理 TAR/gzip，ZIP 使用 Deflate；ZIP/7Z 解压密码通过 stdin 传递，不持久化。不得恢复系统 zip/ditto/tar 或依赖用户安装 Homebrew/Python 工具。
 - **压缩包预览**使用 Quick Look 扩展独立读取目录。扩展只读，条目太多或读取超时会显示部分内容。目录加密的压缩包通过原有解压入口输入密码。
 - **跨进程协作**:扩展把执行请求写入 App Group 的 `pending_execution.json` → 主 App 的 `ScriptExecutor` 监听通知后认领执行;工作流请求带 `workflowId`
 - **菜单顺序**:Finder 与按需预览共用 `QuickMenuPlan`。核心顺序为复制路径、应用、终端、剪切、粘贴，再到更多操作；不按使用频率重排。`ActionUsage.record()` 仍记录成功执行，不能据此恢复自动置顶或最近使用主页面

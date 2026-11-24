@@ -3,11 +3,7 @@ import XCTest
 @testable import MiaoRightKit
 
 final class SevenZipArchiveTests: XCTestCase {
-    private var executable: URL {
-        if let path = ProcessInfo.processInfo.environment["MIAORIGHT_TEST_7ZZ_PATH"] { return URL(fileURLWithPath: path) }
-        return URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
-            .appendingPathComponent("ThirdParty/7zip/7zz")
-    }
+    private var executable: URL { ArchiveTestTool.executableURL }
     private var archiver: SevenZipArchive { SevenZipArchive(executableURL: executable) }
 
     private func directory() throws -> URL {

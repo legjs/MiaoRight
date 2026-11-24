@@ -1,6 +1,6 @@
 # 妙右产品上下文
 
-妙右是 Apple Silicon、macOS 14+ 的 Finder 与剪贴板增强工具。主程序使用 SwiftUI 和 AppKit，Finder 右键菜单和压缩包预览分别由 Finder Sync 与 Quick Look 扩展提供。附加工具可按需启用。
+妙右是面向 macOS 14 及以上的 Finder 与剪贴板增强工具，支持 Apple 芯片和 Intel 芯片。主程序使用 SwiftUI 和 AppKit，Finder 右键菜单和压缩包预览分别由 Finder Sync 与 Quick Look 扩展提供。附加工具可按需启用。
 
 用户确认的核心需求是复制文件路径、用常用应用打开、在终端打开、文件剪切粘贴、剪贴板历史。日常入口是 Finder 右键与全局剪贴板快捷键，主窗口是低频偏好设置。
 
