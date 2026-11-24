@@ -82,11 +82,11 @@ cp Packaging/Info-App.plist "$APP/Contents/Info.plist"
 # 稳定签名:本机存在「MiaoRight dev」自签证书时使用(DR 稳定,
 # 重编译后 TCC 授权持久有效);否则回退 ad-hoc(每次重建需重新授权)
 IDENTITY="${MIAORIGHT_SIGNING_IDENTITY:-MiaoRight dev}"
-IDENTITY_KEYCHAINS=()
 if [[ -n "${MIAORIGHT_SIGNING_KEYCHAIN:-}" ]]; then
-  IDENTITY_KEYCHAINS=("$MIAORIGHT_SIGNING_KEYCHAIN")
+  AVAILABLE_IDENTITIES="$(security find-identity -p codesigning "$MIAORIGHT_SIGNING_KEYCHAIN" 2>/dev/null || true)"
+else
+  AVAILABLE_IDENTITIES="$(security find-identity -p codesigning 2>/dev/null || true)"
 fi
-AVAILABLE_IDENTITIES="$(security find-identity -p codesigning "${IDENTITY_KEYCHAINS[@]}" 2>/dev/null || true)"
 if [[ "$AVAILABLE_IDENTITIES" != *"\"$IDENTITY\""* ]]; then IDENTITY="-"; fi
 if [[ "${MIAORIGHT_REQUIRE_STABLE_SIGNING:-0}" == "1" && "$IDENTITY" == "-" ]]; then
   echo "A stable signing identity is required but was not found." >&2
