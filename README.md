@@ -48,7 +48,7 @@ The result view can reveal output files in Finder. During the current app sessio
 
 ## Archives
 
-- **Preview an archive.** Select it in Finder and press Space or use the Preview pane. The read-only Quick Look view shows the file tree, sizes, modification dates when available, and a summary. It supports ZIP, 7Z, RAR, TAR, common compressed TAR formats, GZ, BZ2, XZ, and CPIO. Large archives may show a partial listing. If another previewer opens the file, check the Quick Look extensions in System Settings.
+- **Preview an archive in Finder.** Select an archive in Finder and press Space or choose View → Show Preview (⇧⌘P). MiaoRight’s read-only Quick Look preview extension shows a directory tree, sizes, available modification dates, and totals in Finder’s system preview. There is no archive preview command or hotkey inside the MiaoRight app. Supported formats include ZIP, 7Z, RAR, TAR, common compressed TAR formats, GZ, BZ2, XZ, and CPIO. Large or encrypted archives may show partial or unavailable contents; use Extract Archive to enter a password for encrypted directories. If another previewer handles the file, check Quick Look extensions in System Settings.
 - **Create an archive.** Enable **Compress…** under **Context Menu → Add Action → Compression and Extraction**. Choose ZIP, 7Z, or TAR.GZ. ZIP and 7Z support encryption. Use 7Z for passwords containing non-ASCII characters.
 - **Extract an archive.** Enable **Extract Archive** in the same group. It recognizes ZIP, 7Z, RAR, TAR, GZ, BZ2, XZ, compressed TAR archives, and common multipart archives. Put all parts in the same folder and select the first part. Output goes to a new folder beside the archive. Use this action if an encrypted directory cannot be previewed.
 

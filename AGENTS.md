@@ -44,14 +44,14 @@ open build/MiaoRight.app        # ⚠️ 必须用 open 启动,直接执行二�
 | `MiaoRightKit/Composer` | 原子能力层(阶段1基建):`AtomRegistry` 注册约 30 个原子积木,`PipelineEngine` 解释执行组合动作(步骤串联、产物传递、破坏性自动确认) |
 | `MiaoRightApp` | 主程序入口(@main),仅做装配 |
 | `MiaoRightFinder` | Finder Sync 扩展:右键菜单渲染、执行请求写入。**入口必须走 `main.swift` 的 NSExtensionMain**(SPM 构建的关键,勿删) |
-| `MiaoRightArchivePreview` | Quick Look 扩展，展示只读目录树、文件大小、修改时间与摘要。SPM 入口同样使用 `NSExtensionMain`。 |
+| `MiaoRightArchivePreview` | Quick Look 预览扩展，在访达快速预览与右侧预览面板显示只读目录树、文件大小、修改时间和摘要。没有 App 内压缩包预览入口或专用快捷键。SPM 入口同样使用 `NSExtensionMain`。 |
 | `MiaoRightArchivePreviewKit` / `CArchive` | 使用系统 libarchive 读取压缩包目录，返回有条目和时间限制的预览数据。 |
 
 ## 关键机制
 
 - **动作即数据**:内置动作定义在 `MiaoRightKit/DefaultScripts.swift` + `ScriptCatalog.swift`(name 为唯一键,中文)。执行器按动作名分发:`NativeAction`(原生 Swift 实现)优先,脚本类动作回退 shell
 - **压缩解压**:ZIP、7Z、TAR.GZ、旧组合动作与新建 Excel/PPT 的 ZIP 打包统一走 `SevenZipArchive`。官方 arm64 与 x86_64 的 `7zz` 固定在 `ThirdParty/7zip`，构建前校验 SHA-256，按目标架构复制到 `Contents/Helpers` 并单独签名；许可和对应源码随包保留。先写入独立暂存目录，成功后发布；解压统一到旁边的新文件夹，不覆盖旧文件。TAR.GZ 分两步处理 TAR/gzip，ZIP 使用 Deflate；ZIP/7Z 解压密码通过 stdin 传递，不持久化。不得恢复系统 zip/ditto/tar 或依赖用户安装 Homebrew/Python 工具。
-- **压缩包预览**使用 Quick Look 扩展独立读取目录。扩展只读，条目太多或读取超时会显示部分内容。目录加密的压缩包通过原有解压入口输入密码。
+- **压缩包预览**由 Quick Look 预览扩展独立读取目录，并显示在 Finder 的系统快速预览中。App 内不提供压缩包预览入口或快捷键。扩展只读，条目太多或读取超时会显示部分内容。目录加密的压缩包通过原有解压入口输入密码。
 - **跨进程协作**:扩展把执行请求写入 App Group 的 `pending_execution.json` → 主 App 的 `ScriptExecutor` 监听通知后认领执行;工作流请求带 `workflowId`
 - **菜单顺序**:Finder 与按需预览共用 `QuickMenuPlan`。核心顺序为复制路径、应用、终端、剪切、粘贴，再到更多操作；不按使用频率重排。`ActionUsage.record()` 仍记录成功执行，不能据此恢复自动置顶或最近使用主页面
 - **双语**:界面字符串一律 `L10n.text("中文", "English")`;动作名/描述经 `ActionNames` 映射(数据键为中文);语言偏好存 App Group,扩展构建菜单时读取
