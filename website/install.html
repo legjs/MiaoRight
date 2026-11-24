@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>三步装好妙右 · MiaoRight</title>
+  <meta name="description" content="用三步完成妙右安装：选择芯片、拖进应用程序、打开系统权限。">
+  <style>
+    :root { color-scheme:light dark; --bg:#f5f5f7; --surface:#fff; --ink:#1d1d1f; --muted:#6e6e73; --line:rgba(0,0,0,.1); --blue:#0071e3; --soft:rgba(0,113,227,.1); }
+    @media (prefers-color-scheme:dark) { :root { --bg:#000; --surface:#1d1d1f; --ink:#f5f5f7; --muted:#a1a1a6; --line:rgba(255,255,255,.13); --blue:#2997ff; --soft:rgba(41,151,255,.13); } }
+    * { box-sizing:border-box; }
+    body { margin:0; background:var(--bg); color:var(--ink); font:16px/1.65 -apple-system,BlinkMacSystemFont,"SF Pro SC","PingFang SC",sans-serif; -webkit-font-smoothing:antialiased; }
+    a { color:var(--blue); text-decoration:none; } a:hover { text-decoration:underline; }
+    .topbar { border-bottom:1px solid var(--line); background:color-mix(in srgb,var(--bg) 88%,transparent); backdrop-filter:blur(20px); }
+    .topbar-inner { max-width:820px; height:52px; margin:auto; padding:0 22px; display:flex; align-items:center; gap:20px; }
+    .wordmark { color:var(--ink); font-weight:650; } nav { margin-left:auto; display:flex; gap:18px; font-size:13px; } nav a { color:var(--muted); }
+    main { max-width:820px; margin:auto; padding:66px 22px 90px; }
+    .eyebrow { color:var(--blue); font-size:13px; font-weight:650; margin:0 0 10px; }
+    h1 { margin:0; font-size:clamp(40px,7vw,64px); line-height:1.08; letter-spacing:-.035em; }
+    .lede { max-width:620px; margin:18px 0 0; color:var(--muted); font-size:19px; }
+    .actions { display:flex; flex-wrap:wrap; gap:12px; margin-top:24px; }
+    .button { padding:8px 18px; border-radius:999px; font-size:14px; font-weight:550; }
+    .button.primary { background:var(--blue); color:#fff; } .button.secondary { background:var(--soft); color:var(--blue); }
+    .steps { display:grid; gap:14px; margin-top:38px; counter-reset:step; }
+    .step { display:grid; grid-template-columns:46px minmax(0,1fr); gap:16px; padding:22px; border:1px solid var(--line); border-radius:16px; background:var(--surface); counter-increment:step; }
+    .step::before { content:counter(step); width:34px; height:34px; border-radius:50%; display:grid; place-items:center; background:var(--ink); color:var(--bg); font-size:13px; font-weight:700; }
+    h2 { margin:0 0 6px; font-size:21px; letter-spacing:-.015em; }
+    .step p { margin:6px 0 0; color:var(--muted); }
+    .pill { display:inline-block; padding:1px 7px; border-radius:5px; background:var(--soft); color:var(--ink); font-weight:550; }
+    .check { display:grid; gap:10px; margin-top:14px; }
+    .check div { display:flex; gap:10px; align-items:flex-start; color:var(--muted); }
+    .check b { color:var(--ink); font-weight:550; }
+    .check span.tick { color:var(--blue); font-weight:700; }
+    .note { margin-top:30px; padding:16px 18px; border-radius:12px; border:1px solid var(--line); background:var(--surface); color:var(--muted); font-size:14px; }
+    details { margin-top:16px; padding:16px 18px; border:1px solid var(--line); border-radius:12px; background:var(--surface); }
+    summary { cursor:pointer; font-weight:550; } details p,details li { color:var(--muted); font-size:14px; }
+    pre { overflow:auto; padding:12px; border-radius:8px; background:var(--bg); font:12px/1.7 "SFMono-Regular",Menlo,monospace; }
+    footer { border-top:1px solid var(--line); color:var(--muted); font-size:12px; }
+    footer div { max-width:820px; margin:auto; padding:26px 22px 40px; display:flex; gap:22px; flex-wrap:wrap; }
+    @media (max-width:560px) { nav a:last-child{display:none} main{padding-top:44px}.lede{font-size:17px}.step{grid-template-columns:36px minmax(0,1fr);gap:10px;padding:18px}.step::before{width:29px;height:29px;font-size:11px} }
+  </style>
+</head>
+<body>
+  <header class="topbar"><div class="topbar-inner"><a class="wordmark" href="index.html">妙右 MiaoRight</a><nav><a href="download.html">下载</a><a href="index.html">首页</a></nav></div></header>
+  <main>
+    <p class="eyebrow">安装只需三步</p>
+    <h1>下载、拖进去、打开。</h1>
+    <p class="lede">妙右是菜单栏工具。第一次安装后，还需要打开几个系统开关，右键菜单和剪贴板才会生效。</p>
+    <div class="actions"><a class="button primary" href="download.html">自动识别芯片并下载</a><a class="button secondary" href="#no-effect">功能没生效</a></div>
+
+    <section class="steps">
+      <article class="step"><div><h2>选择正确的版本</h2><p>打开苹果菜单 →「关于本机」。显示“芯片：Apple M…”选 <span class="pill">Apple 芯片</span>；显示“处理器：Intel…”选 <span class="pill">Intel 芯片</span>。</p><p>下载页会自动推荐当前 Mac 的版本。优先下载 DMG；如果当前版本只有 ZIP，解压后得到 MiaoRight.app。</p></div></article>
+      <article class="step"><div><h2>拖进“应用程序”</h2><p>双击 DMG，把 <b>MiaoRight.app</b> 拖到 <b>Applications / 应用程序</b>，然后推出 DMG。</p><p>之后始终从“应用程序”打开妙右。右键菜单需要它位于 <span class="pill">/Applications/MiaoRight.app</span>。</p></div></article>
+      <article class="step"><div><h2>打开妙右，完成三项开关</h2><p>打开妙右后，在「通用」页会显示“开始使用妙右”，缺哪项就点哪项。</p><div class="check"><div><span class="tick">✓</span><span><b>Finder 右键菜单</b><br>系统设置 → 通用 → 登录项与扩展 → 扩展 → 访达。</span></div><div><span class="tick">✓</span><span><b>剪贴板历史</b><br>在妙右「剪贴板」页开启，然后按 ⇧⌘V 测试。</span></div><div><span class="tick">✓</span><span><b>直接粘贴（可选）</b><br>系统设置 → 隐私与安全性 → 辅助功能。未开启时仍可复制后按 ⌘V。</span></div></div></div></article>
+    </section>
+
+    <div class="note"><b>首次被 macOS 拦截</b><br>先尝试打开妙右。若提示“无法验证开发者”，到「系统设置 → 隐私与安全性」点“仍要打开”，再确认一次。</div>
+
+    <section id="no-effect">
+      <details><summary>安装后还是没有右键菜单或剪贴板</summary><p>先确认 App 在“应用程序”里，并退出后重新打开。然后在妙右「通用」页查看“开始使用妙右”卡片；仍显示未完成的，就点击右侧按钮。</p><p>重启访达后，右键菜单通常会重新加载：</p><pre>killall Finder</pre><p>如果是 Intel Mac，安装包必须是 x86_64。高级检查可运行：</p><pre>uname -m<br>lipo -archs /Applications/MiaoRight.app/Contents/MacOS/MiaoRight</pre><p>两行都应显示 <code>x86_64</code>。显示 <code>arm64</code> 说明下载了 Apple 芯片版本。</p></details>
+    </section>
+  </main>
+  <footer><div><span>妙右 MiaoRight</span><a href="download.html">下载</a><a href="index.html">返回首页</a></div></footer>
+</body>
+</html>

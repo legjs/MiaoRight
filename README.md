@@ -15,9 +15,11 @@ Use the Xcode Command Line Tools with Swift 6.3 to build and launch the app.
 open build/MiaoRight.app
 ```
 
+For the fastest local test loop, run `./scripts/dev.sh release`. It quits the running app normally, rebuilds the Release bundle, updates the development-signed test app in `/Applications/MiaoRight.app`, refreshes its Finder Sync registration, and opens it again. On macOS 26, launching from the build directory can register the Finder extension without actually loading it.
+
 The script builds and signs the app, the Finder Sync and Quick Look extensions, and the bundled 7-Zip helper. It uses the local `MiaoRight dev` signing identity when available and falls back to ad-hoc signing. Launch the app with `open` so LaunchServices registers its extensions. See the [development signing guide](MACOS_DEV_SIGNING.md) for setup.
 
-The build defaults to your Mac’s architecture. For a private release, choose the `arm64` ZIP for Apple silicon or the `x86_64` ZIP for Intel. GitHub Actions packages both versions with ad-hoc signatures and a SHA-256 checksum file. [Release workflow guide](docs/GitHub-更新发布.md)
+The build defaults to your Mac’s architecture. For a private release, choose the `arm64` DMG for Apple silicon or the `x86_64` DMG for Intel. GitHub Actions also publishes ZIP packages for in-app updates, signs both architectures with the stable `MiaoRight Release` identity, and includes a SHA-256 checksum file. The release workflow requires the signing identity through Actions Secrets and fails instead of publishing an ad-hoc build. [Release workflow guide](docs/GitHub-更新发布.md)
 
 - **Finder actions.** In System Settings, enable MiaoRight under **Login Items & Extensions → Finder Extensions**. MiaoRight’s main window offers an **Open System Settings** shortcut when the extension is disabled.
 - **Clipboard history.** On first use, turn on **Clipboard → Record Clipboard History**. Copy an item and press `⇧⌘V` to open the panel.
@@ -63,7 +65,7 @@ The vault locks when the Mac sleeps, when you quit MiaoRight, or after the confi
 ## Development and verification
 
 - Running XCTest requires full Xcode. See the [isolated test setup](AGENTS.md), [product context](PRODUCT.md), and [design system](DESIGN.md).
-- **General → Software Update** checks for stable GitHub Releases when requested. See the [update-check setup](docs/GitHub-更新发布.md).
+- **General → Software Update** checks stable GitHub Releases once a day by default, or on demand. Automatic checks can be turned off, and the result is kept across launches. A production-signed copy at `/Applications/MiaoRight.app` can download or accept the matching ZIP, verify its bundle ID, version, architecture, nested extensions, and fixed release certificate, then quit, replace that app in place, and relaunch. Development-signed builds keep the browser download flow and cannot overwrite a production installation. See the [update-check setup](docs/GitHub-更新发布.md). Private GitHub releases still require a signed-in browser session.
 - The latest feature verification covered the Release build, deep signature validation, and 58 targeted offscreen tests for clipboard, archive, and menu behavior. The live Save dialog, Finder and Quick Look workflows, VoiceOver, and physical multi-display setups still need end-to-end verification. See the [earlier implementation notes](docs/日常功能补齐-执行记录.md) for historical test results.
 
 ## Credits and license

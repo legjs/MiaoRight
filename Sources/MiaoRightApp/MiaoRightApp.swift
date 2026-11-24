@@ -175,6 +175,7 @@ struct MiaoRightApp: App {
             HotkeyCenter.shared.registerDefault()
             // 旧工作流一次性迁移为组合菜单(workflows.json 改名锚点保证幂等)
             WorkflowMigrator.migrateIfNeeded(store: ScriptStore.shared)
+            await AppUpdateService.shared.checkIfDue()
         }
         if ProcessInfo.processInfo.arguments.contains("--miaoright-execution-requested") {
             ScriptExecutor.shared.processPendingExecutionAfterLaunchRequest()
@@ -182,7 +183,7 @@ struct MiaoRightApp: App {
     }
 
     var body: some Scene {
-        WindowGroup(id: "main") {
+        Window(L10n.text("妙右", "MiaoRight"), id: "main") {
             mainWindowContent
         }
         .windowStyle(.hiddenTitleBar)
@@ -202,8 +203,6 @@ struct MiaoRightApp: App {
         ContentView()
             .environment(ScriptStore.shared)
             .environment(MonitoredFolderService.shared)
-            .modifier(SettingsLauncher())
-            .modifier(SettingsActionCapture())
             .modifier(WindowActionCapture())
             .background(MainWindowCaptureView())
             .onAppear {
@@ -236,29 +235,6 @@ struct MiaoRightApp: App {
         window.center()
         window.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
-    }
-}
-
-struct SettingsLauncher: ViewModifier {
-    @Environment(\.openSettings) private var openSettings
-
-    func body(content: Content) -> some View {
-        content
-            .onReceive(NotificationCenter.default.publisher(for: .openSettings)) { _ in
-                openSettings()
-                NSApp.activate(ignoringOtherApps: true)
-            }
-    }
-}
-
-struct SettingsActionCapture: ViewModifier {
-    @Environment(\.openSettings) private var openSettings
-
-    func body(content: Content) -> some View {
-        content
-            .onAppear {
-                SettingsActionStorage.shared.capture(openSettings)
-            }
     }
 }
 

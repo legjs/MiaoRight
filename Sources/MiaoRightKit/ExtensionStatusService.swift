@@ -98,11 +98,11 @@ enum ExtensionStatus: Equatable, Sendable {
     var statusText: String {
         switch self {
         case .active:
-            "扩展已启用"
+            "右键菜单已就绪"
         case .enabledNotRunning:
-            "已启用(建议重启 Finder)"
+            "右键菜单等待访达加载"
         case .disabled:
-            "扩展未启用"
+            "需要启用 Finder 扩展"
         }
     }
 

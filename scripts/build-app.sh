@@ -81,8 +81,13 @@ cp Packaging/Info-App.plist "$APP/Contents/Info.plist"
 
 # 稳定签名:本机存在「MiaoRight dev」自签证书时使用(DR 稳定,
 # 重编译后 TCC 授权持久有效);否则回退 ad-hoc(每次重建需重新授权)
-IDENTITY="MiaoRight dev"
-security find-identity -v -p codesigning 2>/dev/null | grep -q "MiaoRight dev" || IDENTITY="-"
+IDENTITY="${MIAORIGHT_SIGNING_IDENTITY:-MiaoRight dev}"
+AVAILABLE_IDENTITIES="$(security find-identity -v -p codesigning 2>/dev/null || true)"
+if [[ "$AVAILABLE_IDENTITIES" != *"\"$IDENTITY\""* ]]; then IDENTITY="-"; fi
+if [[ "${MIAORIGHT_REQUIRE_STABLE_SIGNING:-0}" == "1" && "$IDENTITY" == "-" ]]; then
+  echo "A stable signing identity is required but was not found." >&2
+  exit 1
+fi
 
 # 先签嵌套工具再签外层 App；源码及许可同时随包提供。
 codesign --force --identifier com.miaoright.app.7zip --sign "$IDENTITY" "$APP/Contents/Helpers/7zz"
@@ -97,5 +102,13 @@ codesign --force --identifier com.miaoright.app.ArchivePreview --sign "$IDENTITY
 codesign --force --identifier com.miaoright.app --sign "$IDENTITY" \
   --entitlements Packaging/App.entitlements \
   "$APP"
+
+codesign --verify --deep --strict "$APP"
+if [[ "$IDENTITY" == "-" ]]; then
+  echo "Warning: $APP uses an ad-hoc signature and TCC permissions may reset after rebuilds." >&2
+else
+  SIGNATURE_AUTHORITY="$(codesign -d --verbose=4 "$APP" 2>&1 | awk -F= '/^Authority=/{authority=$2} END{print authority}')"
+  echo "Signed $APP with ${SIGNATURE_AUTHORITY:-$IDENTITY}"
+fi
 
 echo "Built $APP"

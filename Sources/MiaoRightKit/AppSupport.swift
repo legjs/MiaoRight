@@ -15,21 +15,20 @@ extension Notification.Name {
 @MainActor
 public final class SettingsActionStorage {
     public static let shared = SettingsActionStorage()
-    var openSettings: (() -> Void)?
-    public func capture(_ action: OpenSettingsAction) {
-        openSettings = {
-            action()
+    private var generalPageRequested = false
+
+    public func showSettings() {
+        generalPageRequested = true
+        WindowActionStorage.shared.showMainWindow()
+        DispatchQueue.main.async {
+            NotificationCenter.default.post(name: .openSettings, object: nil)
+            NSApp.activate(ignoringOtherApps: true)
         }
     }
 
-    public func showSettings() {
-        if let openSettings {
-            openSettings()
-        } else {
-            NotificationCenter.default.post(name: .openSettings, object: nil)
-            NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
-        }
-        NSApp.activate(ignoringOtherApps: true)
+    public func consumeGeneralPageRequest() -> Bool {
+        defer { generalPageRequested = false }
+        return generalPageRequested
     }
 }
 
@@ -38,6 +37,7 @@ public final class WindowActionStorage {
     public static let shared = WindowActionStorage()
     public var openWindow: ((String) -> Void)?
     weak var mainWindow: NSWindow?
+    private var openingMainWindow = false
 
     public func capture(_ action: OpenWindowAction) {
         openWindow = { id in
@@ -68,6 +68,11 @@ public final class WindowActionStorage {
             window.makeKeyAndOrderFront(nil)
             mainWindow = window
         } else {
+            guard !openingMainWindow else {
+                NSApp.activate(ignoringOtherApps: true)
+                return
+            }
+            openingMainWindow = true
             // 窗口从未创建/已销毁:优先 SwiftUI openWindow(需窗口内容捕获过),
             // 最终兜底走应用级命令桥 —— 窗口零存在也能开出主窗口
             if let openWindow {
@@ -75,8 +80,8 @@ public final class WindowActionStorage {
             } else {
                 commandsOpenWindow?("main")
             }
-            // 确定性兜底:0.3s 后仍无主窗口,直接创建 NSWindow 承载主界面
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+            // 确定性兜底:0.4s 后仍无主窗口,直接创建 NSWindow 承载主界面
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
                 let exists = NSApp.windows.contains {
                     $0.identifier?.rawValue.contains("main") == true && $0.isVisible
                 }
@@ -85,6 +90,7 @@ public final class WindowActionStorage {
                         name: Notification.Name("com.miaoright.openMainWindowFallback"), object: nil
                     )
                 }
+                self.openingMainWindow = false
             }
         }
         NSApp.activate(ignoringOtherApps: true)

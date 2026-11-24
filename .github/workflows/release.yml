@@ -52,6 +52,40 @@ jobs:
         with:
           persist-credentials: false
           ref: refs/tags/${{ env.RELEASE_TAG }}
+      - name: Import stable signing identity
+        shell: bash
+        env:
+          MIAORIGHT_SIGNING_P12: ${{ secrets.MIAORIGHT_SIGNING_P12 }}
+          MIAORIGHT_SIGNING_P12_PASSWORD: ${{ secrets.MIAORIGHT_SIGNING_P12_PASSWORD }}
+          MIAORIGHT_SIGNING_IDENTITY: MiaoRight Release
+        run: |
+          if [[ -z "$MIAORIGHT_SIGNING_P12" || -z "$MIAORIGHT_SIGNING_P12_PASSWORD" ]]; then
+            echo "MIAORIGHT_SIGNING_P12 and MIAORIGHT_SIGNING_P12_PASSWORD are required for stable release signing." >&2
+            exit 1
+          fi
+
+          keychain="$RUNNER_TEMP/miaoright-signing.keychain-db"
+          keychain_password="$(openssl rand -hex 24)"
+          security create-keychain -p "$keychain_password" "$keychain"
+          security set-keychain-settings -lut 21600 "$keychain"
+          security unlock-keychain -p "$keychain_password" "$keychain"
+
+          printf '%s' "$MIAORIGHT_SIGNING_P12" | /usr/bin/base64 -D > "$RUNNER_TEMP/miaoright-signing.p12"
+          security import "$RUNNER_TEMP/miaoright-signing.p12" \
+            -k "$keychain" \
+            -P "$MIAORIGHT_SIGNING_P12_PASSWORD" \
+            -T /usr/bin/codesign
+          rm -f "$RUNNER_TEMP/miaoright-signing.p12"
+          security set-key-partition-list -S apple-tool:,apple:,codesign: \
+            -s -k "$keychain_password" "$keychain"
+
+          security find-certificate -c "$MIAORIGHT_SIGNING_IDENTITY" -p "$keychain" > "$RUNNER_TEMP/miaoright-release.pem"
+          security add-trusted-cert -r trustRoot -p codeSign -k "$keychain" "$RUNNER_TEMP/miaoright-release.pem"
+          security list-keychains -d user -s "$keychain"
+          identities="$(security find-identity -v -p codesigning "$keychain")"
+          [[ "$identities" == *"\"$MIAORIGHT_SIGNING_IDENTITY\""* ]]
+          echo "MIAORIGHT_REQUIRE_STABLE_SIGNING=1" >> "$GITHUB_ENV"
+          echo "MIAORIGHT_SIGNING_IDENTITY=$MIAORIGHT_SIGNING_IDENTITY" >> "$GITHUB_ENV"
       - name: Prepare the tagged build
         shell: bash
         run: |
@@ -75,8 +109,8 @@ jobs:
           codesign --verify --deep --strict "$MIAORIGHT_APP_OUTPUT"
       - name: Run archive, update, and smoke tests
         shell: bash
-        run: swift test -c release --scratch-path "$RUNNER_TEMP/swift-test" --filter 'Archive|AppUpdateTests|SmokeTests'
-      - name: Package and verify the release ZIP
+        run: swift test -c release --scratch-path "$RUNNER_TEMP/swift-test" --filter 'Archive|AppUpdateTests|AppUpdateInstallerTests|SmokeTests'
+      - name: Package and verify the release ZIP and DMG
         shell: bash
         working-directory: ${{ runner.temp }}
         run: |
@@ -85,13 +119,26 @@ jobs:
           "$MIAORIGHT_TEST_7ZZ_PATH" a -tzip -mm=Deflate -snl -bd "$archive" MiaoRight.app
           "$MIAORIGHT_TEST_7ZZ_PATH" x -bd -o"$RUNNER_TEMP/unpacked" "$archive"
           codesign --verify --deep --strict "$RUNNER_TEMP/unpacked/MiaoRight.app"
+          "$GITHUB_WORKSPACE/scripts/package-dmg.sh" \
+            "$MIAORIGHT_APP_OUTPUT" \
+            "$RELEASE_TAG" \
+            "$MIAORIGHT_BUILD_ARCH" \
+            "$RUNNER_TEMP/release/MiaoRight-$RELEASE_TAG-$MIAORIGHT_BUILD_ARCH.dmg"
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: miaoright-${{ matrix.arch }}
-          path: ${{ runner.temp }}/release/*.zip
+          path: |
+            ${{ runner.temp }}/release/*.zip
+            ${{ runner.temp }}/release/*.dmg
           if-no-files-found: error
           compression-level: 0
           retention-days: 7
+      - name: Remove temporary signing keychain
+        if: always()
+        shell: bash
+        run: |
+          security delete-keychain "$RUNNER_TEMP/miaoright-signing.keychain-db" 2>/dev/null || true
+          rm -f "$RUNNER_TEMP/miaoright-release.pem"
 
   publish:
     if: github.event.repository.private
@@ -114,20 +161,25 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
         run: |
-          arm="MiaoRight-$RELEASE_TAG-arm64.zip"
-          intel="MiaoRight-$RELEASE_TAG-x86_64.zip"
-          sha256sum "$arm" "$intel" > SHA256SUMS
+          arm_zip="MiaoRight-$RELEASE_TAG-arm64.zip"
+          intel_zip="MiaoRight-$RELEASE_TAG-x86_64.zip"
+          arm_dmg="MiaoRight-$RELEASE_TAG-arm64.dmg"
+          intel_dmg="MiaoRight-$RELEASE_TAG-x86_64.dmg"
+          assets=("$arm_zip" "$intel_zip" "$arm_dmg" "$intel_dmg")
+          sha256sum "${assets[@]}" > SHA256SUMS
 
           if existing=$(gh release view "$RELEASE_TAG" --json isDraft,assets 2>/dev/null); then
             if [[ "$(jq -r '.isDraft' <<< "$existing")" = true ]]; then
-              gh release upload "$RELEASE_TAG" "$arm" "$intel" SHA256SUMS --clobber
+              gh release upload "$RELEASE_TAG" "${assets[@]}" SHA256SUMS --clobber
               gh release edit "$RELEASE_TAG" --draft=false
             else
-              jq -e --arg arm "$arm" --arg intel "$intel" \
-                '[.assets[].name] | contains([$arm, $intel, "SHA256SUMS"])' <<< "$existing"
+              jq -e \
+                --arg arm_zip "$arm_zip" --arg intel_zip "$intel_zip" \
+                --arg arm_dmg "$arm_dmg" --arg intel_dmg "$intel_dmg" \
+                '[.assets[].name] | contains([$arm_zip, $intel_zip, $arm_dmg, $intel_dmg, "SHA256SUMS"])' <<< "$existing"
             fi
           else
-            gh release create "$RELEASE_TAG" "$arm" "$intel" SHA256SUMS \
+            gh release create "$RELEASE_TAG" "${assets[@]}" SHA256SUMS \
               --verify-tag --title "MiaoRight ${RELEASE_TAG#v}" \
-              --notes "Separate Apple silicon (arm64) and Intel (x86_64) builds for macOS 14 and later. Use SHA256SUMS to verify your download."
+              --notes "DMG installers and ZIP update packages for Apple silicon (arm64) and Intel (x86_64), macOS 14 or later. Use the DMG for the first installation. SHA256SUMS is included for verification."
           fi

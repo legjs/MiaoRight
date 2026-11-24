@@ -81,13 +81,18 @@ public struct ContentView: View {
             if AppUpdateService.shared.consumePreferencesRequest() {
                 page = .general
                 updateRequestID = AppUpdateService.shared.preferencesRequestID
+            } else if SettingsActionStorage.shared.consumeGeneralPageRequest() {
+                page = .general
             }
         }
         .task { await refreshStatus() }
         .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
             Task { await refreshStatus() }
         }
-        .onReceive(NotificationCenter.default.publisher(for: .openSettings)) { _ in page = .general }
+        .onReceive(NotificationCenter.default.publisher(for: .openSettings)) { _ in
+            _ = SettingsActionStorage.shared.consumeGeneralPageRequest()
+            page = .general
+        }
         .onReceive(NotificationCenter.default.publisher(for: .showUpdatePreferences)) { _ in
             page = .general
             updateRequestID = AppUpdateService.shared.preferencesRequestID
@@ -141,10 +146,10 @@ public struct ContentView: View {
     }
     private var statusText: String {
         switch status {
-        case .active: L10n.text("Finder 扩展已连接", "Finder extension connected")
-        case .enabledNotRunning: L10n.text("等待 Finder 加载", "Waiting for Finder")
-        case .disabled: L10n.text("需要启用 Finder 扩展", "Enable Finder extension")
-        case nil: L10n.text("检查 Finder 扩展…", "Checking Finder…")
+        case .active: L10n.text("右键菜单已就绪", "Finder menu ready")
+        case .enabledNotRunning: L10n.text("右键菜单等待访达加载", "Finder menu waiting to load")
+        case .disabled: L10n.text("右键菜单需要启用 Finder 扩展", "Finder menu needs its extension")
+        case nil: L10n.text("正在检查右键菜单…", "Checking the Finder menu…")
         }
     }
     private func refreshStatus() async {

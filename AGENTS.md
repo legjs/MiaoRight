@@ -18,21 +18,27 @@
 ```bash
 swift build -c release          # 编译
 ./scripts/build-app.sh release  # 组装 build/MiaoRight.app 并签名
+./scripts/dev.sh release        # 退出旧实例、重新构建并更新 /Applications/MiaoRight.app
 open build/MiaoRight.app        # ⚠️ 必须用 open 启动,直接执行二进制会绕过 LaunchServices
 ```
 
 - 构建产物为 `build/MiaoRight.app`，包含主程序、`MiaoRightFinder.appex`、`MiaoRightArchivePreview.appex` 与独立签名的 7-Zip 工具。
+- 发布工作流同时生成 DMG 和 ZIP。DMG 用于首次手动安装，包含 `MiaoRight.app`、`Applications` 快捷方式和安装说明；ZIP 仅用于应用内原位更新。`scripts/package-dmg.sh` 负责生成、挂载并校验 DMG。
+- macOS 26 从构建目录启动时可能登记 Finder Sync 扩展但不加载进程。本地测试由 `scripts/dev.sh` 将开发签名包更新到 `/Applications/MiaoRight.app`，重新注册扩展后再通过 `open` 启动。可用 `MIAORIGHT_DEV_APP_PATH` 改到其他可受信的应用目录。
 - 构建默认使用本机架构。可通过 `MIAORIGHT_BUILD_ARCH=arm64` 或 `MIAORIGHT_BUILD_ARCH=x86_64` 指定目标。推送版本标签后，私有仓库的发布工作流在两种原生架构的运行器上分别构建、测试并打包。操作见 [GitHub 发布和更新检查](docs/GitHub-更新发布.md)。
 - `swift test` 需要 Xcode 的 XCTest,CLT 环境不可用
 
 ### 签名(稳定开发身份)
 
-本机钥匙串中有自签代码签名证书 **「MiaoRight dev」**(10 年期),构建脚本自动检测并使用它;
+本机钥匙串中有两张长期有效的自签代码签名证书。**「MiaoRight dev」**用于本地开发，构建脚本默认检测并使用它；**「MiaoRight Release」**只用于 GitHub 发布，通过 Actions Secrets 导入 CI 临时钥匙串。两张证书和 Bundle ID 都必须保持稳定;
 签名指定 `--identifier com.miaoright.app`,DR 为「证书哈希」,**跨重建稳定**,
 因此 TCC 授权(如 App Group 访问)一次授权永久有效,不会因重编译反复弹窗。
 
 - 证书丢失/换机:按 `MACOS_DEV_SIGNING.md` 第 1-2 步重建并信任(需用户级 codeSign 信任)
 - 证书不在时脚本自动回退 ad-hoc(每次重建需重新授权,不推荐)
+- 发布工作流通过 `MIAORIGHT_SIGNING_P12` 与 `MIAORIGHT_SIGNING_P12_PASSWORD` 导入独立的 `MiaoRight Release` 证书，并设置 `MIAORIGHT_SIGNING_IDENTITY=MiaoRight Release` 与 `MIAORIGHT_REQUIRE_STABLE_SIGNING=1`。缺少 Secret 或找不到证书时构建失败，不得发布 ad-hoc 包
+- TCC 授权连续性与 Gatekeeper 公证是两件事。稳定自签证书可以在没有 Apple 开发者账号时让后续更新沿用授权，但首次安装仍需手动允许打开。不要用 ad-hoc 发布需要辅助功能、输入监控或 Finder/Quick Look 扩展的版本
+- 证书私钥只在登录钥匙串和加密备份中。不得导出整个登录钥匙串，不得把 `.p12`、Base64、密码或 Secret 打印到日志。证书轮换会让所有已安装版本重新授权，仅在证书丢失或泄露时执行。验证方法见 `MACOS_DEV_SIGNING.md`
 - 私钥只在本机钥匙串,绝不入库
 
 ## 架构（SwiftPM）
@@ -53,12 +59,15 @@ open build/MiaoRight.app        # ⚠️ 必须用 open 启动,直接执行二�
 - **压缩解压**:ZIP、7Z、TAR.GZ、旧组合动作与新建 Excel/PPT 的 ZIP 打包统一走 `SevenZipArchive`。官方 arm64 与 x86_64 的 `7zz` 固定在 `ThirdParty/7zip`，构建前校验 SHA-256，按目标架构复制到 `Contents/Helpers` 并单独签名；许可和对应源码随包保留。先写入独立暂存目录，成功后发布；解压统一到旁边的新文件夹，不覆盖旧文件。TAR.GZ 分两步处理 TAR/gzip，ZIP 使用 Deflate；ZIP/7Z 解压密码通过 stdin 传递，不持久化。不得恢复系统 zip/ditto/tar 或依赖用户安装 Homebrew/Python 工具。
 - **压缩包预览**由 Quick Look 预览扩展独立读取目录，并显示在 Finder 的系统快速预览中。App 内不提供压缩包预览入口或快捷键。扩展只读，条目太多或读取超时会显示部分内容。目录加密的压缩包通过原有解压入口输入密码。
 - **跨进程协作**:扩展把执行请求写入 App Group 的 `pending_execution.json` → 主 App 的 `ScriptExecutor` 监听通知后认领执行;工作流请求带 `workflowId`
+- **单实例主窗口**:SwiftUI 只声明一个 `Window(id: "main")`，不要改回可多开的 `WindowGroup`。“打开设置”统一打开同一个主窗口并切到「通用」页；`WindowActionStorage.showMainWindow()` 用 `openingMainWindow` 合并并发开窗请求，避免重复设置窗口。
 - **菜单顺序**:Finder 与按需预览共用 `QuickMenuPlan`。核心顺序为复制路径、应用、终端、剪切、粘贴，再到更多操作；不按使用频率重排。`ActionUsage.record()` 仍记录成功执行，不能据此恢复自动置顶或最近使用主页面
 - **双语**:界面字符串一律 `L10n.text("中文", "English")`;动作名/描述经 `ActionNames` 映射(数据键为中文);语言偏好存 App Group,扩展构建菜单时读取
 - **工作流兼容**:`WorkflowStore` 保留旧工作流数据模型，`WorkflowMigrator` 将已有 workflows.json 迁移为组合动作，执行统一走 `PipelineEngine`。当前主窗口没有新建编排入口；不得因隐藏入口而清空用户配置
 - **应用管理**:从本机选择或拖入 App；图标由 `NSWorkspace` 获取，已保存但丢失的目标显示提示。终端仅列本机可用目标和需要修复的已启用目标
+- **首次使用检查**：`SettingsView` 在「通用」页顶部显示“开始使用妙右”卡片，只列尚未完成的安装位置、Finder 扩展和剪贴板历史三项，每项提供直接操作按钮。辅助功能授权作为可选行展示，不计入三项完成度。三项完成后卡片自动隐藏，不新增导航页或独立向导窗口。
 - **剪贴板**:暂停采集与隐藏面板是不同操作。320 点面板固定在目标屏幕 visibleFrame 内裁剪滑动，遵循 Reduce Motion；搜索输入法优先，列表定位与多选状态分离。文件移动失败保留未完成状态
 - **剪贴板搜索与保存**在本机用 Vision 按需识别已缓存图片的文字。记录菜单统一提供「保存…」，将文字写为 UTF-8 TXT、图片写为 PNG，或复制记录指向的原文件。倒数第二条使用独立可改键的全局快捷键，需要辅助功能授权。临时粘贴完成后恢复原剪贴板内容，期间有新的复制则保留新内容。
+- **软件更新**由 `AppUpdateService` 读取 GitHub Releases。默认启动后每 24 小时最多检查一次，可关闭自动检查；手动检查会显示网络、限流和响应错误。发行资产必须按 `MiaoRight-<tag>-<arch>.zip` 精确匹配当前架构，发行页面和下载地址必须属于 `MiaoRightUpdateRepository`。生产版只有在路径为 `/Applications/MiaoRight.app` 且当前签名包含 `MiaoRight Release` 证书指纹时才显示原位安装。安装前必须校验候选 App 的 Bundle ID、发行版本、架构、嵌套扩展和固定证书指纹，然后用后台助手等待主程序退出，备份旧包、原位替换并重新启动。开发签名版本禁止自动覆盖生产包。匿名检查无法读取私有仓库的发行版。
 - **常用文件操作**:目录与模板使用带 `miaorightShortcut` 标记的既有组合动作 JSON，由 `QuickFilePreferences` 管理；目录的打开/复制/移动各自启用，移动执行前确认。模板先保存独立快照。不能把无标记的历史组合动作识别成快捷目录。
 - **压缩与重命名**:`压缩…`、`批量重命名…` 先在主窗口内嵌表单，确认后执行；`解压` 自动识别格式及常见分卷。所有压缩解压走内置 7-Zip，密码仅经 stdin，禁止持久化或放入命令行参数。
 - **保险箱**:`VaultStore` 管理 hdiutil AES-256 加密 sparse bundle，解锁=挂载到 App Group 容器旁的固定挂载点(`VaultMount`)，锁定=卸载。密码只经 stdin 传给 hdiutil 且不带换行；「记住密码」为可选的登录钥匙串存储，忘记密码不可恢复。右键「加入保险箱」走内嵌确认表单(未创建先建、锁定先解锁后移入)，移入经 `FileOperationJournal` 支持撤销；创建、解锁与内容管理在主窗口独立「保险箱」导航页完成(与剪贴板并列)。空闲(默认 15 分钟)/睡眠/退出自动锁定。扩展凭 App Group 的 `vault.configured` 标记判断菜单可用性；异常退出后卷仍挂着时按已解锁处理。离屏测试禁止执行 hdiutil 命令。

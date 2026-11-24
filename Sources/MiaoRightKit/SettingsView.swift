@@ -21,6 +21,8 @@ struct SettingsView: View {
     @State private var maxItems = ClipboardStore.maxItems
     @State private var confirmingClear = false
     @State private var error: String?
+    @State private var checkingFinderStatus = false
+    @State private var finderCheckMessage: String?
     @AppStorage(AppPreferences.showActionNotificationsKey) private var showNotifications = true
     @AppStorage(ClipboardHistoryService.autoPasteKey) private var autoPaste = true
     @AppStorage(SharedDefaults.showOpenMainWindowMenuItemKey, store: SharedDefaults.userDefaults) private var showSettingsItem = true
@@ -111,6 +113,7 @@ struct SettingsView: View {
     private var general: some View {
         VStack(alignment: .leading, spacing: 0) {
             PreferenceHeader(title: L10n.text("通用", "General"), subtitle: L10n.text("设置一次，之后随手使用。", "Set it up once, then keep it close at hand."))
+            setupChecklist
             PreferenceRow(title: L10n.text("登录时启动", "Launch at Login"), icon: "power", detail: loginDetail) {
                 Toggle(L10n.text("登录时启动", "Launch at Login"), isOn: Binding(get: { loginState.isRequested }, set: { setLoginEnabled($0) }))
                     .labelsHidden().toggleStyle(.switch)
@@ -162,11 +165,24 @@ struct SettingsView: View {
                 Button(L10n.text("系统设置…", "System Settings…")) { openExtensions() }
             }
             HStack {
-                Button(L10n.text("重新检查连接", "Check Connection")) { Task { await refresh() } }.buttonStyle(.borderless)
+                Button(checkingFinderStatus ? L10n.text("正在检查…", "Checking…") : L10n.text("重新检查右键菜单", "Check Finder Menu")) {
+                    Task { await recheckFinderMenu() }
+                }
+                    .buttonStyle(.borderless)
+                    .disabled(checkingFinderStatus)
+                    .help(L10n.text("重新检查访达是否已加载妙右右键扩展，不会联网。", "Check whether Finder has loaded the MiaoRight extension. This does not use the network."))
                 if status == .enabledNotRunning {
                     Button(L10n.text("打开 Finder", "Open Finder")) { NSWorkspace.shared.open(FileManager.default.homeDirectoryForCurrentUser) }.buttonStyle(.borderless)
                 }
             }.font(.system(size: 12)).padding(.top, 12)
+            if let finderCheckMessage {
+                HStack(alignment: .top, spacing: 7) {
+                    Image(systemName: finderCheckIcon).foregroundStyle(finderCheckColor)
+                    Text(finderCheckMessage).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                }
+                .font(.system(size: 11))
+                .padding(.top, 8)
+            }
             DisclosureGroup(L10n.text("其他程序的右键菜单", "Other Apps’ Context Menus")) {
                 ExtensionsManagementView()
             }.disclosureGroupStyle(PreferenceDisclosureStyle(icon: "puzzlepiece.extension", summary: L10n.text("管理其他 App 添加的菜单项", "Manage menu items added by other apps"))).padding(.top, 20)
@@ -200,12 +216,107 @@ struct SettingsView: View {
             }.padding(.top, 24)
         }
     }
+
+    @ViewBuilder
+    private var setupChecklist: some View {
+        if !setupItemsComplete {
+            VStack(alignment: .leading, spacing: 12) {
+                HStack(alignment: .firstTextBaseline, spacing: 10) {
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text(L10n.text("开始使用妙右", "Get MiaoRight Ready"))
+                            .font(.system(size: 13, weight: .semibold))
+                        Text(L10n.text("完成下面几项后，右键菜单和剪贴板才会工作。", "Complete these items to enable the context menu and clipboard."))
+                            .font(.system(size: 11)).foregroundStyle(.secondary)
+                    }
+                    Spacer(minLength: 12)
+                    Text(setupProgressText).font(.system(size: 11)).foregroundStyle(.secondary)
+                }
+
+                if !isAtExpectedInstallLocation {
+                    setupStep(
+                        icon: "folder.badge.gearshape",
+                        title: L10n.text("把妙右放进“应用程序”", "Move MiaoRight to Applications"),
+                        detail: L10n.text("右键菜单需要从 /Applications/MiaoRight.app 运行。", "The Finder menu requires /Applications/MiaoRight.app."),
+                        action: L10n.text("打开文件夹", "Open Folder")
+                    ) { NSWorkspace.shared.open(URL(fileURLWithPath: "/Applications", isDirectory: true)) }
+                }
+
+                if status != .active {
+                    setupStep(
+                        icon: "cursorarrow.click",
+                        title: L10n.text("启用 Finder 右键菜单", "Enable the Finder Menu"),
+                        detail: status == .enabledNotRunning
+                            ? L10n.text("扩展已开启，点一下让访达重新加载。", "The extension is on. Reload Finder to finish.")
+                            : L10n.text("在系统设置的“访达”扩展中打开妙右。", "Turn on MiaoRight in Finder Extensions."),
+                        action: status == .enabledNotRunning
+                            ? L10n.text("重启访达", "Reload Finder")
+                            : L10n.text("打开设置", "Open Settings")
+                    ) {
+                        if status == .enabledNotRunning {
+                            FinderControl.restartFinder()
+                            Task { await refresh() }
+                        } else {
+                            openExtensions()
+                        }
+                    }
+                }
+
+                if !history.recordingEnabled {
+                    setupStep(
+                        icon: "doc.on.clipboard",
+                        title: L10n.text("开启剪贴板历史", "Turn On Clipboard History"),
+                        detail: L10n.text("开启后，按 ⇧⌘V 就能找回刚才复制的内容。", "Then press ⇧⌘V to find what you copied."),
+                        action: L10n.text("立即开启", "Turn On")
+                    ) { history.setRecordingEnabled(true) }
+                }
+
+                if !authorized {
+                    setupStep(
+                        icon: "hand.raised",
+                        title: L10n.text("允许直接粘贴", "Allow Direct Paste"),
+                        detail: L10n.text("不开启也可以先从面板复制，再按 ⌘V。", "You can also copy from the panel and press ⌘V."),
+                        action: L10n.text("去授权", "Authorize")
+                    ) { AutoPaste.openAuthorizationSettings() }
+                }
+            }
+            .padding(16)
+            .background(Color(nsColor: .controlBackgroundColor), in: RoundedRectangle(cornerRadius: 8))
+            .overlay(RoundedRectangle(cornerRadius: 8).strokeBorder(Color.blue.opacity(0.18)))
+            .padding(.bottom, 14)
+        }
+    }
+
+    private var isAtExpectedInstallLocation: Bool {
+        Bundle.main.bundleURL.standardizedFileURL.path == "/Applications/MiaoRight.app"
+    }
+
+    private var setupCompletedCount: Int {
+        [isAtExpectedInstallLocation, status == .active, history.recordingEnabled].filter { $0 }.count
+    }
+
+    private var setupItemsComplete: Bool { setupCompletedCount == 3 }
+
+    private var setupProgressText: String {
+        L10n.text("\(setupCompletedCount) / 3 已完成", "\(setupCompletedCount) of 3 complete")
+    }
+
+    private func setupStep(icon: String, title: String, detail: String, action: String, perform: @escaping () -> Void) -> some View {
+        HStack(spacing: 10) {
+            Image(systemName: icon).font(.system(size: 14)).foregroundStyle(.blue).frame(width: 20)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title).font(.system(size: 12, weight: .medium))
+                Text(detail).font(.system(size: 11)).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+            }
+            Spacer(minLength: 8)
+            Button(action, action: perform).controlSize(.small)
+        }
+    }
     private var extensionDetail: String {
         switch status {
-        case .active: L10n.text("已连接，可在 Finder 中使用右键菜单", "Connected; actions are available in Finder")
-        case .enabledNotRunning: L10n.text("已启用，等待 Finder 加载；打开文件夹后再次检查", "Enabled; waiting for Finder. Open a folder, then check again.")
+        case .active: L10n.text("右键菜单已就绪，可在访达中使用", "The Finder menu is ready")
+        case .enabledNotRunning: L10n.text("扩展已启用，访达尚未加载；打开文件夹后再次检查", "Enabled; Finder has not loaded it yet. Open a folder and check again.")
         case .disabled: L10n.text("请在系统设置中启用“妙右 Finder 扩展”", "Enable “MiaoRight Finder Extension” in System Settings")
-        case nil: L10n.text("正在检查…", "Checking…")
+        case nil: L10n.text("正在检查右键菜单…", "Checking the Finder menu…")
         }
     }
     private var loginDetail: String {
@@ -224,6 +335,39 @@ struct SettingsView: View {
     private func refresh() async {
         authorized = AutoPaste.isAuthorized(); folders.refresh(); loginState = AppPolicies.loginItemState()
         status = await Task.detached(priority: .utility) { ExtensionStatusService.checkStatus() }.value
+    }
+
+    private func recheckFinderMenu() async {
+        checkingFinderStatus = true
+        finderCheckMessage = nil
+        await refresh()
+        checkingFinderStatus = false
+        switch status {
+        case .active:
+            finderCheckMessage = L10n.text("检查完成，右键菜单已就绪。可以在访达中右键测试。", "Check complete. The Finder menu is ready; right-click in Finder to test it.")
+        case .enabledNotRunning:
+            finderCheckMessage = L10n.text("扩展已启用，但访达还没有加载它。可以点右侧的“打开 Finder”。", "The extension is enabled, but Finder has not loaded it. Open a Finder window to continue.")
+        case .disabled:
+            finderCheckMessage = L10n.text("Finder 扩展尚未启用。请点“系统设置…”打开它。", "The Finder extension is off. Use System Settings to enable it.")
+        case nil:
+            finderCheckMessage = L10n.text("暂时无法读取扩展状态，请稍后重试。", "Could not read the extension status. Try again shortly.")
+        }
+    }
+
+    private var finderCheckIcon: String {
+        switch status {
+        case .active: "checkmark.circle.fill"
+        case .enabledNotRunning: "clock.fill"
+        default: "exclamationmark.triangle.fill"
+        }
+    }
+
+    private var finderCheckColor: Color {
+        switch status {
+        case .active: .green
+        case .enabledNotRunning: .orange
+        default: .red
+        }
     }
     private func openExtensions() {
         if let url = URL(string: "x-apple.systempreferences:com.apple.ExtensionsPreferences") { NSWorkspace.shared.open(url) }

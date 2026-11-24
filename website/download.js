@@ -21,8 +21,8 @@
     const link = document.querySelector('a[data-arch="' + architecture + '"]');
     if (!link) return;
     for (const choice of choices) choice.checked = choice.value === architecture;
-    button.href = link.href;
-    button.textContent = architecture === 'arm64' ? '下载 Apple 芯片版' : '下载 Intel 芯片版';
+    button.href = link.dataset.dmg || link.href;
+    button.textContent = (architecture === 'arm64' ? '下载 Apple 芯片版 ' : '下载 Intel 芯片版 ') + (link.dataset.dmg ? 'DMG' : 'ZIP');
     document.getElementById('recommended-download').hidden = false;
   }
 

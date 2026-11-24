@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>下载妙右 MiaoRight</title>
-  <meta name="description" content="下载妙右 0.1.1，为你的 Mac 选择对应版本。">
+  <meta name="description" content="下载妙右 0.1.2，为你的 Mac 选择对应版本。">
   <link rel="stylesheet" href="style.css">
   <script src="download.js" defer></script>
 </head>
@@ -12,12 +12,13 @@
   <header class="topbar">
     <div class="topbar-inner">
       <a class="wordmark" href="index.html">妙右</a>
-      <nav aria-label="页面导航"><a href="index.html#archive">压缩包预览</a><a href="index.html">返回首页</a></nav>
+      <nav aria-label="页面导航"><a href="install.html">安装引导</a><a href="index.html#archive">压缩包预览</a><a href="index.html">返回首页</a></nav>
     </div>
   </header>
   <main class="download-main">
     <h1>下载妙右</h1>
-    <p class="download-sub">0.1.1 版，适用于 macOS 14 及以上。</p>
+    <p class="download-sub">0.1.2 版，适用于 macOS 14 及以上。</p>
+    <p class="download-note">首次安装请下载 DMG；ZIP 继续用于应用内更新。</p>
     <section class="download-box" aria-labelledby="chip-heading">
       <h2 id="chip-heading">选择适合你的版本</h2>
       <p id="detection-status" role="status" aria-live="polite">可在苹果菜单「关于本机」查看芯片，然后选择对应版本。</p>
@@ -27,17 +28,19 @@
         <label><input type="radio" name="architecture" value="x86_64">Intel 芯片</label>
       </fieldset>
       <div class="download-primary" id="recommended-download" hidden>
-        <a class="btn btn-primary" id="download-button">下载 ZIP</a>
+        <a class="btn btn-primary" id="download-button">下载 DMG</a>
       </div>
       <div class="download-links" aria-label="所有下载">
-        <a data-arch="arm64" href="https://github.com/legjs/MiaoRight/releases/download/v0.1.1/MiaoRight-v0.1.1-arm64.zip"><span>下载 Apple 芯片版</span><small>arm64 · ZIP</small></a>
-        <a data-arch="x86_64" href="https://github.com/legjs/MiaoRight/releases/download/v0.1.1/MiaoRight-v0.1.1-x86_64.zip"><span>下载 Intel 芯片版</span><small>x86_64 · ZIP</small></a>
+        <a data-arch="arm64" data-dmg="https://github.com/legjs/MiaoRight/releases/download/v0.1.2/MiaoRight-v0.1.2-arm64.dmg" href="https://github.com/legjs/MiaoRight/releases/download/v0.1.2/MiaoRight-v0.1.2-arm64.dmg"><span>下载 Apple 芯片版</span><small>arm64 · DMG</small></a>
+        <a data-arch="x86_64" data-dmg="https://github.com/legjs/MiaoRight/releases/download/v0.1.2/MiaoRight-v0.1.2-x86_64.dmg" href="https://github.com/legjs/MiaoRight/releases/download/v0.1.2/MiaoRight-v0.1.2-x86_64.dmg"><span>下载 Intel 芯片版</span><small>x86_64 · DMG</small></a>
       </div>
     </section>
-    <p class="download-note">安装包位于私有 GitHub 仓库，需要登录有访问权限的账号。遇到 404，可先打开<a href="https://github.com/legjs/MiaoRight/releases/tag/v0.1.1" target="_blank" rel="noopener noreferrer">发行页面</a>确认权限。</p>
-    <p class="download-note">本版本使用 ad-hoc 签名，尚未经过 Apple 公证，首次被拦截时可按<a href="#first-open">打开指引</a>操作。<a href="https://github.com/legjs/MiaoRight/releases/download/v0.1.1/SHA256SUMS">下载 SHA-256 校验文件</a></p>
-    <section class="install-help" id="install" aria-labelledby="install-heading">
-      <h2 id="install-heading">下载后怎么用</h2>
+    <p class="download-note">安装包位于私有 GitHub 仓库，需要登录有访问权限的账号。遇到 404，可先打开<a href="https://github.com/legjs/MiaoRight/releases/tag/v0.1.2" target="_blank" rel="noopener noreferrer">发行页面</a>确认权限。</p>
+    <p class="download-note">本版本使用项目固定的自签证书签名，尚未经过 Apple 公证，首次被拦截时可按<a href="#first-open">打开指引</a>操作。<a href="https://github.com/legjs/MiaoRight/releases/download/v0.1.2/SHA256SUMS">下载 SHA-256 校验文件</a></p>
+    <p class="download-note">更新时请先退出妙右，并将新版替换为<strong>/Applications/MiaoRight.app</strong>。生产签名版本的应用内更新会原位替换这个路径，从下载目录直接运行的新包不能自动覆盖生产安装。</p>
+    <section class="install-help" id="install-legacy" aria-labelledby="install-heading-legacy" hidden>
+      <h2 id="install-heading-legacy">下载后怎么用</h2>
+      <p><a class="btn btn-quiet" href="install.html">打开完整安装与首次设置引导</a></p>
       <p class="guide-intro">首次安装按下面的顺序操作。遇到「无法验证开发者」或「Apple 无法检查是否包含恶意软件」时，请看第 2 步。</p>
       <p class="guide-caption">以下配图均为操作示意，系统名称和按钮位置会随 macOS 版本略有变化。</p>
       <ol class="install-steps">
@@ -79,9 +82,9 @@
             <p>只在确认来源、ZIP 校验值一致，且没有恶意软件警告的情况下，才继续排查下载隔离标记。展开下面的说明。</p>
             <details class="guide-detail">
               <summary>校验文件和处理下载隔离标记</summary>
-              <p>同时下载本页的 ZIP 和 <a href="https://github.com/legjs/MiaoRight/releases/download/v0.1.1/SHA256SUMS">SHA256SUMS</a>，在「文本编辑」中打开 SHA256SUMS。打开「应用程序 → 实用工具 → 终端」，运行下面的命令，将输出与相同 ZIP 文件名对应的校验值逐字对照。</p>
+              <p>同时下载本页的 ZIP 和 <a href="https://github.com/legjs/MiaoRight/releases/download/v0.1.2/SHA256SUMS">SHA256SUMS</a>，在「文本编辑」中打开 SHA256SUMS。打开「应用程序 → 实用工具 → 终端」，运行下面的命令，将输出与相同 ZIP 文件名对应的校验值逐字对照。</p>
               <pre><code>cd ~/Downloads
-shasum -a 256 MiaoRight-v0.1.1-*.zip</code></pre>
+shasum -a 256 MiaoRight-v0.1.2-*.zip</code></pre>
               <p>将 App 放入「应用程序」后，运行签名校验。终端没有输出并回到输入提示符时，表示这项校验成功。出现校验错误时，请重新下载，或向项目反馈。</p>
               <pre><code>codesign --verify --deep --strict "/Applications/MiaoRight.app"</code></pre>
               <p>两项校验都通过后，可用下面的命令移除<strong>这一份妙右 App</strong>的下载隔离标记，再尝试打开。此操作会让该副本跳过相应的下载隔离检查，请仅对你确认信任的副本使用。</p>
@@ -129,6 +132,15 @@ open "/Applications/MiaoRight.app"</code></pre>
         <h3>现在可以试一试</h3>
         <p>右键复制一条文件路径，按 ⇧⌘V 找回它，再在访达中选中一个 ZIP 查看包内目录。剪贴板记录里的「… → 保存…」还能把文字、图片和文件保存到你选的位置。</p>
       </div>
+    </section>
+    <section class="install-help" id="install" aria-labelledby="install-heading">
+      <h2 id="install-heading">下载后怎么用</h2>
+      <ol>
+        <li>确认 Mac 芯片，下载对应版本。</li>
+        <li>把 MiaoRight.app 拖进“应用程序”，再从那里打开。</li>
+        <li>打开妙右「通用」页，按“开始使用妙右”提示完成剩余开关。</li>
+      </ol>
+      <p><a class="btn btn-quiet" href="install.html">查看三步安装引导</a></p>
     </section>
   </main>
   <footer><div class="wrap"><a class="mark" href="index.html">妙右 MiaoRight</a><p class="fine">Finder 右键、剪贴板和压缩包预览，随手可用。</p></div></footer>

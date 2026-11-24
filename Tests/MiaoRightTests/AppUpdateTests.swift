@@ -24,14 +24,23 @@ final class AppUpdateTests: XCTestCase {
         })
     }
 
-    private func release(tag: String = "v1.1.0", url: String = "https://github.com/legjs/MiaoRight/releases/tag/v1.1.0", prerelease: Bool = false) -> String {
-        "{\"tag_name\":\"\(tag)\",\"html_url\":\"\(url)\",\"body\":\"Release notes\",\"draft\":false,\"prerelease\":\(prerelease)}"
+    private func release(
+        tag: String = "v1.1.0",
+        url: String = "https://github.com/legjs/MiaoRight/releases/tag/v1.1.0",
+        prerelease: Bool = false,
+        assets: [(String, String, Int)] = []
+    ) -> String {
+        let assetJSON = assets.map {
+            "{\"name\":\"\($0.0)\",\"browser_download_url\":\"\($0.1)\",\"size\":\($0.2)}"
+        }.joined(separator: ",")
+        return "{\"name\":\"MiaoRight \(tag)\",\"tag_name\":\"\(tag)\",\"html_url\":\"\(url)\",\"body\":\"Release notes\",\"published_at\":\"2026-11-24T12:00:00Z\",\"draft\":false,\"prerelease\":\(prerelease),\"assets\":[\(assetJSON)]}"
     }
 
     func testPublicReleaseAndMissingReleaseAreDistinct() async throws {
         let available = try await client(body: release()).latestRelease()
         XCTAssertEqual(available?.tagName, "v1.1.0")
         XCTAssertEqual(available?.notes, "Release notes")
+        XCTAssertNotNil(available?.publishedDate)
         let absent = try await client(status: 404).latestRelease()
         XCTAssertNil(absent)
         let beta = try await client(body: release(tag: "v2.0.0-beta.1", prerelease: true)).latestRelease()
@@ -46,6 +55,7 @@ final class AppUpdateTests: XCTestCase {
             (client(body: "not json"), .response),
             (client(body: release(tag: "latest")), .version),
             (client(body: release(url: "https://example.com/download")), .response),
+            (client(body: release(assets: [("MiaoRight-v1.1.0-arm64.zip", "https://example.com/MiaoRight-v1.1.0-arm64.zip", 42)])), .response),
             (GitHubReleaseClient(repository: UpdateRepository("legjs/MiaoRight")!, load: { _ in throw URLError(.notConnectedToInternet) }), .network)
         ] {
             do { _ = try await client.latestRelease(); XCTFail("Expected \(expected)") }
@@ -61,5 +71,39 @@ final class AppUpdateTests: XCTestCase {
         }
         XCTAssertNil(UpdateRepository("legjs/../other"))
         XCTAssertNil(UpdateRepository("legjs/"))
+    }
+
+    func testInstallerMatchesCurrentArchitectureAndRepository() async throws {
+        let repository = try XCTUnwrap(UpdateRepository("legjs/MiaoRight"))
+        let armURL = "https://github.com/legjs/MiaoRight/releases/download/v1.1.0/MiaoRight-v1.1.0-arm64.zip"
+        let intelURL = "https://github.com/legjs/MiaoRight/releases/download/v1.1.0/MiaoRight-v1.1.0-x86_64.zip"
+        let checksumURL = "https://github.com/legjs/MiaoRight/releases/download/v1.1.0/SHA256SUMS"
+        let loaded = try await client(body: release(assets: [
+            ("MiaoRight-v1.1.0-arm64.zip", armURL, 42),
+            ("MiaoRight-v1.1.0-x86_64.zip", intelURL, 64),
+            ("SHA256SUMS", checksumURL, 128)
+        ])).latestRelease()
+        let loadedRelease = try XCTUnwrap(loaded)
+
+        XCTAssertEqual(loadedRelease.installer(for: .arm64, repository: repository)?.downloadURL.absoluteString, armURL)
+        XCTAssertEqual(loadedRelease.installer(for: .x86_64, repository: repository)?.downloadURL.absoluteString, intelURL)
+        XCTAssertEqual(loadedRelease.checksums(repository: repository)?.downloadURL.absoluteString, checksumURL)
+
+        let loadedWrongTag = try await client(body: release(assets: [
+            ("MiaoRight-v1.0.0-arm64.zip", armURL, 42)
+        ])).latestRelease()
+        let wrongTag = try XCTUnwrap(loadedWrongTag)
+        XCTAssertNil(wrongTag.installer(for: .arm64, repository: repository))
+    }
+
+    func testCachedReleaseRoundTripPreservesInstallerMetadata() async throws {
+        let armURL = "https://github.com/legjs/MiaoRight/releases/download/v1.1.0/MiaoRight-v1.1.0-arm64.zip"
+        let loaded = try await client(body: release(assets: [
+            ("MiaoRight-v1.1.0-arm64.zip", armURL, 42)
+        ])).latestRelease()
+        let original = try XCTUnwrap(loaded)
+        let decoded = try JSONDecoder().decode(GitHubRelease.self, from: JSONEncoder().encode(original))
+        XCTAssertEqual(decoded, original)
+        XCTAssertEqual(decoded.installer(for: .arm64, repository: UpdateRepository("legjs/MiaoRight")!)?.size, 42)
     }
 }

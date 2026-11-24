@@ -19,11 +19,13 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>0.1.1</string>
+	<string>0.1.2</string>
 	<key>CFBundleVersion</key>
-	<string>101</string>
+	<string>102</string>
 	<key>MiaoRightUpdateRepository</key>
 	<string>legjs/MiaoRight</string>
+	<key>MiaoRightReleaseSigningCertificateSHA1</key>
+	<string>caa0c3b678a217e14206af09ee216b57d4ddda16</string>
 	<key>CFBundleLocalizations</key>
 	<array>
 		<string>zh-Hans</string>

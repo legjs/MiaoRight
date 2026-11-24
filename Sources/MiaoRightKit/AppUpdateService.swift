@@ -74,16 +74,97 @@ struct UpdateRepository: Sendable {
         url.scheme == "https" && url.host?.lowercased() == "github.com" && url.user == nil && url.password == nil && url.port == nil
             && url.path.lowercased().hasPrefix("/\(slug.lowercased())/releases/")
     }
+    func containsDownload(_ url: URL) -> Bool {
+        contains(url) && url.path.lowercased().hasPrefix("/\(slug.lowercased())/releases/download/")
+    }
 }
 
-struct GitHubRelease: Decodable, Sendable, Equatable {
+enum ReleaseArchitecture: String, Sendable {
+    case arm64
+    case x86_64
+
+    static var current: Self {
+#if arch(arm64)
+        .arm64
+#else
+        .x86_64
+#endif
+    }
+
+    var displayName: String {
+        switch self {
+        case .arm64: L10n.text("Apple 芯片", "Apple silicon")
+        case .x86_64: L10n.text("Intel 芯片", "Intel")
+        }
+    }
+}
+
+struct GitHubReleaseAsset: Codable, Sendable, Equatable {
+    let name: String
+    let downloadURL: URL
+    let size: Int
+
+    enum CodingKeys: String, CodingKey {
+        case name
+        case downloadURL = "browser_download_url"
+        case size
+    }
+}
+
+struct GitHubRelease: Codable, Sendable, Equatable {
+    let name: String?
     let tagName: String
     let pageURL: URL
     let notes: String?
+    let publishedAt: String?
     let draft: Bool
     let prerelease: Bool
+    let assets: [GitHubReleaseAsset]
+
     enum CodingKeys: String, CodingKey {
-        case tagName = "tag_name", pageURL = "html_url", notes = "body", draft, prerelease
+        case name, tagName = "tag_name", pageURL = "html_url", notes = "body"
+        case publishedAt = "published_at", draft, prerelease, assets
+    }
+
+    init(from decoder: Decoder) throws {
+        let values = try decoder.container(keyedBy: CodingKeys.self)
+        name = try values.decodeIfPresent(String.self, forKey: .name)
+        tagName = try values.decode(String.self, forKey: .tagName)
+        pageURL = try values.decode(URL.self, forKey: .pageURL)
+        notes = try values.decodeIfPresent(String.self, forKey: .notes)
+        publishedAt = try values.decodeIfPresent(String.self, forKey: .publishedAt)
+        draft = try values.decode(Bool.self, forKey: .draft)
+        prerelease = try values.decode(Bool.self, forKey: .prerelease)
+        assets = try values.decodeIfPresent([GitHubReleaseAsset].self, forKey: .assets) ?? []
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var values = encoder.container(keyedBy: CodingKeys.self)
+        try values.encodeIfPresent(name, forKey: .name)
+        try values.encode(tagName, forKey: .tagName)
+        try values.encode(pageURL, forKey: .pageURL)
+        try values.encodeIfPresent(notes, forKey: .notes)
+        try values.encodeIfPresent(publishedAt, forKey: .publishedAt)
+        try values.encode(draft, forKey: .draft)
+        try values.encode(prerelease, forKey: .prerelease)
+        try values.encode(assets, forKey: .assets)
+    }
+
+    var publishedDate: Date? {
+        guard let publishedAt else { return nil }
+        let formatter = ISO8601DateFormatter()
+        if let date = formatter.date(from: publishedAt) { return date }
+        formatter.formatOptions.insert(.withFractionalSeconds)
+        return formatter.date(from: publishedAt)
+    }
+
+    func installer(for architecture: ReleaseArchitecture, repository: UpdateRepository) -> GitHubReleaseAsset? {
+        let expectedName = "MiaoRight-\(tagName)-\(architecture.rawValue).zip"
+        return assets.first { $0.name == expectedName && repository.containsDownload($0.downloadURL) }
+    }
+
+    func checksums(repository: UpdateRepository) -> GitHubReleaseAsset? {
+        assets.first { $0.name == "SHA256SUMS" && repository.containsDownload($0.downloadURL) }
     }
 }
 
@@ -123,7 +204,10 @@ struct GitHubReleaseClient: Sendable {
         }
         guard http.statusCode == 200 else { throw UpdateCheckError.server(http.statusCode) }
         guard data.count <= 2_000_000, let release = try? JSONDecoder().decode(GitHubRelease.self, from: data),
-              repository.contains(release.pageURL) else { throw UpdateCheckError.response }
+              repository.contains(release.pageURL),
+              release.assets.allSatisfy({
+                  !$0.name.isEmpty && $0.size >= 0 && repository.containsDownload($0.downloadURL)
+              }) else { throw UpdateCheckError.response }
         guard !release.draft && !release.prerelease else { return nil }
         guard AppVersion(release.tagName) != nil else { throw UpdateCheckError.version }
         return release
@@ -137,20 +221,49 @@ extension Notification.Name {
 @MainActor @Observable
 public final class AppUpdateService {
     public static let shared = AppUpdateService()
+    static let automaticChecksKey = "appUpdateAutomaticChecks"
+    static let lastCheckedAtKey = "appUpdateLastCheckedAt"
+    static let cachedReleaseKey = "appUpdateCachedRelease"
+    static let checkInterval: TimeInterval = 24 * 60 * 60
     enum State: Equatable {
         case idle, checking, upToDate, noRelease
         case available(GitHubRelease)
         case failed(UpdateCheckError)
     }
+    enum InstallState: Equatable {
+        case idle, downloading, verifying, installing
+        case failed(String)
+    }
     private(set) var state: State = .idle
+    private(set) var installState: InstallState = .idle
     private(set) var preferencesRequestID = 0
     private var preferencesRequested = false
+    private(set) var automaticallyChecksForUpdates: Bool
+    private(set) var lastCheckedAt: Date?
+    private(set) var canInstallInPlace: Bool
     let repository: UpdateRepository?
     static var currentVersion: String { Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "0.0.0" }
     var isChecking: Bool { state == .checking }
 
     private init() {
         repository = (Bundle.main.object(forInfoDictionaryKey: "MiaoRightUpdateRepository") as? String).flatMap(UpdateRepository.init)
+        let defaults = AppGroup.standardDefaults
+        automaticallyChecksForUpdates = defaults.object(forKey: Self.automaticChecksKey) as? Bool ?? true
+        let timestamp = defaults.double(forKey: Self.lastCheckedAtKey)
+        lastCheckedAt = timestamp > 0 ? Date(timeIntervalSince1970: timestamp) : nil
+        canInstallInPlace = AppUpdateInstaller.isCurrentProductionInstallation
+        if let repository,
+           let data = defaults.data(forKey: Self.cachedReleaseKey),
+           let release = try? JSONDecoder().decode(GitHubRelease.self, from: data),
+           repository.contains(release.pageURL),
+           release.assets.allSatisfy({
+               !$0.name.isEmpty && $0.size >= 0 && repository.containsDownload($0.downloadURL)
+           }),
+           let latest = AppVersion(release.tagName),
+           let current = AppVersion(Self.currentVersion),
+           latest > current {
+            state = .available(release)
+        }
     }
 
     public func checkFromMenu() {
@@ -167,16 +280,135 @@ public final class AppUpdateService {
     }
 
     func check() async {
-        guard !isChecking else { return }
-        state = .checking
-        guard let repository else { state = .failed(.configuration); return }
-        guard let current = AppVersion(Self.currentVersion) else { state = .failed(.version); return }
+        await performCheck(silentFailure: false)
+    }
+
+    public func checkIfDue(now: Date = .now) async {
+        guard automaticallyChecksForUpdates, !isChecking else { return }
+        if let lastCheckedAt, now.timeIntervalSince(lastCheckedAt) < Self.checkInterval { return }
+        await performCheck(silentFailure: true)
+    }
+
+    func setAutomaticallyChecksEnabled(_ enabled: Bool) {
+        AppGroup.standardDefaults.set(enabled, forKey: Self.automaticChecksKey)
+        automaticallyChecksForUpdates = enabled
+        guard enabled else { return }
+        Task { await checkIfDue() }
+    }
+
+    var isInstalling: Bool {
+        switch installState {
+        case .downloading, .verifying, .installing: true
+        default: false
+        }
+    }
+
+    func installUpdate(_ release: GitHubRelease, archiveURL: URL? = nil) async {
+        await performInstall(release: release, archiveURL: archiveURL)
+    }
+
+    func installDownloadedUpdate(from archiveURL: URL) async {
+        await performInstall(release: nil, archiveURL: archiveURL)
+    }
+
+    private func performInstall(release: GitHubRelease?, archiveURL: URL?) async {
+        guard !isInstalling else { return }
+        guard canInstallInPlace else {
+            installState = .failed(AppUpdateInstallError.currentBuildIsNotProduction.localizedDescription)
+            return
+        }
+
+        let stagingDirectory: URL
         do {
-            guard let release = try await GitHubReleaseClient(repository: repository).latestRelease() else { state = .noRelease; return }
-            guard let latest = AppVersion(release.tagName) else { state = .failed(.version); return }
-            state = latest > current ? .available(release) : .upToDate
-        } catch is CancellationError { state = .idle }
-        catch let error as UpdateCheckError { state = .failed(error) }
-        catch { state = .failed(.network) }
+            stagingDirectory = try AppUpdateInstaller.makeStagingDirectory()
+        } catch {
+            installState = .failed(error.localizedDescription)
+            return
+        }
+
+        var replacementStarted = false
+        do {
+            let archive: URL
+            if let archiveURL {
+                installState = .verifying
+                archive = archiveURL
+            } else {
+                guard let release else { throw AppUpdateInstallError.missingArchive }
+                guard let repository,
+                      let asset = release.installer(for: .current, repository: repository) else {
+                    throw AppUpdateInstallError.missingArchive
+                }
+                installState = .downloading
+                archive = try await AppUpdateInstaller.download(asset, into: stagingDirectory)
+                installState = .verifying
+            }
+
+            let prepared = try await Task.detached(priority: .userInitiated) {
+                try AppUpdateInstaller.prepare(
+                    archiveURL: archive,
+                    expectedTag: release?.tagName,
+                    stagingDirectory: stagingDirectory
+                )
+            }.value
+            installState = .installing
+            try AppUpdateInstaller.launchReplacement(prepared, currentPID: getpid())
+            replacementStarted = true
+            NSApplication.shared.terminate(nil)
+        } catch {
+            if !replacementStarted {
+                try? FileManager.default.removeItem(at: stagingDirectory)
+            }
+            installState = .failed(error.localizedDescription)
+        }
+    }
+
+    private func performCheck(silentFailure: Bool) async {
+        guard !isChecking else { return }
+        let previousState = state
+        state = .checking
+        guard let repository else {
+            state = silentFailure ? previousState : .failed(.configuration)
+            return
+        }
+        guard let current = AppVersion(Self.currentVersion) else {
+            state = silentFailure ? previousState : .failed(.version)
+            return
+        }
+        do {
+            guard let release = try await GitHubReleaseClient(repository: repository).latestRelease() else {
+                markChecked()
+                clearCachedRelease()
+                state = .noRelease
+                return
+            }
+            guard let latest = AppVersion(release.tagName) else {
+                state = silentFailure ? previousState : .failed(.version)
+                return
+            }
+            markChecked()
+            if latest > current {
+                cache(release)
+                state = .available(release)
+            } else {
+                clearCachedRelease()
+                state = .upToDate
+            }
+        } catch is CancellationError { state = silentFailure ? previousState : .idle }
+        catch let error as UpdateCheckError { state = silentFailure ? previousState : .failed(error) }
+        catch { state = silentFailure ? previousState : .failed(.network) }
+    }
+
+    private func markChecked(at date: Date = .now) {
+        lastCheckedAt = date
+        AppGroup.standardDefaults.set(date.timeIntervalSince1970, forKey: Self.lastCheckedAtKey)
+    }
+
+    private func cache(_ release: GitHubRelease) {
+        guard let data = try? JSONEncoder().encode(release) else { return }
+        AppGroup.standardDefaults.set(data, forKey: Self.cachedReleaseKey)
+    }
+
+    private func clearCachedRelease() {
+        AppGroup.standardDefaults.removeObject(forKey: Self.cachedReleaseKey)
     }
 }
