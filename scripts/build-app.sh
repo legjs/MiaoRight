@@ -86,7 +86,7 @@ IDENTITY_KEYCHAINS=()
 if [[ -n "${MIAORIGHT_SIGNING_KEYCHAIN:-}" ]]; then
   IDENTITY_KEYCHAINS=("$MIAORIGHT_SIGNING_KEYCHAIN")
 fi
-AVAILABLE_IDENTITIES="$(security find-identity -v -p codesigning "${IDENTITY_KEYCHAINS[@]}" 2>/dev/null || true)"
+AVAILABLE_IDENTITIES="$(security find-identity -p codesigning "${IDENTITY_KEYCHAINS[@]}" 2>/dev/null || true)"
 if [[ "$AVAILABLE_IDENTITIES" != *"\"$IDENTITY\""* ]]; then IDENTITY="-"; fi
 if [[ "${MIAORIGHT_REQUIRE_STABLE_SIGNING:-0}" == "1" && "$IDENTITY" == "-" ]]; then
   echo "A stable signing identity is required but was not found." >&2

@@ -82,7 +82,7 @@ jobs:
 
           security list-keychains -d user -s "$keychain"
           security default-keychain -d user -s "$keychain"
-          identities="$(security find-identity -v -p codesigning "$keychain")"
+          identities="$(security find-identity -p codesigning "$keychain")"
           [[ "$identities" == *"\"$MIAORIGHT_SIGNING_IDENTITY\""* ]]
           echo "MIAORIGHT_REQUIRE_STABLE_SIGNING=1" >> "$GITHUB_ENV"
           echo "MIAORIGHT_SIGNING_IDENTITY=$MIAORIGHT_SIGNING_IDENTITY" >> "$GITHUB_ENV"
