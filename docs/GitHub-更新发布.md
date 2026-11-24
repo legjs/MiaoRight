@@ -17,6 +17,8 @@
 
 [发布工作流](../.github/workflows/release.yml)会在 Apple 芯片和 Intel 运行器上分别构建及测试，两个任务都通过后才创建私有 GitHub Release。发行版包含 `MiaoRight-v0.1.1-arm64.zip`、`MiaoRight-v0.1.1-x86_64.zip` 和 `SHA256SUMS`。每个包都使用匹配架构的 7-Zip，打包后会重新解压并校验签名。GitHub 产物采用 ad-hoc 签名。它们尚未经过 Apple 公证。本机使用 `MiaoRight dev` 签名的构建可继续用于本地开发。
 
+要手动运行某个已推送的版本，在 Actions 的 **Build and release MiaoRight** 工作流选择 **Run workflow**，分支选 `main`，输入版本标签。构建使用标签指向的代码。
+
 ## App 内更新检查
 
 App 内检查使用 GitHub 的无凭据接口，只能读取公开稳定版。当前仓库的私有发行版可在已登录且有访问权限的 GitHub Releases 页面查看。

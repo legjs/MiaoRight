@@ -3,13 +3,22 @@ name: Build and release MiaoRight
 on:
   push:
     tags:
-      - 'v[0-9]*'
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing release tag
+        required: true
+        type: string
 
 permissions:
   contents: read
 
+env:
+  RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
+
 concurrency:
-  group: release-${{ github.ref }}
+  group: release-${{ inputs.tag || github.ref_name }}
   cancel-in-progress: false
 
 jobs:
@@ -30,19 +39,23 @@ jobs:
       MIAORIGHT_BUILD_ARCH: ${{ matrix.arch }}
       MIAORIGHT_OFFSCREEN_TESTING: '1'
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
       - name: Verify the tag and build architecture
         shell: bash
         run: |
-          if [[ ! "$GITHUB_REF_NAME" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+          if [[ ! "$RELEASE_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
             echo "Expected a stable version tag such as v0.1.1." >&2
             exit 1
           fi
           test "$(uname -m)" = "$MIAORIGHT_BUILD_ARCH"
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          ref: refs/tags/${{ env.RELEASE_TAG }}
+      - name: Prepare the tagged build
+        shell: bash
+        run: |
           for plist in Packaging/Info-{App,FinderSync,ArchivePreview}.plist; do
-            test "$(plutil -extract CFBundleShortVersionString raw "$plist")" = "${GITHUB_REF_NAME#v}"
+            test "$(plutil -extract CFBundleShortVersionString raw "$plist")" = "${RELEASE_TAG#v}"
           done
           swift --version
           {
@@ -66,7 +79,7 @@ jobs:
         working-directory: ${{ runner.temp }}
         run: |
           mkdir -p release
-          archive="$RUNNER_TEMP/release/MiaoRight-$GITHUB_REF_NAME-$MIAORIGHT_BUILD_ARCH.zip"
+          archive="$RUNNER_TEMP/release/MiaoRight-$RELEASE_TAG-$MIAORIGHT_BUILD_ARCH.zip"
           "$MIAORIGHT_TEST_7ZZ_PATH" a -tzip -mm=Deflate -snl -bd "$archive" MiaoRight.app
           "$MIAORIGHT_TEST_7ZZ_PATH" x -bd -o"$RUNNER_TEMP/unpacked" "$archive"
           codesign --verify --deep --strict "$RUNNER_TEMP/unpacked/MiaoRight.app"
@@ -99,20 +112,20 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
         run: |
-          arm="MiaoRight-$GITHUB_REF_NAME-arm64.zip"
-          intel="MiaoRight-$GITHUB_REF_NAME-x86_64.zip"
+          arm="MiaoRight-$RELEASE_TAG-arm64.zip"
+          intel="MiaoRight-$RELEASE_TAG-x86_64.zip"
           sha256sum "$arm" "$intel" > SHA256SUMS
 
-          if existing=$(gh release view "$GITHUB_REF_NAME" --json isDraft,assets 2>/dev/null); then
+          if existing=$(gh release view "$RELEASE_TAG" --json isDraft,assets 2>/dev/null); then
             if [[ "$(jq -r '.isDraft' <<< "$existing")" = true ]]; then
-              gh release upload "$GITHUB_REF_NAME" "$arm" "$intel" SHA256SUMS --clobber
-              gh release edit "$GITHUB_REF_NAME" --draft=false
+              gh release upload "$RELEASE_TAG" "$arm" "$intel" SHA256SUMS --clobber
+              gh release edit "$RELEASE_TAG" --draft=false
             else
               jq -e --arg arm "$arm" --arg intel "$intel" \
                 '[.assets[].name] | contains([$arm, $intel, "SHA256SUMS"])' <<< "$existing"
             fi
           else
-            gh release create "$GITHUB_REF_NAME" "$arm" "$intel" SHA256SUMS \
-              --verify-tag --title "MiaoRight ${GITHUB_REF_NAME#v}" \
+            gh release create "$RELEASE_TAG" "$arm" "$intel" SHA256SUMS \
+              --verify-tag --title "MiaoRight ${RELEASE_TAG#v}" \
               --notes "Separate Apple silicon (arm64) and Intel (x86_64) builds for macOS 14 and later. Use SHA256SUMS to verify your download."
           fi
