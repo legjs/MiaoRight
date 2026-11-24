@@ -8,7 +8,7 @@ The app uses SwiftUI and AppKit with native Finder Sync and Quick Look extension
 
 ## Build and get started
 
-Use the Xcode Command Line Tools with Swift 6 to build and launch the app.
+Use the Xcode Command Line Tools with Swift 6.3 to build and launch the app.
 
 ```bash
 ./scripts/build-app.sh release

@@ -32,10 +32,11 @@ jobs:
       matrix:
         include:
           - arch: arm64
-            runner: macos-15
+            runner: macos-26
           - arch: x86_64
-            runner: macos-15-intel
+            runner: macos-26-intel
     env:
+      DEVELOPER_DIR: /Applications/Xcode_26.5.app/Contents/Developer
       MIAORIGHT_BUILD_ARCH: ${{ matrix.arch }}
       MIAORIGHT_OFFSCREEN_TESTING: '1'
     steps:
@@ -57,6 +58,7 @@ jobs:
           for plist in Packaging/Info-{App,FinderSync,ArchivePreview}.plist; do
             test "$(plutil -extract CFBundleShortVersionString raw "$plist")" = "${RELEASE_TAG#v}"
           done
+          xcodebuild -version
           swift --version
           {
             echo "MIAORIGHT_APP_OUTPUT=$RUNNER_TEMP/MiaoRight.app"

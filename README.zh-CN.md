@@ -8,7 +8,7 @@
 
 ## 构建与开始使用
 
-在项目目录使用带有 Swift 6 的 Xcode Command Line Tools 构建和启动。
+在项目目录使用带有 Swift 6.3 的 Xcode Command Line Tools 构建和启动。
 
 ```bash
 ./scripts/build-app.sh release

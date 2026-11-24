@@ -19,6 +19,8 @@
 
 要手动运行某个已推送的版本，在 Actions 的 **Build and release MiaoRight** 工作流选择 **Run workflow**，分支选 `main`，输入版本标签。构建使用标签指向的代码。
 
+发布任务使用 macOS 26 运行器及 Xcode 26.5，生成的可执行文件仍以 macOS 14 为最低版本。
+
 ## App 内更新检查
 
 App 内检查使用 GitHub 的无凭据接口，只能读取公开稳定版。当前仓库的私有发行版可在已登录且有访问权限的 GitHub Releases 页面查看。
