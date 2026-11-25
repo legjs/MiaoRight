@@ -150,6 +150,10 @@ jobs:
     permissions:
       contents: write
     steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          ref: refs/tags/${{ env.RELEASE_TAG }}
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           pattern: miaoright-*
@@ -162,6 +166,12 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
         run: |
+          notes_file="$GITHUB_WORKSPACE/docs/release-notes/$RELEASE_TAG.md"
+          if [[ ! -f "$notes_file" ]]; then
+            echo "Missing bilingual release notes: $notes_file" >&2
+            exit 1
+          fi
+
           arm_zip="MiaoRight-$RELEASE_TAG-arm64.zip"
           intel_zip="MiaoRight-$RELEASE_TAG-x86_64.zip"
           arm_dmg="MiaoRight-$RELEASE_TAG-arm64.dmg"
@@ -172,15 +182,16 @@ jobs:
           if existing=$(gh release view "$RELEASE_TAG" --json isDraft,assets 2>/dev/null); then
             if [[ "$(jq -r '.isDraft' <<< "$existing")" = true ]]; then
               gh release upload "$RELEASE_TAG" "${assets[@]}" SHA256SUMS --clobber
-              gh release edit "$RELEASE_TAG" --draft=false
+              gh release edit "$RELEASE_TAG" --draft=false --notes-file "$notes_file"
             else
               jq -e \
                 --arg arm_zip "$arm_zip" --arg intel_zip "$intel_zip" \
                 --arg arm_dmg "$arm_dmg" --arg intel_dmg "$intel_dmg" \
                 '[.assets[].name] | contains([$arm_zip, $intel_zip, $arm_dmg, $intel_dmg, "SHA256SUMS"])' <<< "$existing"
+              gh release edit "$RELEASE_TAG" --notes-file "$notes_file"
             fi
           else
             gh release create "$RELEASE_TAG" "${assets[@]}" SHA256SUMS \
               --verify-tag --title "MiaoRight ${RELEASE_TAG#v}" \
-              --notes "DMG installers and ZIP update packages for Apple silicon (arm64) and Intel (x86_64), macOS 14 or later. Use the DMG for the first installation. SHA256SUMS is included for verification."
+              --notes-file "$notes_file"
           fi

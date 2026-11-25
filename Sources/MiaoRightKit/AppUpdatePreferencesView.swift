@@ -65,10 +65,7 @@ struct AppUpdatePreferencesView: View {
                 Text(L10n.text("发布于 \(formatDate(date))", "Published \(formatDate(date))"))
                     .font(.system(size: 11)).foregroundStyle(.secondary)
             }
-            if let notes = release.notes?.trimmingCharacters(in: .whitespacesAndNewlines), !notes.isEmpty {
-                Text(notes).font(.system(size: 12)).foregroundStyle(.secondary)
-                    .lineLimit(8).textSelection(.enabled).fixedSize(horizontal: false, vertical: true)
-            }
+            ReleaseNotesView(markdown: release.notes)
             if let repository = updates.repository,
                let installer = release.installer(for: .current, repository: repository) {
                 if updates.canInstallInPlace {

@@ -41,6 +41,8 @@ gh secret set MIAORIGHT_SIGNING_P12_PASSWORD
 
 发布完成后同步更新 `website/download.html` 中的版本号、DMG 链接和 ZIP 链接，以及 `website/install.html` 的架构说明。下载页面向首次安装时使用 DMG；应用内更新继续使用版本化 ZIP。旧的 `v0.1.1` 只有 ZIP，后续版本才会同时提供两种格式。
 
+每个稳定标签必须提供 `docs/release-notes/<tag>.md`。发布工作流直接把该文件写为 GitHub Release 正文；缺少文件时发布会失败。格式遵循 [release notes 规范](release-notes/README.md)，固定包含 `## 中文` 和 `## English`，分类使用“新增/改进/修复/兼容性”及对应英文标题。App 更新页会按当前界面语言提取对应段落并显示分类和项目符号。
+
 要手动运行某个已推送的版本，在 Actions 的 **Build and release MiaoRight** 工作流选择 **Run workflow**，分支选 `main`，输入版本标签。构建使用标签指向的代码。
 
 发布任务使用 macOS 26 运行器及 Xcode 26.5，生成的可执行文件仍以 macOS 14 为最低版本。
