@@ -6,6 +6,11 @@ The format follows [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.1.0/
 
 ## [Unreleased]
 
+### Changed
+
+- The repository is now public and distributed under the MIT License.
+- Public releases support automatic update checks and in-place installation without GitHub authentication.
+
 ## [0.1.2] - 2026-11-25
 
 ### Added

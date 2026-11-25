@@ -11,7 +11,7 @@
 - **设计契约**:见 `PRODUCT.md`、`DESIGN.md` 与 `.impeccable/design.json`；使用系统语义颜色、系统字体与单一蓝色强调。默认窗口 780×600、最小 680×540，64 点顶部栏，无侧栏。外观可选跟随系统/浅色/深色，原生毛玻璃遵循减少透明度与增加对比度；原创菜单+光标图标由 Packaging/Icons/GenerateIcons.swift 自动生成，品牌信息置于通用页底部。不要恢复彩色磁贴工作台或节点画布作为主入口
 - **双语**:全部文案走 `L10n.text(中文, English)`,支持跟随系统/中文/English 即时切换
 
-> 本项目仅供个人学习与本地使用，不得分发。保留 `LICENSE` 中的许可证与必要声明。
+> 本项目以 MIT License 开源发布。保留 `LICENSE` 中的版权与许可声明，第三方组件继续遵循各自许可证。
 
 ## 构建(无需完整 Xcode,CLT 即可)
 
@@ -25,7 +25,7 @@ open build/MiaoRight.app        # ⚠️ 必须用 open 启动,直接执行二�
 - 构建产物为 `build/MiaoRight.app`，包含主程序、`MiaoRightFinder.appex`、`MiaoRightArchivePreview.appex` 与独立签名的 7-Zip 工具。
 - 发布工作流同时生成 DMG 和 ZIP。DMG 用于首次手动安装，包含 `MiaoRight.app`、`Applications` 快捷方式和安装说明；ZIP 仅用于应用内原位更新。`scripts/package-dmg.sh` 负责生成、挂载并校验 DMG。
 - macOS 26 从构建目录启动时可能登记 Finder Sync 扩展但不加载进程。本地测试由 `scripts/dev.sh` 将开发签名包更新到 `/Applications/MiaoRight.app`，重新注册扩展后再通过 `open` 启动。可用 `MIAORIGHT_DEV_APP_PATH` 改到其他可受信的应用目录。
-- 构建默认使用本机架构。可通过 `MIAORIGHT_BUILD_ARCH=arm64` 或 `MIAORIGHT_BUILD_ARCH=x86_64` 指定目标。推送版本标签后，私有仓库的发布工作流在 Apple 芯片 runner 上分别原生构建 arm64、交叉构建 x86_64，再统一测试、打包并发布。操作见 [GitHub 发布和更新检查](docs/GitHub-更新发布.md)。
+- 构建默认使用本机架构。可通过 `MIAORIGHT_BUILD_ARCH=arm64` 或 `MIAORIGHT_BUILD_ARCH=x86_64` 指定目标。推送版本标签后，公开仓库的发布工作流在 Apple 芯片 runner 上分别原生构建 arm64、交叉构建 x86_64，再统一测试、打包并发布。操作见 [GitHub 发布和更新检查](docs/GitHub-更新发布.md)。
 - `swift test` 需要 Xcode 的 XCTest,CLT 环境不可用
 
 ### 签名(稳定开发身份)
@@ -67,7 +67,7 @@ open build/MiaoRight.app        # ⚠️ 必须用 open 启动,直接执行二�
 - **首次使用检查**：`SettingsView` 在「通用」页顶部显示“开始使用妙右”卡片，只列尚未完成的安装位置、Finder 扩展和剪贴板历史三项，每项提供直接操作按钮。辅助功能授权作为可选行展示，不计入三项完成度。三项完成后卡片自动隐藏，不新增导航页或独立向导窗口。
 - **剪贴板**:暂停采集与隐藏面板是不同操作。320 点面板固定在目标屏幕 visibleFrame 内裁剪滑动，遵循 Reduce Motion；搜索输入法优先，列表定位与多选状态分离。文件移动失败保留未完成状态
 - **剪贴板搜索与保存**在本机用 Vision 按需识别已缓存图片的文字。记录菜单统一提供「保存…」，将文字写为 UTF-8 TXT、图片写为 PNG，或复制记录指向的原文件。倒数第二条使用独立可改键的全局快捷键，需要辅助功能授权。临时粘贴完成后恢复原剪贴板内容，期间有新的复制则保留新内容。
-- **软件更新**由 `AppUpdateService` 读取 GitHub Releases。默认启动后每 24 小时最多检查一次，可关闭自动检查；手动检查会显示网络、限流和响应错误。发行资产必须按 `MiaoRight-<tag>-<arch>.zip` 精确匹配当前架构，发行页面和下载地址必须属于 `MiaoRightUpdateRepository`。生产版只有在路径为 `/Applications/MiaoRight.app` 且当前签名包含 `MiaoRight Release` 证书指纹时才显示原位安装。安装前必须校验候选 App 的 Bundle ID、发行版本、架构、嵌套扩展和固定证书指纹，然后用后台助手等待主程序退出，备份旧包、原位替换并重新启动。开发签名版本禁止自动覆盖生产包。更新正文统一来自 `docs/release-notes/<tag>.md`，使用中英双语和 Keep a Changelog 分类；App 按当前语言解析并显示分类条目。累计历史同步维护在 `CHANGELOG.md` 与 `CHANGELOG.zh-CN.md`，发布工作流会校验版本条目。匿名检查无法读取私有仓库的发行版。
+- **软件更新**由 `AppUpdateService` 读取公开 GitHub Releases。默认启动后每 24 小时最多检查一次，可关闭自动检查；手动检查会显示网络、限流和响应错误。发行资产必须按 `MiaoRight-<tag>-<arch>.zip` 精确匹配当前架构，发行页面和下载地址必须属于 `MiaoRightUpdateRepository`。妙右位于 `/Applications/MiaoRight.app` 时显示原位安装入口，开发签名版本也可更新但首次切换生产签名时需重新授权。安装前必须校验候选 App 的 Bundle ID、发行版本、架构、嵌套扩展和固定证书指纹，然后用后台助手等待主程序退出，备份旧包、原位替换并重新启动。更新正文统一来自 `docs/release-notes/<tag>.md`，使用中英双语和 Keep a Changelog 分类；App 按当前语言解析并显示分类条目。累计历史同步维护在 `CHANGELOG.md` 与 `CHANGELOG.zh-CN.md`，发布工作流会校验版本条目。
 - **常用文件操作**:目录与模板使用带 `miaorightShortcut` 标记的既有组合动作 JSON，由 `QuickFilePreferences` 管理；目录的打开/复制/移动各自启用，移动执行前确认。模板先保存独立快照。不能把无标记的历史组合动作识别成快捷目录。
 - **压缩与重命名**:`压缩…`、`批量重命名…` 先在主窗口内嵌表单，确认后执行；`解压` 自动识别格式及常见分卷。所有压缩解压走内置 7-Zip，密码仅经 stdin，禁止持久化或放入命令行参数。
 - **保险箱**:`VaultStore` 管理 hdiutil AES-256 加密 sparse bundle，解锁=挂载到 App Group 容器旁的固定挂载点(`VaultMount`)，锁定=卸载。密码只经 stdin 传给 hdiutil 且不带换行；「记住密码」为可选的登录钥匙串存储，忘记密码不可恢复。右键「加入保险箱」走内嵌确认表单(未创建先建、锁定先解锁后移入)，移入经 `FileOperationJournal` 支持撤销；创建、解锁与内容管理在主窗口独立「保险箱」导航页完成(与剪贴板并列)。空闲(默认 15 分钟)/睡眠/退出自动锁定。扩展凭 App Group 的 `vault.configured` 标记判断菜单可用性；异常退出后卷仍挂着时按已解锁处理。离屏测试禁止执行 hdiutil 命令。

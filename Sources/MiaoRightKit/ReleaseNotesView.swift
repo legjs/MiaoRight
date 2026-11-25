@@ -72,12 +72,12 @@ struct ReleaseNotesView: View {
                     case .bullet:
                         HStack(alignment: .firstTextBaseline, spacing: 7) {
                             Text("•").foregroundStyle(.secondary)
-                            Text(inlineMarkdown(block.text)).fixedSize(horizontal: false, vertical: true)
+                            Text(plainText(block.text)).fixedSize(horizontal: false, vertical: true)
                         }
                         .font(.system(size: 12))
                         .foregroundStyle(.secondary)
                     case .paragraph:
-                        Text(inlineMarkdown(block.text))
+                        Text(plainText(block.text))
                             .font(.system(size: 12))
                             .foregroundStyle(.secondary)
                             .fixedSize(horizontal: false, vertical: true)
@@ -87,7 +87,10 @@ struct ReleaseNotesView: View {
         }
     }
 
-    private func inlineMarkdown(_ text: String) -> AttributedString {
-        (try? AttributedString(markdown: text)) ?? AttributedString(text)
+    private func plainText(_ text: String) -> String {
+        text
+            .replacingOccurrences(of: "`", with: "")
+            .replacingOccurrences(of: "**", with: "")
+            .replacingOccurrences(of: "__", with: "")
     }
 }

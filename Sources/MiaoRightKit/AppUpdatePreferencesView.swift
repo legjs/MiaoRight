@@ -29,8 +29,8 @@ struct AppUpdatePreferencesView: View {
                     title: L10n.text("安装已下载的更新", "Install a Downloaded Update"),
                     icon: "shippingbox",
                     detail: L10n.text(
-                        "选择发行页面下载的 ZIP，校验后原位替换 /Applications/MiaoRight.app",
-                        "Choose a ZIP downloaded from the release page; it is verified before replacing /Applications/MiaoRight.app"
+                        "选择发行页面下载的 ZIP，妙右会自动校验、替换 /Applications/MiaoRight.app 并重新启动",
+                        "Choose a ZIP downloaded from the release page; MiaoRight verifies it, replaces /Applications/MiaoRight.app, and relaunches automatically"
                     )
                 ) {
                     Button(L10n.text("选择 ZIP…", "Choose ZIP…")) { chooseArchive() }
@@ -84,6 +84,14 @@ struct AppUpdatePreferencesView: View {
                     ))
                     .font(.system(size: 11)).foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
+                    if !updates.isProductionInstallation {
+                        Text(L10n.text(
+                            "当前是开发签名版本。安装发布包后会切换为生产签名，系统权限和登录项需要重新确认一次。",
+                            "This is a development-signed build. Installing the release switches to the production signature and requires confirming system permissions and the login item once."
+                        ))
+                        .font(.system(size: 11)).foregroundStyle(.orange)
+                        .fixedSize(horizontal: false, vertical: true)
+                    }
                 } else {
                     HStack(spacing: 12) {
                         Button(downloadTitle(for: installer)) { NSWorkspace.shared.open(installer.downloadURL) }
@@ -96,8 +104,8 @@ struct AppUpdatePreferencesView: View {
                         }
                     }
                     Text(L10n.text(
-                        "自动安装只适用于生产签名版本，并且必须位于 /Applications/MiaoRight.app。当前是开发测试版本，请继续通过浏览器下载。",
-                        "Automatic installation requires the production-signed app at /Applications/MiaoRight.app. This is a development build, so continue with the browser download."
+                        "自动安装要求妙右位于 /Applications/MiaoRight.app。请先按安装引导把 App 移入“应用程序”。",
+                        "Automatic installation requires MiaoRight at /Applications/MiaoRight.app. Move the app to Applications using the installation guide first."
                     ))
                     .font(.system(size: 11)).foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)

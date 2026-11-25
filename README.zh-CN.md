@@ -19,7 +19,7 @@ open build/MiaoRight.app
 
 脚本会构建并签名主程序、Finder Sync 与 Quick Look 扩展，以及内置的 7-Zip 工具。它优先使用本机的 `MiaoRight dev` 签名身份，找不到时回退到 ad-hoc 签名。请通过 `open` 启动，让 LaunchServices 注册扩展。证书配置见[开发签名指南](MACOS_DEV_SIGNING.md)。
 
-本地构建默认使用当前 Mac 的架构。私有发行版中，Apple 芯片请选择 `arm64` DMG，Intel 芯片请选择 `x86_64` DMG；ZIP 保留给应用内更新。GitHub Actions 会用长期有效的 `MiaoRight Release` 身份签名两种架构，并附上 SHA-256 校验文件。发布工作流从 Actions Secrets 导入签名身份，缺少证书时会停止发布，不会退回 ad-hoc 包。 [发布流程](docs/GitHub-更新发布.md)
+本地构建默认使用当前 Mac 的架构。发行版中，Apple 芯片请选择 `arm64` DMG，Intel 芯片请选择 `x86_64` DMG；ZIP 保留给应用内更新。GitHub Actions 会用长期有效的 `MiaoRight Release` 身份签名两种架构，并附上 SHA-256 校验文件。发布工作流从 Actions Secrets 导入签名身份，缺少证书时会停止发布，不会退回 ad-hoc 包。 [发布流程](docs/GitHub-更新发布.md)
 
 - **Finder 右键。** 在系统设置的「登录项与扩展 → Finder 扩展」中启用妙右。扩展未启用时，妙右主窗口会显示「打开系统设置」按钮。
 - **剪贴板历史。** 首次使用时，开启「剪贴板 → 记录剪贴板历史」，复制一条内容后按 `⇧⌘V` 呼出面板。
@@ -66,11 +66,11 @@ Mac 睡眠、退出妙右或达到设定的空闲时间时，保险箱会锁定�
 
 - 运行 XCTest 需要完整 Xcode。参见[离屏测试设置](AGENTS.md)、[产品说明](PRODUCT.md)和[设计系统](DESIGN.md)。
 - 版本历史遵循 Keep a Changelog 与语义化版本，见 [CHANGELOG.zh-CN.md](CHANGELOG.zh-CN.md)；英文版为 [CHANGELOG.md](CHANGELOG.md)。
-- 「通用 → 软件更新」默认每天检查一次稳定发行版，也可以随时手动检查，自动检查可关闭。发现新版本后会跨启动保留提示。生产签名版本位于 `/Applications/MiaoRight.app` 时，可直接下载或选择匹配的 ZIP，校验 Bundle ID、发行版本、架构、嵌套扩展和固定发布证书后退出、原位替换并重新启动。开发签名版本保留浏览器下载流程，不能覆盖生产包。具体配置见[更新检查说明](docs/GitHub-更新发布.md)。私有仓库仍需在已登录且有权限的浏览器中下载。
+- 「通用 → 软件更新」默认每天检查一次公开的稳定发行版，也可以随时手动检查，自动检查可关闭。发现新版本后会跨启动保留提示。妙右位于 `/Applications/MiaoRight.app` 时，可直接下载或选择匹配的 ZIP，校验 Bundle ID、发行版本、架构、嵌套扩展和固定发布证书后退出、原位替换并重新启动。具体配置见[更新检查说明](docs/GitHub-更新发布.md)。
 - 最新功能验证通过了 Release 构建、深度签名校验，以及 58 项剪贴板、压缩包和菜单相关的离屏测试。测试范围未覆盖前台保存对话框、Finder 与 Quick Look 完整交互、VoiceOver 及物理多屏。[早期执行记录](docs/日常功能补齐-执行记录.md)保留了之前各轮的验证结果。
 
 ## 致谢与许可
 
 Finder 动作目录参考了超级右键（iRightMouse）。
 
-本项目仅供个人学习与本地使用。许可文本见[许可证与声明](LICENSE)。
+本项目使用 [MIT License](LICENSE) 开源发布。第三方组件继续遵循各自许可证。

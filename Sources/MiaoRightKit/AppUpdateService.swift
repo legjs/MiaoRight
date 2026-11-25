@@ -241,6 +241,7 @@ public final class AppUpdateService {
     private(set) var automaticallyChecksForUpdates: Bool
     private(set) var lastCheckedAt: Date?
     private(set) var canInstallInPlace: Bool
+    private(set) var isProductionInstallation: Bool
     let repository: UpdateRepository?
     static var currentVersion: String { Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "0.0.0" }
     var isChecking: Bool { state == .checking }
@@ -251,7 +252,8 @@ public final class AppUpdateService {
         automaticallyChecksForUpdates = defaults.object(forKey: Self.automaticChecksKey) as? Bool ?? true
         let timestamp = defaults.double(forKey: Self.lastCheckedAtKey)
         lastCheckedAt = timestamp > 0 ? Date(timeIntervalSince1970: timestamp) : nil
-        canInstallInPlace = AppUpdateInstaller.isCurrentProductionInstallation
+        canInstallInPlace = AppUpdateInstaller.isInstalledInApplications
+        isProductionInstallation = AppUpdateInstaller.isCurrentProductionInstallation
         if let repository,
            let data = defaults.data(forKey: Self.cachedReleaseKey),
            let release = try? JSONDecoder().decode(GitHubRelease.self, from: data),
@@ -314,7 +316,7 @@ public final class AppUpdateService {
     private func performInstall(release: GitHubRelease?, archiveURL: URL?) async {
         guard !isInstalling else { return }
         guard canInstallInPlace else {
-            installState = .failed(AppUpdateInstallError.currentBuildIsNotProduction.localizedDescription)
+            installState = .failed(AppUpdateInstallError.notInstalledInApplications.localizedDescription)
             return
         }
 

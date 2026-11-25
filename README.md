@@ -19,7 +19,7 @@ For the fastest local test loop, run `./scripts/dev.sh release`. It quits the ru
 
 The script builds and signs the app, the Finder Sync and Quick Look extensions, and the bundled 7-Zip helper. It uses the local `MiaoRight dev` signing identity when available and falls back to ad-hoc signing. Launch the app with `open` so LaunchServices registers its extensions. See the [development signing guide](MACOS_DEV_SIGNING.md) for setup.
 
-The build defaults to your Mac’s architecture. For a private release, choose the `arm64` DMG for Apple silicon or the `x86_64` DMG for Intel. GitHub Actions also publishes ZIP packages for in-app updates, signs both architectures with the stable `MiaoRight Release` identity, and includes a SHA-256 checksum file. The release workflow requires the signing identity through Actions Secrets and fails instead of publishing an ad-hoc build. [Release workflow guide](docs/GitHub-更新发布.md)
+The build defaults to your Mac’s architecture. For a release, choose the `arm64` DMG for Apple silicon or the `x86_64` DMG for Intel. GitHub Actions also publishes ZIP packages for in-app updates, signs both architectures with the stable `MiaoRight Release` identity, and includes a SHA-256 checksum file. The release workflow requires the signing identity through Actions Secrets and fails instead of publishing an ad-hoc build. [Release workflow guide](docs/GitHub-更新发布.md)
 
 - **Finder actions.** In System Settings, enable MiaoRight under **Login Items & Extensions → Finder Extensions**. MiaoRight’s main window offers an **Open System Settings** shortcut when the extension is disabled.
 - **Clipboard history.** On first use, turn on **Clipboard → Record Clipboard History**. Copy an item and press `⇧⌘V` to open the panel.
@@ -66,11 +66,11 @@ The vault locks when the Mac sleeps, when you quit MiaoRight, or after the confi
 
 - Running XCTest requires full Xcode. See the [isolated test setup](AGENTS.md), [product context](PRODUCT.md), and [design system](DESIGN.md).
 - Release history follows Keep a Changelog and Semantic Versioning in [CHANGELOG.md](CHANGELOG.md). The Simplified Chinese edition is [CHANGELOG.zh-CN.md](CHANGELOG.zh-CN.md).
-- **General → Software Update** checks stable GitHub Releases once a day by default, or on demand. Automatic checks can be turned off, and the result is kept across launches. A production-signed copy at `/Applications/MiaoRight.app` can download or accept the matching ZIP, verify its bundle ID, version, architecture, nested extensions, and fixed release certificate, then quit, replace that app in place, and relaunch. Development-signed builds keep the browser download flow and cannot overwrite a production installation. See the [update-check setup](docs/GitHub-更新发布.md). Private GitHub releases still require a signed-in browser session.
+- **General → Software Update** checks public stable GitHub Releases once a day by default, or on demand. Automatic checks can be turned off, and the result is kept across launches. A copy at `/Applications/MiaoRight.app` can download or accept the matching ZIP, verify its bundle ID, version, architecture, nested extensions, and fixed release certificate, then quit, replace that app in place, and relaunch. See the [update-check setup](docs/GitHub-更新发布.md).
 - The latest feature verification covered the Release build, deep signature validation, and 58 targeted offscreen tests for clipboard, archive, and menu behavior. The live Save dialog, Finder and Quick Look workflows, VoiceOver, and physical multi-display setups still need end-to-end verification. See the [earlier implementation notes](docs/日常功能补齐-执行记录.md) for historical test results.
 
 ## Credits and license
 
 The Finder action catalog takes inspiration from iRightMouse.
 
-This project is for personal learning and local use only. See the [license and notices](LICENSE).
+Released under the [MIT License](LICENSE). Third-party components retain their respective licenses.

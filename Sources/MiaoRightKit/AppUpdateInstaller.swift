@@ -4,7 +4,6 @@ import MiaoRightShared
 
 enum AppUpdateInstallError: LocalizedError, Equatable {
     case notInstalledInApplications
-    case currentBuildIsNotProduction
     case missingReleaseCertificate
     case missingArchive
     case downloadFailed
@@ -22,11 +21,6 @@ enum AppUpdateInstallError: LocalizedError, Equatable {
             L10n.text(
                 "自动更新只支持 /Applications/MiaoRight.app。请先把妙右移入“应用程序”文件夹。",
                 "Automatic updates require /Applications/MiaoRight.app. Move MiaoRight to Applications first."
-            )
-        case .currentBuildIsNotProduction:
-            L10n.text(
-                "当前运行的是开发签名版本，不能用来覆盖生产版本。",
-                "The running build uses a development signature and cannot replace a production installation."
             )
         case .missingReleaseCertificate:
             L10n.text(
