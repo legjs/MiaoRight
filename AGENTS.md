@@ -85,6 +85,17 @@ open build/MiaoRight.app        # ⚠️ 必须用 open 启动,直接执行二�
 - 每次 Git 提交的标题和正文都必须使用英文。改完必须运行 `./scripts/build-app.sh release`，构建通过后再提交。
 - 默认 README 为英文 `README.md`，简体中文版为 `README.zh-CN.md`。更新功能、限制、使用入口或验证状态时同步维护两份 README。
 
+## 发布规则（强制）
+
+- 稳定版本标签使用 `vX.Y.Z` 语义化版本。标签版本必须同时写入 `Packaging/Info-{App,FinderSync,ArchivePreview}.plist`，构建号同步递增。
+- 每个版本必须同时更新累计式 `CHANGELOG.md` 与 `CHANGELOG.zh-CN.md`，分类遵循 Keep a Changelog 的 Added / Changed / Deprecated / Removed / Fixed / Security 及对应中文标题。
+- 每个标签必须提供 `docs/release-notes/<tag>.md`，正文固定包含 `## 中文` 和 `## English`。GitHub Release 正文直接使用该文件；缺少 release notes 或 changelog 版本条目时发布会失败。
+- App 内更新页必须按当前界面语言显示 Release Notes 的分类和条目，不能直接倾倒 Markdown 原文。
+- 每个架构同时发布 DMG 和 ZIP。DMG 用于首次安装，包含 Applications 快捷方式和安装说明；ZIP 用于应用内更新；四个资产与 `SHA256SUMS` 必须一起上传。
+- 发布包必须使用长期稳定的 `MiaoRight Release` 身份签名，禁止发布 ad-hoc 包。CI 临时钥匙串导入使用无交互权限，查询身份时不能只依赖 `find-identity -v`。
+- 生产更新只允许原位替换 `/Applications/MiaoRight.app`，开发签名版本不得自动覆盖生产包。
+- 发布前必须运行 Release 构建和相关测试；只有经过版本、架构、签名、DMG 挂载和 SHA-256 校验的产物才能上传。
+
 ## 已知边界
 
 - 设置里切语言:窗口内容即时生效;系统级菜单栏(文件/编辑等)由 macOS 渲染,重启 App 后跟随
