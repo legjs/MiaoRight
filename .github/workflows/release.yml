@@ -93,6 +93,10 @@ jobs:
           for plist in Packaging/Info-{App,FinderSync,ArchivePreview}.plist; do
             test "$(plutil -extract CFBundleShortVersionString raw "$plist")" = "${RELEASE_TAG#v}"
           done
+          version="${RELEASE_TAG#v}"
+          grep -Fq "## [$version]" CHANGELOG.md
+          grep -Fq "## [$version]" CHANGELOG.zh-CN.md
+          test -f "docs/release-notes/$RELEASE_TAG.md"
           xcodebuild -version
           swift --version
           {

@@ -65,6 +65,7 @@ Mac 睡眠、退出妙右或达到设定的空闲时间时，保险箱会锁定�
 ## 开发与验证
 
 - 运行 XCTest 需要完整 Xcode。参见[离屏测试设置](AGENTS.md)、[产品说明](PRODUCT.md)和[设计系统](DESIGN.md)。
+- 版本历史遵循 Keep a Changelog 与语义化版本，见 [CHANGELOG.zh-CN.md](CHANGELOG.zh-CN.md)；英文版为 [CHANGELOG.md](CHANGELOG.md)。
 - 「通用 → 软件更新」默认每天检查一次稳定发行版，也可以随时手动检查，自动检查可关闭。发现新版本后会跨启动保留提示。生产签名版本位于 `/Applications/MiaoRight.app` 时，可直接下载或选择匹配的 ZIP，校验 Bundle ID、发行版本、架构、嵌套扩展和固定发布证书后退出、原位替换并重新启动。开发签名版本保留浏览器下载流程，不能覆盖生产包。具体配置见[更新检查说明](docs/GitHub-更新发布.md)。私有仓库仍需在已登录且有权限的浏览器中下载。
 - 最新功能验证通过了 Release 构建、深度签名校验，以及 58 项剪贴板、压缩包和菜单相关的离屏测试。测试范围未覆盖前台保存对话框、Finder 与 Quick Look 完整交互、VoiceOver 及物理多屏。[早期执行记录](docs/日常功能补齐-执行记录.md)保留了之前各轮的验证结果。
 

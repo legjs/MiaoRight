@@ -65,6 +65,7 @@ The vault locks when the Mac sleeps, when you quit MiaoRight, or after the confi
 ## Development and verification
 
 - Running XCTest requires full Xcode. See the [isolated test setup](AGENTS.md), [product context](PRODUCT.md), and [design system](DESIGN.md).
+- Release history follows Keep a Changelog and Semantic Versioning in [CHANGELOG.md](CHANGELOG.md). The Simplified Chinese edition is [CHANGELOG.zh-CN.md](CHANGELOG.zh-CN.md).
 - **General → Software Update** checks stable GitHub Releases once a day by default, or on demand. Automatic checks can be turned off, and the result is kept across launches. A production-signed copy at `/Applications/MiaoRight.app` can download or accept the matching ZIP, verify its bundle ID, version, architecture, nested extensions, and fixed release certificate, then quit, replace that app in place, and relaunch. Development-signed builds keep the browser download flow and cannot overwrite a production installation. See the [update-check setup](docs/GitHub-更新发布.md). Private GitHub releases still require a signed-in browser session.
 - The latest feature verification covered the Release build, deep signature validation, and 58 targeted offscreen tests for clipboard, archive, and menu behavior. The live Save dialog, Finder and Quick Look workflows, VoiceOver, and physical multi-display setups still need end-to-end verification. See the [earlier implementation notes](docs/日常功能补齐-执行记录.md) for historical test results.
 
