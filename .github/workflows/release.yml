@@ -117,7 +117,7 @@ jobs:
           codesign --verify --deep --strict "$MIAORIGHT_APP_OUTPUT"
       - name: Run archive, update, release-note, and smoke tests
         shell: bash
-        run: swift test -c release --scratch-path "$RUNNER_TEMP/swift-test" --filter 'Archive|AppUpdateTests|AppUpdateInstallerTests|ReleaseNotesParserTests|SmokeTests'
+        run: swift test -c release --scratch-path "$RUNNER_TEMP/swift-test" --filter 'Archive|AppUpdateTests|AppUpdateInstallerTests|ReleaseNotesParserTests|GitHubAtomReleaseClientTests|SmokeTests'
       - name: Package and verify both architectures
         shell: bash
         run: |

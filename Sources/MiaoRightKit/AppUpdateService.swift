@@ -121,6 +121,26 @@ struct GitHubRelease: Codable, Sendable, Equatable {
     let prerelease: Bool
     let assets: [GitHubReleaseAsset]
 
+    init(
+        name: String?,
+        tagName: String,
+        pageURL: URL,
+        notes: String?,
+        publishedAt: String?,
+        draft: Bool,
+        prerelease: Bool,
+        assets: [GitHubReleaseAsset]
+    ) {
+        self.name = name
+        self.tagName = tagName
+        self.pageURL = pageURL
+        self.notes = notes
+        self.publishedAt = publishedAt
+        self.draft = draft
+        self.prerelease = prerelease
+        self.assets = assets
+    }
+
     enum CodingKeys: String, CodingKey {
         case name, tagName = "tag_name", pageURL = "html_url", notes = "body"
         case publishedAt = "published_at", draft, prerelease, assets
@@ -377,7 +397,13 @@ public final class AppUpdateService {
             return
         }
         do {
-            guard let release = try await GitHubReleaseClient(repository: repository).latestRelease() else {
+            let release: GitHubRelease?
+            do {
+                release = try await GitHubReleaseClient(repository: repository).latestRelease()
+            } catch UpdateCheckError.rateLimited {
+                release = try await GitHubAtomReleaseClient(repository: repository).latestRelease()
+            }
+            guard let release else {
                 markChecked()
                 clearCachedRelease()
                 state = .noRelease

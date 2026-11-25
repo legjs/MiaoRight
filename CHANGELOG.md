@@ -18,21 +18,19 @@ The format follows [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.1.0/
 
 - Updates can replace `/Applications/MiaoRight.app` from either a downloaded or user-selected ZIP after version, architecture, nested-extension, and certificate validation.
 - The release pipeline builds arm64 natively and cross-compiles x86_64 on one Apple silicon runner.
-- MIT copyright information now includes MiaoRight contributors.
+- Added the MIT copyright notice to the app's General page, README files, and website footer.
+- MIT copyright information now includes MiaoRight contributors and appears in the app and on the website.
 
 ### Fixed
 
 - Fixed unreadable release-note text in dark mode.
 - Improved Finder extension status feedback and removed duplicate settings-window creation.
+- Added an Atom release-feed fallback so update checks continue when the GitHub API is rate-limited.
+- Ensured the main window is created after cold launch and after update relaunch.
 
 ### Security
 
 - Update packages must be signed by the stable MiaoRight Release identity before replacement.
-
-### Changed
-
-- The repository is now public and distributed under the MIT License.
-- Public releases support automatic update checks and in-place installation without GitHub authentication.
 
 ## [0.1.2] - 2026-11-25
 

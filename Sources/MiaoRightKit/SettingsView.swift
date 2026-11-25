@@ -211,6 +211,8 @@ struct SettingsView: View {
                     Text(L10n.text("妙右", "MiaoRight")).font(.system(size: 13, weight: .medium))
                     Text(L10n.text("版本 \(AppUpdateService.currentVersion)", "Version \(AppUpdateService.currentVersion)"))
                         .font(.system(size: 11)).foregroundStyle(.secondary)
+                    Text(L10n.text("© 2026 legjs 与 MiaoRight 贡献者 · MIT License", "© 2026 legjs and MiaoRight contributors · MIT License"))
+                        .font(.system(size: 10)).foregroundStyle(.tertiary)
                 }
                 Spacer()
             }.padding(.top, 24)

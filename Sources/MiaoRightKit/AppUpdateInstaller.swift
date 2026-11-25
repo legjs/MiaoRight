@@ -130,7 +130,7 @@ enum AppUpdateInstaller {
             try FileManager.default.moveItem(at: downloadedURL, to: archiveURL)
             let attributes = try FileManager.default.attributesOfItem(atPath: archiveURL.path)
             let size = (attributes[.size] as? NSNumber)?.int64Value ?? 0
-            guard size == Int64(asset.size), isZIPFile(archiveURL) else {
+            guard (asset.size == 0 || size == Int64(asset.size)), isZIPFile(archiveURL) else {
                 throw AppUpdateInstallError.invalidArchive
             }
         } catch let error as AppUpdateInstallError {

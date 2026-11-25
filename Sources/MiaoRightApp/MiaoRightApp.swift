@@ -36,6 +36,17 @@ class MiaoRightAppDelegate: NSObject, NSApplicationDelegate {
             }
             WindowActionStorage.shared.showMainWindow()
         }
+        // LSUIElement-style menu bar apps may not create a WindowGroup window at
+        // launch. Create the native fallback directly if SwiftUI has not produced
+        // a visible main window after the scene has had time to materialize.
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+            let hasVisibleMainWindow = NSApp.windows.contains {
+                $0.identifier?.rawValue.contains("main") == true && $0.isVisible
+            }
+            if !hasVisibleMainWindow {
+                MiaoRightApp.presentFallbackMainWindow()
+            }
+        }
 
         DistributedNotificationCenter.default().addObserver(
             forName: CrossProcessNotifications.openMainWindow,
@@ -134,11 +145,7 @@ class MiaoRightAppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationShouldHandleReopen(_: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
         if !flag {
-            if let openWindow = WindowActionStorage.shared.openWindow {
-                openWindow("main")
-            } else {
-                WindowActionStorage.shared.showMainWindow()
-            }
+            WindowActionStorage.shared.showMainWindow()
         }
         return true
     }
@@ -183,7 +190,7 @@ struct MiaoRightApp: App {
     }
 
     var body: some Scene {
-        Window(L10n.text("妙右", "MiaoRight"), id: "main") {
+        WindowGroup(id: "main") {
             mainWindowContent
         }
         .windowStyle(.hiddenTitleBar)
@@ -292,7 +299,7 @@ struct AppCommands: Commands {
             Button(L10n.text("检查更新…", "Check for Updates…")) { AppUpdateService.shared.checkFromMenu() }
         }
         // 应用级开窗桥:菜单构建时注入 openWindow,主窗口不存在也能打开
-        CommandGroup(after: .newItem) {
+        CommandGroup(replacing: .newItem) {
             OpenWindowBridge()
         }
         CommandGroup(replacing: .appTermination) {

@@ -73,4 +73,4 @@ The vault locks when the Mac sleeps, when you quit MiaoRight, or after the confi
 
 The Finder action catalog takes inspiration from iRightMouse.
 
-Released under the [MIT License](LICENSE). Third-party components retain their respective licenses.
+Copyright © 2026 legjs and MiaoRight contributors. Released under the [MIT License](LICENSE). Third-party components retain their respective licenses.

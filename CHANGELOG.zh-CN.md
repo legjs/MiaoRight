@@ -18,21 +18,19 @@
 
 - 下载 ZIP 或选择已有 ZIP 后，在校验版本、架构、嵌套扩展和证书后替换 `/Applications/MiaoRight.app`。
 - 发布流水线在单个 Apple 芯片 runner 上原生构建 arm64，并交叉构建 x86_64。
-- MIT 版权信息现包含 MiaoRight contributors。
+- 在 App「通用」页、README 和网站页脚补充 MIT 版权信息。
+- MIT 版权信息现包含 MiaoRight contributors，并在 App 与网站中展示。
 
 ### 修复
 
 - 修复深色模式下更新说明文字不可读的问题。
 - 改进 Finder 扩展状态反馈，并移除重复创建设置窗口的问题。
+- 新增 Atom Release feed 回退，在 GitHub API 限流时仍能检查更新。
+- 确保冷启动和更新重启后主窗口能够正常创建。
 
 ### 安全
 
 - 更新包必须由稳定的 MiaoRight Release 身份签名后才能替换 App。
-
-### 变更
-
-- 仓库现已公开，并按 MIT License 发布。
-- 公开 Release 支持自动检查更新和无 GitHub 登录的原位安装。
 
 ## [0.1.2] - 2026-11-25
 

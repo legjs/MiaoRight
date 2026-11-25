@@ -73,4 +73,4 @@ Mac 睡眠、退出妙右或达到设定的空闲时间时，保险箱会锁定�
 
 Finder 动作目录参考了超级右键（iRightMouse）。
 
-本项目使用 [MIT License](LICENSE) 开源发布。第三方组件继续遵循各自许可证。
+版权所有 © 2026 legjs 与 MiaoRight 贡献者。本项目使用 [MIT License](LICENSE) 开源发布，第三方组件继续遵循各自许可证。
