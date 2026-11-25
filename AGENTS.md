@@ -25,7 +25,7 @@ open build/MiaoRight.app        # ⚠️ 必须用 open 启动,直接执行二�
 - 构建产物为 `build/MiaoRight.app`，包含主程序、`MiaoRightFinder.appex`、`MiaoRightArchivePreview.appex` 与独立签名的 7-Zip 工具。
 - 发布工作流同时生成 DMG 和 ZIP。DMG 用于首次手动安装，包含 `MiaoRight.app`、`Applications` 快捷方式和安装说明；ZIP 仅用于应用内原位更新。`scripts/package-dmg.sh` 负责生成、挂载并校验 DMG。
 - macOS 26 从构建目录启动时可能登记 Finder Sync 扩展但不加载进程。本地测试由 `scripts/dev.sh` 将开发签名包更新到 `/Applications/MiaoRight.app`，重新注册扩展后再通过 `open` 启动。可用 `MIAORIGHT_DEV_APP_PATH` 改到其他可受信的应用目录。
-- 构建默认使用本机架构。可通过 `MIAORIGHT_BUILD_ARCH=arm64` 或 `MIAORIGHT_BUILD_ARCH=x86_64` 指定目标。推送版本标签后，私有仓库的发布工作流在两种原生架构的运行器上分别构建、测试并打包。操作见 [GitHub 发布和更新检查](docs/GitHub-更新发布.md)。
+- 构建默认使用本机架构。可通过 `MIAORIGHT_BUILD_ARCH=arm64` 或 `MIAORIGHT_BUILD_ARCH=x86_64` 指定目标。推送版本标签后，私有仓库的发布工作流在 Apple 芯片 runner 上分别原生构建 arm64、交叉构建 x86_64，再统一测试、打包并发布。操作见 [GitHub 发布和更新检查](docs/GitHub-更新发布.md)。
 - `swift test` 需要 Xcode 的 XCTest,CLT 环境不可用
 
 ### 签名(稳定开发身份)

@@ -24,30 +24,21 @@ concurrency:
 jobs:
   build:
     if: github.event.repository.private
-    name: Build (${{ matrix.arch }})
-    runs-on: ${{ matrix.runner }}
-    timeout-minutes: 25
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - arch: arm64
-            runner: macos-26
-          - arch: x86_64
-            runner: macos-26-intel
+    name: Build both architectures
+    runs-on: macos-26
+    timeout-minutes: 30
     env:
       DEVELOPER_DIR: /Applications/Xcode_26.5.app/Contents/Developer
-      MIAORIGHT_BUILD_ARCH: ${{ matrix.arch }}
       MIAORIGHT_OFFSCREEN_TESTING: '1'
     steps:
-      - name: Verify the tag and build architecture
+      - name: Verify the tag and runner architecture
         shell: bash
         run: |
           if [[ ! "$RELEASE_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-            echo "Expected a stable version tag such as v0.1.1." >&2
+            echo "Expected a stable version tag such as v0.1.2." >&2
             exit 1
           fi
-          test "$(uname -m)" = "$MIAORIGHT_BUILD_ARCH"
+          test "$(uname -m)" = "arm64"
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
@@ -99,39 +90,51 @@ jobs:
           test -f "docs/release-notes/$RELEASE_TAG.md"
           xcodebuild -version
           swift --version
+          mkdir -p "$RUNNER_TEMP/release"
           {
-            echo "MIAORIGHT_APP_OUTPUT=$RUNNER_TEMP/MiaoRight.app"
-            echo "MIAORIGHT_SWIFT_BUILD_PATH=$RUNNER_TEMP/swift-build"
-            echo "MIAORIGHT_ICON_OUTPUT=$RUNNER_TEMP/icons"
+            echo "MIAORIGHT_TEST_7ZZ_PATH=$RUNNER_TEMP/arm64/MiaoRight.app/Contents/Helpers/7zz"
             echo "MIAORIGHT_TEST_STORAGE=$RUNNER_TEMP/test-storage"
             echo "MIAORIGHT_CLIPBOARD_TEST_STORAGE=$RUNNER_TEMP/test-clipboard"
-            echo "MIAORIGHT_TEST_7ZZ_PATH=$RUNNER_TEMP/MiaoRight.app/Contents/Helpers/7zz"
           } >> "$GITHUB_ENV"
-      - name: Build and verify the signed app
+      - name: Build and verify arm64
         shell: bash
+        env:
+          MIAORIGHT_BUILD_ARCH: arm64
+          MIAORIGHT_APP_OUTPUT: ${{ runner.temp }}/arm64/MiaoRight.app
+          MIAORIGHT_SWIFT_BUILD_PATH: ${{ runner.temp }}/swift-arm64
+          MIAORIGHT_ICON_OUTPUT: ${{ runner.temp }}/icons-arm64
         run: |
           ./scripts/build-app.sh release
           codesign --verify --deep --strict "$MIAORIGHT_APP_OUTPUT"
-      - name: Run archive, update, and smoke tests
+      - name: Build and verify x86_64
         shell: bash
-        run: swift test -c release --scratch-path "$RUNNER_TEMP/swift-test" --filter 'Archive|AppUpdateTests|AppUpdateInstallerTests|SmokeTests'
-      - name: Package and verify the release ZIP and DMG
-        shell: bash
-        working-directory: ${{ runner.temp }}
+        env:
+          MIAORIGHT_BUILD_ARCH: x86_64
+          MIAORIGHT_APP_OUTPUT: ${{ runner.temp }}/x86_64/MiaoRight.app
+          MIAORIGHT_SWIFT_BUILD_PATH: ${{ runner.temp }}/swift-x86_64
+          MIAORIGHT_ICON_OUTPUT: ${{ runner.temp }}/icons-x86_64
         run: |
-          mkdir -p release
-          archive="$RUNNER_TEMP/release/MiaoRight-$RELEASE_TAG-$MIAORIGHT_BUILD_ARCH.zip"
-          "$MIAORIGHT_TEST_7ZZ_PATH" a -tzip -mm=Deflate -snl -bd "$archive" MiaoRight.app
-          "$MIAORIGHT_TEST_7ZZ_PATH" x -bd -o"$RUNNER_TEMP/unpacked" "$archive"
-          codesign --verify --deep --strict "$RUNNER_TEMP/unpacked/MiaoRight.app"
-          "$GITHUB_WORKSPACE/scripts/package-dmg.sh" \
-            "$MIAORIGHT_APP_OUTPUT" \
-            "$RELEASE_TAG" \
-            "$MIAORIGHT_BUILD_ARCH" \
-            "$RUNNER_TEMP/release/MiaoRight-$RELEASE_TAG-$MIAORIGHT_BUILD_ARCH.dmg"
+          ./scripts/build-app.sh release
+          codesign --verify --deep --strict "$MIAORIGHT_APP_OUTPUT"
+      - name: Run archive, update, release-note, and smoke tests
+        shell: bash
+        run: swift test -c release --scratch-path "$RUNNER_TEMP/swift-test" --filter 'Archive|AppUpdateTests|AppUpdateInstallerTests|ReleaseNotesParserTests|SmokeTests'
+      - name: Package and verify both architectures
+        shell: bash
+        run: |
+          zip_tool="$RUNNER_TEMP/arm64/MiaoRight.app/Contents/Helpers/7zz"
+          for arch in arm64 x86_64; do
+            app="$RUNNER_TEMP/$arch/MiaoRight.app"
+            archive="$RUNNER_TEMP/release/MiaoRight-$RELEASE_TAG-$arch.zip"
+            dmg="$RUNNER_TEMP/release/MiaoRight-$RELEASE_TAG-$arch.dmg"
+            (cd "$RUNNER_TEMP/$arch" && "$zip_tool" a -tzip -mm=Deflate -snl -bd "$archive" MiaoRight.app)
+            ditto -x -k "$archive" "$RUNNER_TEMP/unpacked-$arch"
+            codesign --verify --deep --strict "$RUNNER_TEMP/unpacked-$arch/MiaoRight.app"
+            "$GITHUB_WORKSPACE/scripts/package-dmg.sh" "$app" "$RELEASE_TAG" "$arch" "$dmg"
+          done
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: miaoright-${{ matrix.arch }}
+          name: miaoright-release
           path: |
             ${{ runner.temp }}/release/*.zip
             ${{ runner.temp }}/release/*.dmg
@@ -160,9 +163,8 @@ jobs:
           ref: refs/tags/${{ env.RELEASE_TAG }}
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
-          pattern: miaoright-*
+          name: miaoright-release
           path: release
-          merge-multiple: true
       - name: Publish the private GitHub release
         shell: bash
         working-directory: release
@@ -188,6 +190,8 @@ jobs:
               gh release upload "$RELEASE_TAG" "${assets[@]}" SHA256SUMS --clobber
               gh release edit "$RELEASE_TAG" --draft=false --notes-file "$notes_file"
             else
+              gh release upload "$RELEASE_TAG" "${assets[@]}" SHA256SUMS --clobber
+              existing=$(gh release view "$RELEASE_TAG" --json assets)
               jq -e \
                 --arg arm_zip "$arm_zip" --arg intel_zip "$intel_zip" \
                 --arg arm_dmg "$arm_dmg" --arg intel_dmg "$intel_dmg" \

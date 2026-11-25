@@ -17,7 +17,7 @@
    git push origin v0.1.1
    ```
 
-[发布工作流](../.github/workflows/release.yml)会在 Apple 芯片和 Intel 运行器上分别构建及测试，两个任务都通过后才创建私有 GitHub Release。每个架构发布一个用于首次安装的 DMG 和一个用于应用内更新的 ZIP，并附上 `SHA256SUMS`。例如 `MiaoRight-v0.1.2-arm64.dmg`、`MiaoRight-v0.1.2-arm64.zip`、`MiaoRight-v0.1.2-x86_64.dmg` 和 `MiaoRight-v0.1.2-x86_64.zip`。
+[发布工作流](../.github/workflows/release.yml)在单个 Apple 芯片运行器上原生构建 arm64、交叉构建 x86_64，再统一执行测试、校验、DMG 打包和发布。每个架构发布一个用于首次安装的 DMG 和一个用于应用内更新的 ZIP，并附上 `SHA256SUMS`。例如 `MiaoRight-v0.1.2-arm64.dmg`、`MiaoRight-v0.1.2-arm64.zip`、`MiaoRight-v0.1.2-x86_64.dmg` 和 `MiaoRight-v0.1.2-x86_64.zip`。
 
 DMG 由 `scripts/package-dmg.sh` 生成，包含 `MiaoRight.app`、指向 `/Applications` 的快捷方式和安装说明。构建时会校验 App 架构和深度签名，创建后再次挂载，检查 App、快捷方式和签名，再验证 DMG 校验和。ZIP 会重新解压并校验签名。发布包使用长期有效的 `MiaoRight Release` 身份签名，但尚未经过 Apple 公证。
 
