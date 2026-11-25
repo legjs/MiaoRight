@@ -4,7 +4,7 @@
 
 ## 文件位置
 
-每次稳定版本发布前创建 `docs/release-notes/<tag>.md`，例如 `v0.1.2.md`。发布工作流读取该文件并直接写入 GitHub Release 正文。
+每次稳定版本发布前创建 `docs/release-notes/<tag>.md`，例如 `v0.1.3.md`。发布工作流读取该文件并直接写入 GitHub Release 正文。
 
 ## 格式
 

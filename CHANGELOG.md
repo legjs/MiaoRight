@@ -6,6 +6,29 @@ The format follows [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.1.0/
 
 ## [Unreleased]
 
+## [0.1.3] - 2026-11-25
+
+### Added
+
+- MiaoRight is now distributed as an open-source project under the MIT License.
+- Public GitHub Releases support one-click update checks and in-place installation without GitHub authentication.
+- Added a three-step installation guide and an in-app first-run checklist.
+
+### Changed
+
+- Updates can replace `/Applications/MiaoRight.app` from either a downloaded or user-selected ZIP after version, architecture, nested-extension, and certificate validation.
+- The release pipeline builds arm64 natively and cross-compiles x86_64 on one Apple silicon runner.
+- MIT copyright information now includes MiaoRight contributors.
+
+### Fixed
+
+- Fixed unreadable release-note text in dark mode.
+- Improved Finder extension status feedback and removed duplicate settings-window creation.
+
+### Security
+
+- Update packages must be signed by the stable MiaoRight Release identity before replacement.
+
 ### Changed
 
 - The repository is now public and distributed under the MIT License.
@@ -31,5 +54,6 @@ The format follows [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.1.0/
 - Fixed the settings action potentially opening duplicate settings windows.
 - Corrected the local macOS 26 workflow for Finder extensions that do not load when launched from a build directory.
 
-[Unreleased]: https://github.com/legjs/MiaoRight/compare/v0.1.2...HEAD
+[Unreleased]: https://github.com/legjs/MiaoRight/compare/v0.1.3...HEAD
+[0.1.3]: https://github.com/legjs/MiaoRight/releases/tag/v0.1.3
 [0.1.2]: https://github.com/legjs/MiaoRight/releases/tag/v0.1.2

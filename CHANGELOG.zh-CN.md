@@ -6,6 +6,29 @@
 
 ## [未发布]
 
+## [0.1.3] - 2026-11-25
+
+### 新增
+
+- 妙右现已按 MIT License 开源发布。
+- 公开的 GitHub Releases 支持无需 GitHub 登录的一键检查更新和原位安装。
+- 新增三步安装引导和 App 内首次使用检查清单。
+
+### 变更
+
+- 下载 ZIP 或选择已有 ZIP 后，在校验版本、架构、嵌套扩展和证书后替换 `/Applications/MiaoRight.app`。
+- 发布流水线在单个 Apple 芯片 runner 上原生构建 arm64，并交叉构建 x86_64。
+- MIT 版权信息现包含 MiaoRight contributors。
+
+### 修复
+
+- 修复深色模式下更新说明文字不可读的问题。
+- 改进 Finder 扩展状态反馈，并移除重复创建设置窗口的问题。
+
+### 安全
+
+- 更新包必须由稳定的 MiaoRight Release 身份签名后才能替换 App。
+
 ### 变更
 
 - 仓库现已公开，并按 MIT License 发布。
@@ -31,5 +54,6 @@
 - 修复设置入口可能打开两个设置窗口的问题。
 - 修正 macOS 26 从构建目录启动时 Finder 扩展可能不加载的本地测试流程。
 
-[未发布]: https://github.com/legjs/MiaoRight/compare/v0.1.2...HEAD
+[未发布]: https://github.com/legjs/MiaoRight/compare/v0.1.3...HEAD
+[0.1.3]: https://github.com/legjs/MiaoRight/releases/tag/v0.1.3
 [0.1.2]: https://github.com/legjs/MiaoRight/releases/tag/v0.1.2
