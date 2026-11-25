@@ -1,6 +1,6 @@
 # 妙右 MiaoRight
 
-[English](README.md) · 简体中文
+[English](README.md) · 简体中文 · [官网](https://legjs.github.io/MiaoRight/)
 
 妙右是轻量的 Finder 与剪贴板工具，支持 Apple 芯片和 Intel 芯片的 Mac，最低版本为 macOS 14。在 Finder 里右键打开、移动和整理文件，也可以从剪贴板面板找回、粘贴或保存之前复制的内容。
 

@@ -1,6 +1,6 @@
 # MiaoRight
 
-English · [简体中文](README.zh-CN.md)
+English · [简体中文](README.zh-CN.md) · [Website](https://legjs.github.io/MiaoRight/)
 
 MiaoRight is a lightweight Finder and clipboard utility for Apple silicon and Intel Macs running macOS 14 or later. Use Finder’s context menu to open, move, and organize files, and use the clipboard panel to find, paste, or save items you copied earlier.
 
