@@ -21,7 +21,7 @@
     manual: 'Switched the download to your selection.',
     detectedApple: 'Based on your browser, we recommend the Apple silicon build. You can switch manually.',
     detectedIntel: 'Based on your browser, we recommend the Intel build. You can switch manually.',
-    unknown: 'Your browser did not provide enough chip information. Check  → About This Mac and choose the matching build.',
+    unknown: 'Your browser did not provide enough chip information. Check Apple menu → About This Mac and choose the matching build.',
     notMac: 'Choose the chip type for the Mac where you will install MiaoRight.'
   } : {
     apple: '下载 Apple 芯片版',
