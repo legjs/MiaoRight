@@ -191,25 +191,26 @@ final class MenuBarController: NSObject, NSMenuDelegate {
             updateItem.isEnabled = false
         case .available(let release):
             upToDateNoticeUntil = nil
+            let debugPrefix = updates.simulatesAvailableUpdate ? L10n.text("调试：", "Debug: ") : ""
             updateNotesItem.isHidden = false
             updateNotesItem.title = L10n.text(
                 "查看 \(release.tagName) 更新日志…",
                 "View \(release.tagName) Release Notes…"
             )
             if updates.isInstalling {
-                updateItem.title = L10n.text(
+                updateItem.title = debugPrefix + L10n.text(
                     "正在更新到 \(release.tagName)…",
                     "Updating to \(release.tagName)…"
                 )
                 updateItem.isEnabled = false
             } else if updates.canInstallInPlace {
-                updateItem.title = L10n.text(
+                updateItem.title = debugPrefix + L10n.text(
                     "更新到 \(release.tagName)…",
                     "Update to \(release.tagName)…"
                 )
                 updateItem.isEnabled = true
             } else {
-                updateItem.title = L10n.text(
+                updateItem.title = debugPrefix + L10n.text(
                     "查看 \(release.tagName) 更新…",
                     "View \(release.tagName) Update…"
                 )

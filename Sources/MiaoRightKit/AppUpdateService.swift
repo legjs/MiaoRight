@@ -244,6 +244,7 @@ public final class AppUpdateService {
     static let automaticChecksKey = "appUpdateAutomaticChecks"
     static let lastCheckedAtKey = "appUpdateLastCheckedAt"
     static let cachedReleaseKey = "appUpdateCachedRelease"
+    static let simulateAvailableKey = "appUpdateSimulateAvailable"
     static let checkInterval: TimeInterval = 24 * 60 * 60
     enum State: Equatable {
         case idle, checking, upToDate, noRelease
@@ -263,6 +264,9 @@ public final class AppUpdateService {
     private(set) var lastCheckedAt: Date?
     private(set) var canInstallInPlace: Bool
     private(set) var isProductionInstallation: Bool
+    private(set) var isProductionSigned: Bool
+    private(set) var simulatesAvailableUpdate: Bool
+    var isDebugSimulationAvailable: Bool { !isProductionSigned }
     let repository: UpdateRepository?
     static var currentVersion: String { Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "0.0.0" }
     var isChecking: Bool { state == .checking }
@@ -273,8 +277,20 @@ public final class AppUpdateService {
         automaticallyChecksForUpdates = defaults.object(forKey: Self.automaticChecksKey) as? Bool ?? true
         let timestamp = defaults.double(forKey: Self.lastCheckedAtKey)
         lastCheckedAt = timestamp > 0 ? Date(timeIntervalSince1970: timestamp) : nil
-        canInstallInPlace = AppUpdateInstaller.isInstalledInApplications
-        isProductionInstallation = AppUpdateInstaller.isCurrentProductionInstallation
+        let installsInApplications = AppUpdateInstaller.isInstalledInApplications
+        canInstallInPlace = installsInApplications
+        let productionSigned = AppUpdateInstaller.isCurrentProductionSigned
+        isProductionSigned = productionSigned
+        isProductionInstallation = installsInApplications && productionSigned
+        if productionSigned {
+            defaults.set(false, forKey: Self.simulateAvailableKey)
+            simulatesAvailableUpdate = false
+        } else {
+            simulatesAvailableUpdate = defaults.bool(forKey: Self.simulateAvailableKey)
+        }
+        if simulatesAvailableUpdate {
+            lastCheckedAt = nil
+        }
         if let repository,
            let data = defaults.data(forKey: Self.cachedReleaseKey),
            let release = try? JSONDecoder().decode(GitHubRelease.self, from: data),
@@ -326,6 +342,15 @@ public final class AppUpdateService {
         automaticallyChecksForUpdates = enabled
         guard enabled else { return }
         Task { await checkIfDue() }
+    }
+
+    func setSimulatesAvailableUpdate(_ enabled: Bool) {
+        guard isDebugSimulationAvailable else { return }
+        AppGroup.standardDefaults.set(enabled, forKey: Self.simulateAvailableKey)
+        simulatesAvailableUpdate = enabled
+        clearCachedRelease()
+        state = .idle
+        Task { await check() }
     }
 
     var isInstalling: Bool {
@@ -414,7 +439,13 @@ public final class AppUpdateService {
                 return
             }
             markChecked()
-            if latest > current {
+            let offersUpdate: Bool
+            if simulatesAvailableUpdate, isDebugSimulationAvailable {
+                offersUpdate = latest >= current
+            } else {
+                offersUpdate = latest > current
+            }
+            if offersUpdate {
                 cache(release)
                 state = .available(release)
             } else {

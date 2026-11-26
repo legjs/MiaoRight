@@ -93,8 +93,12 @@ enum AppUpdateInstaller {
     }
 
     static var isCurrentProductionInstallation: Bool {
-        guard isInstalledInApplications, let expectedCertificateSHA1 else { return false }
-        guard let requirement = try? designatedRequirement(for: installedAppURL) else { return false }
+        isInstalledInApplications && isCurrentProductionSigned
+    }
+
+    static var isCurrentProductionSigned: Bool {
+        guard let expectedCertificateSHA1 else { return false }
+        guard let requirement = try? designatedRequirement(for: Bundle.main.bundleURL) else { return false }
         return requirementContainsCertificate(requirement, fingerprint: expectedCertificateSHA1)
     }
 

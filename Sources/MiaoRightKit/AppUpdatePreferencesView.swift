@@ -23,6 +23,36 @@ struct AppUpdatePreferencesView: View {
                 .labelsHidden()
                 .toggleStyle(.switch)
             }
+            if updates.isDebugSimulationAvailable {
+                PreferenceRow(
+                    title: L10n.text("调试：模拟发现新版本", "Debug: Simulate an Available Update"),
+                    icon: "hammer",
+                    detail: L10n.text(
+                        "仅开发签名版本可用。开启后会把当前已发布的最新版本视为可更新，用于测试菜单、直接安装和更新日志；安装会使用真实发布包。",
+                        "Available only in development-signed builds. Treats the latest published release as an update for testing the menu, direct install, and release notes. Installation uses the real release package."
+                    )
+                ) {
+                    Toggle(
+                        L10n.text("模拟发现新版本", "Simulate an Available Update"),
+                        isOn: Binding(
+                            get: { updates.simulatesAvailableUpdate },
+                            set: { updates.setSimulatesAvailableUpdate($0) }
+                        )
+                    )
+                    .labelsHidden()
+                    .toggleStyle(.switch)
+                }
+            }
+            if updates.simulatesAvailableUpdate {
+                Text(L10n.text(
+                    "调试模拟已开启。更新目标为当前已发布的最新版本，安装会替换 /Applications/MiaoRight.app。",
+                    "Debug simulation is on. The target is the latest published release; installing replaces /Applications/MiaoRight.app."
+                ))
+                .font(.system(size: 11))
+                .foregroundStyle(.orange)
+                .fixedSize(horizontal: false, vertical: true)
+                .padding(.top, 8)
+            }
             if case .available(let release) = updates.state {
                 availableRelease(release)
             }
@@ -36,8 +66,10 @@ struct AppUpdatePreferencesView: View {
 
     @ViewBuilder
     private func availableRelease(_ release: GitHubRelease) -> some View {
-        let title = release.name.flatMap { $0.isEmpty ? nil : $0 }
-            ?? L10n.text("发现新版本 \(release.tagName)", "Version \(release.tagName) is available")
+        let title = updates.simulatesAvailableUpdate
+            ? L10n.text("调试模拟：\(release.tagName) 可更新", "Debug simulation: \(release.tagName) is available")
+            : (release.name.flatMap { $0.isEmpty ? nil : $0 }
+                ?? L10n.text("发现新版本 \(release.tagName)", "Version \(release.tagName) is available"))
         VStack(alignment: .leading, spacing: 12) {
             HStack(alignment: .firstTextBaseline, spacing: 10) {
                 Text(title)
@@ -137,15 +169,22 @@ struct AppUpdatePreferencesView: View {
 
     private var detail: String {
         switch updates.state {
-        case .idle: L10n.text("当前版本 \(AppUpdateService.currentVersion)，通过 GitHub 检查新版本", "Version \(AppUpdateService.currentVersion); check GitHub for updates")
-        case .checking: L10n.text("正在连接 GitHub…", "Connecting to GitHub…")
-        case .upToDate: L10n.text("当前已是最新版本 \(AppUpdateService.currentVersion)", "You’re up to date: \(AppUpdateService.currentVersion)")
-        case .noRelease: L10n.text(
+        case .idle: return L10n.text("当前版本 \(AppUpdateService.currentVersion)，通过 GitHub 检查新版本", "Version \(AppUpdateService.currentVersion); check GitHub for updates")
+        case .checking: return L10n.text("正在连接 GitHub…", "Connecting to GitHub…")
+        case .upToDate: return L10n.text("当前已是最新版本 \(AppUpdateService.currentVersion)", "You’re up to date: \(AppUpdateService.currentVersion)")
+        case .noRelease: return L10n.text(
             "暂未找到可匿名读取的稳定发行版。私有仓库请在浏览器中登录后查看发行页面。",
             "No stable release is publicly readable. For a private repository, sign in to GitHub and open the release page in your browser."
         )
-        case .available(let release): L10n.text("当前 \(AppUpdateService.currentVersion)，最新 \(release.tagName)", "Installed: \(AppUpdateService.currentVersion); latest: \(release.tagName)")
-        case .failed(let error): error.message
+        case .available(let release):
+            if updates.simulatesAvailableUpdate {
+                return L10n.text(
+                    "调试模拟：当前 \(AppUpdateService.currentVersion)，把 \(release.tagName) 视为可更新",
+                    "Debug simulation: \(AppUpdateService.currentVersion) treated as updatable to \(release.tagName)"
+                )
+            }
+            return L10n.text("当前 \(AppUpdateService.currentVersion)，最新 \(release.tagName)", "Installed: \(AppUpdateService.currentVersion); latest: \(release.tagName)")
+        case .failed(let error): return error.message
         }
     }
 
