@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>下载妙右 MiaoRight</title>
+  <meta name="description" content="下载妙右 0.1.3，为你的 Mac 选择对应版本。">
+  <link rel="alternate" hreflang="zh-CN" href="https://legjs.github.io/MiaoRight/download.html">
+<link rel="alternate" hreflang="en" href="https://legjs.github.io/MiaoRight/en/download.html">
+<link rel="stylesheet" href="style.css">
+  <script src="download.js" defer></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="wordmark" href="index.html" aria-label="妙右 MiaoRight">
+        <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><rect x="1" y="1" width="16" height="16" rx="4.5" fill="#0071e3"/><path d="M5 9.2l2.7 2.7L13 6.6" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        妙右<span class="brand-en"> MiaoRight</span>
+      </a>
+      <nav aria-label="主导航">
+        <a href="index.html#menu">功能</a>
+        <a class="download-nav" href="download.html" aria-current="page">下载</a>
+        <a href="https://github.com/legjs/MiaoRight" target="_blank" rel="noopener noreferrer">GitHub</a>
+        <a class="lang-switch" href="en/download.html" hreflang="en" lang="en" aria-label="Switch to English" title="Switch to English"><span class="lang-full">English</span><span class="lang-short">EN</span></a>
+      </nav>
+    </div>
+  </header>
+  <main class="download-main">
+    <h1>下载妙右</h1>
+    <p class="download-sub">0.1.3 版，适用于 macOS 14 及以上。</p>
+    <p class="download-note">首次安装请下载 DMG；ZIP 继续用于应用内更新。</p>
+    <section class="download-box" aria-labelledby="chip-heading">
+      <h2 id="chip-heading">选择适合你的版本</h2>
+      <p id="detection-status" role="status" aria-live="polite">可在苹果菜单「关于本机」查看芯片，然后选择对应版本。</p>
+      <fieldset class="chip-options">
+        <legend>你的 Mac 芯片</legend>
+        <label><input type="radio" name="architecture" value="arm64">Apple 芯片（M 系列）</label>
+        <label><input type="radio" name="architecture" value="x86_64">Intel 芯片</label>
+      </fieldset>
+      <div class="download-primary" id="recommended-download" hidden>
+        <a class="btn btn-primary" id="download-button">下载 DMG</a>
+      </div>
+      <div class="download-links" aria-label="所有下载">
+        <a data-arch="arm64" data-dmg="https://github.com/legjs/MiaoRight/releases/download/v0.1.3/MiaoRight-v0.1.3-arm64.dmg" href="https://github.com/legjs/MiaoRight/releases/download/v0.1.3/MiaoRight-v0.1.3-arm64.dmg"><span>下载 Apple 芯片版</span><small>arm64 · DMG</small></a>
+        <a data-arch="x86_64" data-dmg="https://github.com/legjs/MiaoRight/releases/download/v0.1.3/MiaoRight-v0.1.3-x86_64.dmg" href="https://github.com/legjs/MiaoRight/releases/download/v0.1.3/MiaoRight-v0.1.3-x86_64.dmg"><span>下载 Intel 芯片版</span><small>x86_64 · DMG</small></a>
+      </div>
+    </section>
+    <p class="download-next"><a class="btn btn-quiet" href="#install">下载后怎么用 ↓</a></p>
+    <p class="download-note">安装包公开托管在 <a href="https://github.com/legjs/MiaoRight/releases/tag/v0.1.3" target="_blank" rel="noopener noreferrer">GitHub Releases</a>，无需登录。</p>
+    <p class="download-note">本版本使用项目固定的自签证书签名，尚未经过 Apple 公证，首次被拦截时可按<a href="#first-open">打开指引</a>操作。<a href="https://github.com/legjs/MiaoRight/releases/download/v0.1.3/SHA256SUMS">下载 SHA-256 校验文件</a></p>
+    <p class="download-note">更新时请先退出妙右，并将新版替换为<strong>/Applications/MiaoRight.app</strong>。生产签名版本的应用内更新会原位替换这个路径，从下载目录直接运行的新包不能自动覆盖生产安装。</p>
+    <section class="install-help" id="install" aria-labelledby="install-heading">
+      <h2 id="install-heading">安装与首次设置</h2>
+      <p class="guide-intro">首次安装按下面的顺序操作。遇到「无法验证开发者」或「Apple 无法检查是否包含恶意软件」时，请看第 2 步。</p>
+      <p class="guide-caption">以下配图均为操作示意，系统名称和按钮位置会随 macOS 版本略有变化。</p>
+      <nav class="guide-toc" aria-label="安装步骤">
+        <a href="#install-app">1 打开 DMG 并安装</a>
+        <a href="#first-open">2 允许首次打开</a>
+        <a href="#enable-extensions">3 启用扩展</a>
+        <a href="#enable-clipboard">4 开启剪贴板</a>
+      </nav>
+      <ol class="install-steps">
+        <li id="install-app">
+          <h3>打开 DMG，放进「应用程序」</h3>
+          <p>在访达打开「下载」，双击刚下载的 DMG。将 <strong>MiaoRight.app</strong> 拖到访达边栏的「应用程序」，然后从「应用程序」里双击打开。如果下载的是 ZIP，请先解压。</p>
+          <p>如果已有旧版，先从妙右菜单退出，再用新版替换。</p>
+          <figure class="guide-figure">
+            <div class="install-transfer" role="img" aria-label="安装示意，将下载目录中打开 DMG 后的 MiaoRight.app 拖入应用程序，再双击打开">
+              <div><span class="guide-icon app-icon" aria-hidden="true">妙</span><strong>MiaoRight.app</strong><small>下载 · 打开 DMG 后</small></div>
+              <span class="transfer-arrow" aria-hidden="true">→</span>
+              <div><span class="guide-icon folder-icon" aria-hidden="true"></span><strong>应用程序</strong><small>放入后，双击打开</small></div>
+            </div>
+            <figcaption>在「应用程序」中保留一份，方便后续启用扩展和授权。</figcaption>
+          </figure>
+        </li>
+        <li id="first-open">
+          <h3>被 macOS 拦截时，允许这一次打开</h3>
+          <p>当前版本尚未经过 Apple 公证。请确认安装包来自本页的 GitHub 发行链接，再继续。如果能正常打开，直接进入第 3 步。</p>
+          <p>先尝试打开一次妙右，关闭拦截提示。打开苹果菜单中的「系统设置」，进入<strong>「隐私与安全性」</strong>，向下滚动至「安全性」，找到关于妙右的拦截记录，点<strong>「仍要打开」</strong>。按系统提示输入 Mac 登录密码或使用触控 ID，再在确认提示中点「打开」。</p>
+          <figure class="guide-figure">
+            <div class="settings-diagram" role="img" aria-label="系统设置操作示意，进入隐私与安全性，在安全性区域找到妙右拦截记录，点击仍要打开">
+              <div class="diagram-location">系统设置 <span>›</span> 隐私与安全性</div>
+              <div class="diagram-content">
+                <strong>安全性</strong>
+                <div class="diagram-row"><span>关于妙右的拦截记录<small>在尝试打开 App 后出现</small></span><span class="diagram-action">仍要打开</span></div>
+                <p>确认提示中再次选择「打开」</p>
+              </div>
+            </div>
+            <figcaption>先尝试打开 App，再到这里查看拦截记录。 <a href="https://support.apple.com/zh-cn/102445" target="_blank" rel="noopener noreferrer">Apple 官方操作说明</a></figcaption>
+          </figure>
+          <details class="guide-detail">
+            <summary>找不到「仍要打开」怎么办？</summary>
+            <p>回到「应用程序」，再双击一次妙右，再返回「隐私与安全性」的「安全性」区域。也可以用系统设置的搜索框搜索「安全性」。公司或学校管理的 Mac 可能限制此项操作，需要联系管理员。</p>
+          </details>
+          <details class="guide-detail">
+            <summary>提示「已损坏」「将损坏你的电脑」，或仍然打不开</summary>
+            <p>如果提示 App 已损坏，先重新下载并解压。核对 ZIP 的 SHA-256 和发行页的校验文件，检查下载是否完整。若提示「将损坏你的电脑」或包含恶意软件，请停止安装，并向项目反馈完整提示。</p>
+            <p>只在确认来源、ZIP 校验值一致，且没有恶意软件警告的情况下，才继续排查下载隔离标记。展开下面的说明。</p>
+            <details class="guide-detail">
+              <summary>校验文件和处理下载隔离标记</summary>
+              <p>同时下载本页的 ZIP 和 <a href="https://github.com/legjs/MiaoRight/releases/download/v0.1.3/SHA256SUMS">SHA256SUMS</a>，在「文本编辑」中打开 SHA256SUMS。打开「应用程序 → 实用工具 → 终端」，运行下面的命令，将输出与相同 ZIP 文件名对应的校验值逐字对照。</p>
+              <pre><code>cd ~/Downloads
+shasum -a 256 MiaoRight-v0.1.3-*.zip</code></pre>
+              <p>将 App 放入「应用程序」后，运行签名校验。终端没有输出并回到输入提示符时，表示这项校验成功。出现校验错误时，请重新下载，或向项目反馈。</p>
+              <pre><code>codesign --verify --deep --strict "/Applications/MiaoRight.app"</code></pre>
+              <p>两项校验都通过后，可用下面的命令移除<strong>这一份妙右 App</strong>的下载隔离标记，再尝试打开。此操作会让该副本跳过相应的下载隔离检查，请仅对你确认信任的副本使用。</p>
+              <pre><code>xattr -dr com.apple.quarantine "/Applications/MiaoRight.app"
+open "/Applications/MiaoRight.app"</code></pre>
+              <p>如果命令提示权限不足或操作不允许，请到<a href="https://github.com/legjs/MiaoRight/issues" target="_blank" rel="noopener noreferrer">项目问题页面</a>反馈系统版本和完整提示。</p>
+            </details>
+          </details>
+        </li>
+        <li id="enable-extensions">
+          <h3>启用访达右键和压缩包预览</h3>
+          <p>打开妙右后，在「通用」页或扩展未启用的提示中点「打开系统设置」。在较新 macOS 上，前往<strong>「通用 → 登录项与扩展」</strong>，找到下方「扩展」区域。</p>
+          <p>在「访达」里启用妙右；在「快速查看」（Quick Look）里启用妙右压缩包预览。如分组右侧有信息按钮 ⓘ，先点它再打开对应开关。macOS 14 可在系统设置中搜索「扩展」，按「访达」和「快速查看」分类查找。</p>
+          <figure class="guide-figure">
+            <div class="settings-diagram" role="img" aria-label="扩展设置示意，在访达分类中开启妙右，在快速查看分类中开启妙右压缩包预览">
+              <div class="diagram-location">登录项与扩展 <span>›</span> 扩展</div>
+              <div class="diagram-content">
+                <div class="diagram-row"><span>访达<small>妙右 · 文件右键菜单</small></span><span class="diagram-switch" aria-hidden="true"></span><span class="sr-only">已开启</span></div>
+                <div class="diagram-row"><span>快速查看<small>妙右压缩包预览</small></span><span class="diagram-switch" aria-hidden="true"></span><span class="sr-only">已开启</span></div>
+              </div>
+            </div>
+            <figcaption>两个扩展各自启用。 <a href="https://support.apple.com/zh-cn/guide/mac-help/mtusr003/mac" target="_blank" rel="noopener noreferrer">Apple 扩展设置说明</a></figcaption>
+          </figure>
+          <p>回到访达，选中文件并右键，检查妙右菜单。查看压缩包内容时，在访达选中 ZIP，使用访达的系统预览。右侧预览面板可通过菜单「显示 → 显示预览」打开，也可按 ⇧⌘P 显示或隐藏。如果扩展尚未出现，先退出再打开妙右；仍未出现时，可从妙右的「通用」页重启访达，再试一次。</p>
+        </li>
+        <li id="enable-clipboard">
+          <h3>开启剪贴板，允许直接粘贴</h3>
+          <p>进入妙右的「剪贴板」页，开启<strong>「记录剪贴板历史」</strong>。复制一段文字，按 <kbd class="kbd">⇧⌘V</kbd>，新记录就会出现在面板里。</p>
+          <p>想选中后直接贴入其他 App，点页面里的「去授权」，进入<strong>「隐私与安全性 → 辅助功能」</strong>，打开妙右开关。列表中没有时，点「＋」并选择「应用程序」里的 MiaoRight.app。系统要求时用 Mac 登录密码或触控 ID 确认。</p>
+          <figure class="guide-figure">
+            <div class="settings-diagram" role="img" aria-label="剪贴板设置示意，开启记录剪贴板历史，呼出快捷键为 Shift Command V；辅助功能设置中启用妙右">
+              <div class="diagram-location">妙右 <span>›</span> 剪贴板</div>
+              <div class="diagram-content">
+                <div class="diagram-row"><span>记录剪贴板历史</span><span class="diagram-switch" aria-hidden="true"></span><span class="sr-only">已开启</span></div>
+                <div class="diagram-row"><span>呼出快捷键</span><kbd class="kbd">⇧⌘V</kbd></div>
+                <div class="permission-path">系统设置 · 隐私与安全性 · 辅助功能<div class="diagram-row"><span>妙右</span><span class="diagram-switch" aria-hidden="true"></span><span class="sr-only">已开启</span></div></div>
+              </div>
+            </div>
+            <figcaption>历史记录开关控制采集；辅助功能权限用于向目标 App 发送粘贴。</figcaption>
+          </figure>
+          <p>授权后回到想输入文字的 App，点进输入框，再按 ⇧⌘V 选一条记录试贴。也可以在面板里先复制，再按 ⌘V。需要粘贴倒数第二条时，默认快捷键是 <kbd class="kbd">⌃⇧⌘V</kbd>。</p>
+        </li>
+      </ol>
+      <div class="guide-ready">
+        <h3>现在可以试一试</h3>
+        <p>右键复制一条文件路径，按 ⇧⌘V 找回它，再在访达中选中一个 ZIP 查看包内目录。剪贴板记录里的「… → 保存…」还能把文字、图片和文件保存到你选的位置。</p>
+      </div>
+    </section>
+  </main>
+  <footer><div class="wrap"><a class="mark" href="index.html">妙右 MiaoRight</a><p class="fine">Finder 右键、剪贴板和压缩包预览，随手可用。</p><p class="fine">© 2026 legjs 与 MiaoRight 贡献者 · <a href="https://github.com/legjs/MiaoRight/blob/main/LICENSE">MIT License</a></p></div></footer>
+</body>
+</html>

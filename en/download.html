@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Download MiaoRight</title>
+  <meta name="description" content="Download MiaoRight 0.1.3 for your Mac.">
+  <link rel="stylesheet" href="../style.css">
+  <script src="../download.js" defer></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="wordmark" href="../index.html" aria-label="MiaoRight">
+        <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><rect x="1" y="1" width="16" height="16" rx="4.5" fill="#0071e3"/><path d="M5 9.2l2.7 2.7L13 6.6" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        MiaoRight
+      </a>
+      <nav aria-label="Main navigation">
+        <a href="../index.html#menu">Features</a>
+        <a class="download-nav" href="download.html" aria-current="page">Download</a>
+        <a href="https://github.com/legjs/MiaoRight" target="_blank" rel="noopener noreferrer">GitHub</a>
+        <a class="lang-switch" href="../download.html" hreflang="zh-CN" lang="zh-CN" aria-label="Switch to Chinese" title="Switch to Chinese">中文</a>
+      </nav>
+    </div>
+  </header>
+  <main class="download-main">
+    <h1>Download MiaoRight</h1>
+    <p class="download-sub">Version 0.1.3, for macOS 14 and later.</p>
+    <p class="download-note">For a first install, download the DMG. The ZIP is used for in-app updates.</p>
+    <section class="download-box" aria-labelledby="chip-heading">
+      <h2 id="chip-heading">Choose your version</h2>
+      <p id="detection-status" role="status" aria-live="polite">Check Apple menu → About This Mac to see your chip, then choose the matching version.</p>
+      <fieldset class="chip-options">
+        <legend>Your Mac's chip</legend>
+        <label><input type="radio" name="architecture" value="arm64">Apple silicon (M series)</label>
+        <label><input type="radio" name="architecture" value="x86_64">Intel</label>
+      </fieldset>
+      <div class="download-primary" id="recommended-download" hidden>
+        <a class="btn btn-primary" id="download-button">Download DMG</a>
+      </div>
+      <div class="download-links" aria-label="All downloads">
+        <a data-arch="arm64" data-dmg="https://github.com/legjs/MiaoRight/releases/download/v0.1.3/MiaoRight-v0.1.3-arm64.dmg" href="https://github.com/legjs/MiaoRight/releases/download/v0.1.3/MiaoRight-v0.1.3-arm64.dmg"><span>Download for Apple silicon</span><small>arm64 · DMG</small></a>
+        <a data-arch="x86_64" data-dmg="https://github.com/legjs/MiaoRight/releases/download/v0.1.3/MiaoRight-v0.1.3-x86_64.dmg" href="https://github.com/legjs/MiaoRight/releases/download/v0.1.3/MiaoRight-v0.1.3-x86_64.dmg"><span>Download for Intel</span><small>x86_64 · DMG</small></a>
+      </div>
+    </section>
+    <p class="download-next"><a class="btn btn-quiet" href="#install">After downloading ↓</a></p>
+    <p class="download-note">Installers are hosted on <a href="https://github.com/legjs/MiaoRight/releases/tag/v0.1.3" target="_blank" rel="noopener noreferrer">GitHub Releases</a>. No account needed.</p>
+    <p class="download-note">This build is signed with the project's stable self-signed certificate and is not notarized by Apple. If macOS blocks the first launch, follow the <a href="#first-open">opening guide</a>.<a href="https://github.com/legjs/MiaoRight/releases/download/v0.1.3/SHA256SUMS">Download SHA-256 checksums</a></p>
+    <p class="download-note">To update, quit MiaoRight and replace <strong>/Applications/MiaoRight.app</strong>. In-app updates from the production-signed build replace that path in place; running a new copy from Downloads will not overwrite a production install.</p>
+    <section class="install-help" id="install" aria-labelledby="install-heading">
+      <h2 id="install-heading">Install and first-time setup</h2>
+      <p class="guide-intro">Follow these steps for a first install. If macOS says the developer cannot be verified, or that it cannot check for malicious software, see step 2.</p>
+      <p class="guide-caption">The illustrations are diagrams. System names and button positions vary slightly by macOS version.</p>
+      <nav class="guide-toc" aria-label="Install steps">
+        <a href="#install-app">1 Open the DMG and install</a>
+        <a href="#first-open">2 Allow the first launch</a>
+        <a href="#enable-extensions">3 Enable extensions</a>
+        <a href="#enable-clipboard">4 Enable the clipboard</a>
+      </nav>
+      <ol class="install-steps">
+        <li id="install-app">
+          <h3>Open the DMG and move it to Applications</h3>
+          <p>Open Downloads in Finder and double-click the DMG you downloaded. Drag <strong>MiaoRight.app</strong> to Applications in the Finder sidebar, then open it from Applications. If you downloaded the ZIP, unzip it first.</p>
+          <p>If you already have an older version, quit it from the MiaoRight menu first, then replace it.</p>
+          <figure class="guide-figure">
+            <div class="install-transfer" role="img" aria-label="Installation diagram: drag MiaoRight.app from the opened DMG to Applications, then open it">
+              <div><span class="guide-icon app-icon" aria-hidden="true">M</span><strong>MiaoRight.app</strong><small>Downloads · after opening the DMG</small></div>
+              <span class="transfer-arrow" aria-hidden="true">→</span>
+              <div><span class="guide-icon folder-icon" aria-hidden="true"></span><strong>Applications</strong><small>Double-click to open</small></div>
+            </div>
+            <figcaption>Keep a copy in Applications so extensions and permissions stay registered.</figcaption>
+          </figure>
+        </li>
+        <li id="first-open">
+          <h3>Allow the first launch</h3>
+          <p>This build is not notarized. Confirm the download came from the GitHub release linked on this page before continuing. If it opens normally, skip to step 3.</p>
+          <p>Try opening MiaoRight once and dismiss the warning. Open System Settings, go to <strong>Privacy & Security</strong>, scroll to Security, find the blocked MiaoRight entry, and click <strong>Open Anyway</strong>. Enter your Mac password or use Touch ID, then click Open in the confirmation.</p>
+          <figure class="guide-figure">
+            <div class="settings-diagram" role="img" aria-label="System Settings diagram: open Privacy & Security, find the blocked MiaoRight entry under Security, and click Open Anyway">
+              <div class="diagram-location">System Settings <span>›</span> Privacy & Security</div>
+              <div class="diagram-content">
+                <strong>Security</strong>
+                <div class="diagram-row"><span>Blocked MiaoRight entry<small>Appears after you try to open the app</small></span><span class="diagram-action">Open Anyway</span></div>
+                <p>Click Open again in the confirmation</p>
+              </div>
+            </div>
+            <figcaption>Try opening the app first, then come back to the blocked entry. <a href="https://support.apple.com/zh-cn/102445" target="_blank" rel="noopener noreferrer">Apple support</a></figcaption>
+          </figure>
+          <details class="guide-detail">
+            <summary>Can't find Open Anyway?</summary>
+            <p>Return to Applications and double-click MiaoRight once more, then go back to the Security section of Privacy & Security. You can also search System Settings for Security. Macs managed by a company or school may restrict this step; contact your administrator.</p>
+          </details>
+          <details class="guide-detail">
+            <summary>“Damaged”, “will damage your computer”, or it still won't open</summary>
+            <p>If macOS says the app is damaged, download and unzip it again. Compare the ZIP's SHA-256 with the checksum file on the release page to confirm the download is complete. If macOS says the app will damage your computer or contains malicious software, stop and report the full message to the project.</p>
+            <p>Only if you trust the source, the ZIP checksum matches, and there is no malware warning, continue with the download quarantine note below.</p>
+            <details class="guide-detail">
+              <summary>Verify the download and remove the quarantine flag</summary>
+              <p>Download the ZIP and <a href="https://github.com/legjs/MiaoRight/releases/download/v0.1.3/SHA256SUMS">SHA256SUMS</a>, open SHA256SUMS in TextEdit, open Terminal from Applications → Utilities, and compare the command output with the line for the same ZIP filename.</p>
+              <pre><code>cd ~/Downloads
+shasum -a 256 MiaoRight-v0.1.3-*.zip</code></pre>
+              <p>After moving the app to Applications, verify its signature. If Terminal returns to the prompt with no output, the check passed. If it reports an error, download again or report it to the project.</p>
+              <pre><code>codesign --verify --deep --strict "/Applications/MiaoRight.app"</code></pre>
+              <p>If both checks pass, you can remove the download quarantine flag from <strong>this copy of MiaoRight</strong> with the command below, then try opening it again. This bypasses the download quarantine check for that copy; use it only for a copy you trust.</p>
+              <pre><code>xattr -dr com.apple.quarantine "/Applications/MiaoRight.app"
+open "/Applications/MiaoRight.app"</code></pre>
+              <p>If the command reports a permission error or is not allowed, report your macOS version and the full message on the <a href="https://github.com/legjs/MiaoRight/issues" target="_blank" rel="noopener noreferrer">project issue page</a>.</p>
+            </details>
+          </details>
+        </li>
+        <li id="enable-extensions">
+          <h3>Enable Finder and Quick Look</h3>
+          <p>Open MiaoRight, then click Open System Settings in the General page or the extension warning. On recent macOS versions, go to <strong>General → Login Items & Extensions</strong> and find the Extensions section.</p>
+          <p>Turn on MiaoRight under Finder, and MiaoRight Archive Preview under Quick Look. If a group has an ⓘ button, open it before turning on the switch. On macOS 14, search System Settings for Extensions and look under Finder and Quick Look.</p>
+          <figure class="guide-figure">
+            <div class="settings-diagram" role="img" aria-label="Extensions diagram: enable MiaoRight under Finder and MiaoRight Archive Preview under Quick Look">
+              <div class="diagram-location">Login Items & Extensions <span>›</span> Extensions</div>
+              <div class="diagram-content">
+                <div class="diagram-row"><span>Finder<small>MiaoRight · file context menu</small></span><span class="diagram-switch" aria-hidden="true"></span><span class="sr-only">On</span></div>
+                <div class="diagram-row"><span>Quick Look<small>MiaoRight Archive Preview</small></span><span class="diagram-switch" aria-hidden="true"></span><span class="sr-only">On</span></div>
+              </div>
+            </div>
+            <figcaption>Enable both extensions. <a href="https://support.apple.com/zh-cn/guide/mac-help/mtusr003/mac" target="_blank" rel="noopener noreferrer">Apple extension guide</a></figcaption>
+          </figure>
+          <p>Back in Finder, select a file and right-click to check the MiaoRight menu. To preview an archive, select a ZIP and use Quick Look. You can open the preview pane from View → Show Preview, or press ⇧⌘P to show or hide it. If the extension does not appear, quit and reopen MiaoRight. If it still does not appear, restart Finder from MiaoRight's General page and try again.</p>
+        </li>
+        <li id="enable-clipboard">
+          <h3>Enable the clipboard and direct paste</h3>
+          <p>Open the Clipboard page in MiaoRight and turn on <strong>Record Clipboard History</strong>. Copy some text and press <kbd class="kbd">⇧⌘V</kbd>; the new item appears in the panel.</p>
+          <p>To paste directly into another app, click Grant Access, then go to <strong>Privacy & Security → Accessibility</strong> and turn on MiaoRight. If it is not listed, click + and choose MiaoRight.app from Applications. Confirm with your Mac password or Touch ID.</p>
+          <figure class="guide-figure">
+            <div class="settings-diagram" role="img" aria-label="Clipboard diagram: turn on Record Clipboard History with the ⇧⌘V shortcut and enable MiaoRight under Accessibility">
+              <div class="diagram-location">MiaoRight <span>›</span> Clipboard</div>
+              <div class="diagram-content">
+                <div class="diagram-row"><span>Record clipboard history</span><span class="diagram-switch" aria-hidden="true"></span><span class="sr-only">On</span></div>
+                <div class="diagram-row"><span>Shortcut</span><kbd class="kbd">⇧⌘V</kbd></div>
+                <div class="permission-path">System Settings · Privacy & Security · Accessibility<div class="diagram-row"><span>MiaoRight</span><span class="diagram-switch" aria-hidden="true"></span><span class="sr-only">On</span></div></div>
+              </div>
+            </div>
+            <figcaption>The history switch controls capture; Accessibility lets MiaoRight send the paste.</figcaption>
+          </figure>
+          <p>Return to the app where you want to type, click the field, and press ⇧⌘V to paste a history item. You can also copy an item in the panel and press ⌘V. To paste the second-to-last item, the default shortcut is <kbd class="kbd">⌃⇧⌘V</kbd>.</p>
+        </li>
+      </ol>
+      <div class="guide-ready">
+        <h3>Try it now</h3>
+        <p>Copy a file path from the context menu, press ⇧⌘V to find it, then select a ZIP in Finder to see its contents. The … → Save… menu in clipboard history can save text, images, and files wherever you choose.</p>
+      </div>
+    </section>
+  </main>
+  <footer><div class="wrap"><a class="mark" href="../index.html">MiaoRight</a><p class="fine">Finder actions, clipboard history, and archive preview, always at hand.</p><p class="fine">© 2026 legjs and MiaoRight contributors · <a href="https://github.com/legjs/MiaoRight/blob/main/LICENSE">MIT License</a></p></div></footer>
+</body>
+</html>
