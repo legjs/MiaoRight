@@ -69,7 +69,7 @@ final class MenuBarController: NSObject, NSMenuDelegate {
         menu.removeAllItems()
 
         // 打开主窗口
-                let openItem = NSMenuItem(title: L10n.text("打开 MiaoRight", "Open MiaoRight"), action: #selector(openApp), keyEquivalent: "")
+        let openItem = NSMenuItem(title: L10n.text("打开 MiaoRight", "Open MiaoRight"), action: #selector(openApp), keyEquivalent: "")
         openItem.target = self
         menu.addItem(openItem)
 
@@ -98,15 +98,43 @@ final class MenuBarController: NSObject, NSMenuDelegate {
 
         menu.addItem(.separator())
 
+        let updates = AppUpdateService.shared
+        if case .available(let release) = updates.state {
+            let notesItem = NSMenuItem(
+                title: L10n.text(
+                    "查看新版本 \(release.tagName) 的更新日志…",
+                    "View What's New in \(release.tagName)…"
+                ),
+                action: #selector(showUpdateNotes),
+                keyEquivalent: ""
+            )
+            notesItem.target = self
+            menu.addItem(notesItem)
+        }
+
+        let checking = updates.state == .checking
+        let checkItem = NSMenuItem(
+            title: checking
+                ? L10n.text("正在检查更新…", "Checking for Updates…")
+                : L10n.text("检查更新…", "Check for Updates…"),
+            action: #selector(checkForUpdates),
+            keyEquivalent: ""
+        )
+        checkItem.target = self
+        checkItem.isEnabled = !checking
+        menu.addItem(checkItem)
+
+        menu.addItem(.separator())
+
         // 重启 Finder
-                let finderItem = NSMenuItem(title: L10n.text("重启 Finder", "Restart Finder"), action: #selector(restartFinder), keyEquivalent: "")
+        let finderItem = NSMenuItem(title: L10n.text("重启 Finder", "Restart Finder"), action: #selector(restartFinder), keyEquivalent: "")
         finderItem.target = self
         menu.addItem(finderItem)
 
         menu.addItem(.separator())
 
         // 退出
-                let quitItem = NSMenuItem(title: L10n.text("退出 MiaoRight", "Quit MiaoRight"), action: #selector(quitApp), keyEquivalent: "q")
+        let quitItem = NSMenuItem(title: L10n.text("退出 MiaoRight", "Quit MiaoRight"), action: #selector(quitApp), keyEquivalent: "q")
         quitItem.target = self
         menu.addItem(quitItem)
     }
@@ -150,6 +178,14 @@ final class MenuBarController: NSObject, NSMenuDelegate {
 
     @objc private func restartFinder() {
         FinderControl.restartFinder()
+    }
+
+    @objc private func checkForUpdates() {
+        AppUpdateService.shared.checkFromMenu()
+    }
+
+    @objc private func showUpdateNotes() {
+        AppUpdateService.shared.showUpdatePreferences()
     }
 
     @objc private func quitApp() {

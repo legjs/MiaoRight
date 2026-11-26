@@ -1,7 +1,6 @@
 import AppKit
 import MiaoRightShared
 import SwiftUI
-import UniformTypeIdentifiers
 
 struct AppUpdatePreferencesView: View {
     @State private var updates = AppUpdateService.shared
@@ -23,19 +22,6 @@ struct AppUpdatePreferencesView: View {
                 )
                 .labelsHidden()
                 .toggleStyle(.switch)
-            }
-            if updates.canInstallInPlace {
-                PreferenceRow(
-                    title: L10n.text("安装已下载的更新", "Install a Downloaded Update"),
-                    icon: "shippingbox",
-                    detail: L10n.text(
-                        "选择发行页面下载的 ZIP，妙右会自动校验、替换 /Applications/MiaoRight.app 并重新启动",
-                        "Choose a ZIP downloaded from the release page; MiaoRight verifies it, replaces /Applications/MiaoRight.app, and relaunches automatically"
-                    )
-                ) {
-                    Button(L10n.text("选择 ZIP…", "Choose ZIP…")) { chooseArchive() }
-                        .disabled(updates.isInstalling)
-                }
             }
             if case .available(let release) = updates.state {
                 availableRelease(release)
@@ -147,26 +133,6 @@ struct AppUpdatePreferencesView: View {
             ProgressView().controlSize(.small)
             Text(message).font(.system(size: 11)).foregroundStyle(.secondary)
         }.padding(.top, 10)
-    }
-
-    private func chooseArchive(for release: GitHubRelease? = nil) {
-        let panel = NSOpenPanel()
-        panel.title = L10n.text("选择妙右更新包", "Choose a MiaoRight Update")
-        panel.message = L10n.text(
-            "选择从妙右发行页面下载的 ZIP。安装前会校验版本、架构和签名。",
-            "Choose the ZIP downloaded from the MiaoRight release page. Its version, architecture, and signature will be verified."
-        )
-        panel.allowedContentTypes = [.zip]
-        panel.allowsMultipleSelection = false
-        panel.canChooseDirectories = false
-        guard panel.runModal() == .OK, let url = panel.url else { return }
-        Task {
-            if let release {
-                await updates.installUpdate(release, archiveURL: url)
-            } else {
-                await updates.installDownloadedUpdate(from: url)
-            }
-        }
     }
 
     private var detail: String {

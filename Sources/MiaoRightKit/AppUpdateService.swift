@@ -289,11 +289,15 @@ public final class AppUpdateService {
     }
 
     public func checkFromMenu() {
+        showUpdatePreferences()
+        Task { await check() }
+    }
+
+    func showUpdatePreferences() {
         preferencesRequested = true
         preferencesRequestID += 1
         WindowActionStorage.shared.showMainWindow()
         NotificationCenter.default.post(name: .showUpdatePreferences, object: nil)
-        Task { await check() }
     }
 
     func consumePreferencesRequest() -> Bool {
@@ -325,15 +329,11 @@ public final class AppUpdateService {
         }
     }
 
-    func installUpdate(_ release: GitHubRelease, archiveURL: URL? = nil) async {
-        await performInstall(release: release, archiveURL: archiveURL)
+    func installUpdate(_ release: GitHubRelease) async {
+        await performInstall(release: release)
     }
 
-    func installDownloadedUpdate(from archiveURL: URL) async {
-        await performInstall(release: nil, archiveURL: archiveURL)
-    }
-
-    private func performInstall(release: GitHubRelease?, archiveURL: URL?) async {
+    private func performInstall(release: GitHubRelease) async {
         guard !isInstalling else { return }
         guard canInstallInPlace else {
             installState = .failed(AppUpdateInstallError.notInstalledInApplications.localizedDescription)
@@ -350,25 +350,18 @@ public final class AppUpdateService {
 
         var replacementStarted = false
         do {
-            let archive: URL
-            if let archiveURL {
-                installState = .verifying
-                archive = archiveURL
-            } else {
-                guard let release else { throw AppUpdateInstallError.missingArchive }
-                guard let repository,
-                      let asset = release.installer(for: .current, repository: repository) else {
-                    throw AppUpdateInstallError.missingArchive
-                }
-                installState = .downloading
-                archive = try await AppUpdateInstaller.download(asset, into: stagingDirectory)
-                installState = .verifying
+            guard let repository,
+                  let asset = release.installer(for: .current, repository: repository) else {
+                throw AppUpdateInstallError.missingArchive
             }
+            installState = .downloading
+            let archive = try await AppUpdateInstaller.download(asset, into: stagingDirectory)
+            installState = .verifying
 
             let prepared = try await Task.detached(priority: .userInitiated) {
                 try AppUpdateInstaller.prepare(
                     archiveURL: archive,
-                    expectedTag: release?.tagName,
+                    expectedTag: release.tagName,
                     stagingDirectory: stagingDirectory
                 )
             }.value

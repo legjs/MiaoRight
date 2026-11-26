@@ -6,6 +6,14 @@ The format follows [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.1.0/
 
 ## [Unreleased]
 
+### Added
+
+- Added update controls to the menu bar icon menu, including a shortcut to the release notes when an update is available.
+
+### Removed
+
+- Removed manual ZIP selection from the app update page. Updates always download the matching release asset.
+
 ## [0.1.3] - 2026-11-25
 
 ### Added

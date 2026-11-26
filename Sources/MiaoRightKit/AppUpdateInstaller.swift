@@ -143,7 +143,7 @@ enum AppUpdateInstaller {
 
     static func prepare(
         archiveURL: URL,
-        expectedTag: String?,
+        expectedTag: String,
         stagingDirectory: URL,
         extractorURL: URL? = nil,
         certificateSHA1: String? = nil
@@ -239,28 +239,17 @@ enum AppUpdateInstaller {
         }
     }
 
-    private static func validate(_ candidateApp: URL, expectedTag: String?, expectedCertificateSHA1: String) throws {
+    private static func validate(_ candidateApp: URL, expectedTag: String, expectedCertificateSHA1: String) throws {
         guard let bundle = Bundle(url: candidateApp),
               bundle.bundleIdentifier == bundleIdentifier,
               let version = bundle.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String
         else {
             throw AppUpdateInstallError.invalidBundle
         }
-        guard let candidateVersion = AppVersion("v" + version) else {
+        guard let candidateVersion = AppVersion("v" + version),
+              let expectedVersion = AppVersion(expectedTag),
+              candidateVersion == expectedVersion else {
             throw AppUpdateInstallError.wrongVersion
-        }
-        if let expectedTag {
-            guard candidateVersion == AppVersion(expectedTag) else {
-                throw AppUpdateInstallError.wrongVersion
-            }
-        } else {
-            let currentVersion = (Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String)
-                .flatMap(AppVersion.init)
-            guard candidateVersion.prerelease.isEmpty,
-                  let currentVersion,
-                  candidateVersion > currentVersion else {
-                throw AppUpdateInstallError.wrongVersion
-            }
         }
 
         try runChecked("/usr/bin/codesign", ["--verify", "--deep", "--strict", candidateApp.path])
