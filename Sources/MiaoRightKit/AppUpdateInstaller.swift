@@ -145,12 +145,30 @@ enum AppUpdateInstaller {
         return archiveURL
     }
 
+    static func copyLocalAsset(_ asset: GitHubReleaseAsset, into stagingDirectory: URL) throws -> URL {
+        let archiveURL = stagingDirectory.appendingPathComponent(asset.name)
+        do {
+            try FileManager.default.copyItem(at: asset.downloadURL, to: archiveURL)
+            let attributes = try FileManager.default.attributesOfItem(atPath: archiveURL.path)
+            let size = (attributes[.size] as? NSNumber)?.int64Value ?? 0
+            guard (asset.size == 0 || size == Int64(asset.size)), isZIPFile(archiveURL) else {
+                throw AppUpdateInstallError.invalidArchive
+            }
+        } catch let error as AppUpdateInstallError {
+            throw error
+        } catch {
+            throw AppUpdateInstallError.downloadFailed
+        }
+        return archiveURL
+    }
+
     static func prepare(
         archiveURL: URL,
         expectedTag: String,
         stagingDirectory: URL,
         extractorURL: URL? = nil,
-        certificateSHA1: String? = nil
+        certificateSHA1: String? = nil,
+        allowDevelopmentSignature: Bool = false
     ) throws -> PreparedAppUpdate {
         guard archiveURL.pathExtension.lowercased() == "zip", isZIPFile(archiveURL) else {
             throw AppUpdateInstallError.invalidArchive
@@ -172,7 +190,12 @@ enum AppUpdateInstaller {
         guard isDirectory(candidateApp), candidateValues?.isSymbolicLink != true else {
             throw AppUpdateInstallError.invalidBundle
         }
-        try validate(candidateApp, expectedTag: expectedTag, expectedCertificateSHA1: expectedCertificateSHA1)
+        try validate(
+            candidateApp,
+            expectedTag: expectedTag,
+            expectedCertificateSHA1: expectedCertificateSHA1,
+            allowDevelopmentSignature: allowDevelopmentSignature
+        )
 
         let helperScript = stagingDirectory.appendingPathComponent("install-update.sh")
         let logDirectory = FileManager.default.homeDirectoryForCurrentUser
@@ -243,7 +266,12 @@ enum AppUpdateInstaller {
         }
     }
 
-    private static func validate(_ candidateApp: URL, expectedTag: String, expectedCertificateSHA1: String) throws {
+    private static func validate(
+        _ candidateApp: URL,
+        expectedTag: String,
+        expectedCertificateSHA1: String,
+        allowDevelopmentSignature: Bool
+    ) throws {
         guard let bundle = Bundle(url: candidateApp),
               bundle.bundleIdentifier == bundleIdentifier,
               let version = bundle.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String
@@ -257,21 +285,23 @@ enum AppUpdateInstaller {
         }
 
         try runChecked("/usr/bin/codesign", ["--verify", "--deep", "--strict", candidateApp.path])
-        let requirement = try designatedRequirement(for: candidateApp)
-        guard requirementContainsCertificate(requirement, fingerprint: expectedCertificateSHA1) else {
-            throw AppUpdateInstallError.wrongCertificate
-        }
-
-        let pluginDirectory = candidateApp.appendingPathComponent("Contents/PlugIns", isDirectory: true)
-        let plugins = (try? FileManager.default.contentsOfDirectory(
-            at: pluginDirectory,
-            includingPropertiesForKeys: nil,
-            options: [.skipsHiddenFiles]
-        ))?.filter { $0.pathExtension == "appex" } ?? []
-        for plugin in plugins {
-            let pluginRequirement = try designatedRequirement(for: plugin)
-            guard requirementContainsCertificate(pluginRequirement, fingerprint: expectedCertificateSHA1) else {
+        if !allowDevelopmentSignature {
+            let requirement = try designatedRequirement(for: candidateApp)
+            guard requirementContainsCertificate(requirement, fingerprint: expectedCertificateSHA1) else {
                 throw AppUpdateInstallError.wrongCertificate
+            }
+
+            let pluginDirectory = candidateApp.appendingPathComponent("Contents/PlugIns", isDirectory: true)
+            let plugins = (try? FileManager.default.contentsOfDirectory(
+                at: pluginDirectory,
+                includingPropertiesForKeys: nil,
+                options: [.skipsHiddenFiles]
+            ))?.filter { $0.pathExtension == "appex" } ?? []
+            for plugin in plugins {
+                let pluginRequirement = try designatedRequirement(for: plugin)
+                guard requirementContainsCertificate(pluginRequirement, fingerprint: expectedCertificateSHA1) else {
+                    throw AppUpdateInstallError.wrongCertificate
+                }
             }
         }
 

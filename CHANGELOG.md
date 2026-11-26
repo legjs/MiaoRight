@@ -10,7 +10,7 @@ The format follows [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.1.0/
 
 - Added a live update status to the menu bar icon menu for checking, up-to-date, failure, and available-update states.
 - The menu bar can install an available release directly and offers a separate release-notes shortcut.
-- Added a development-only update simulation switch to test the menu states, direct installation, and release notes without publishing a new version.
+- Added a development-only update simulation switch with a local v0.1.4 test package and simulated release notes for testing the menu, direct installation, and release-notes view.
 
 ### Removed
 

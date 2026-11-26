@@ -189,7 +189,7 @@ struct GitHubRelease: Codable, Sendable, Equatable {
 }
 
 enum UpdateCheckError: Error, Equatable {
-    case configuration, version, response, rateLimited, network, server(Int)
+    case configuration, version, response, rateLimited, network, server(Int), debugPackageMissing
     var message: String {
         switch self {
         case .configuration: L10n.text("更新地址未配置，请联系开发者。", "The update source is not configured. Please contact the developer.")
@@ -198,6 +198,10 @@ enum UpdateCheckError: Error, Equatable {
         case .rateLimited: L10n.text("GitHub 请求额度暂时已用尽，请稍后重试。", "GitHub’s request limit has been reached. Please try again later.")
         case .network: L10n.text("无法连接 GitHub，请检查网络后重试。", "Could not connect to GitHub. Check your connection and try again.")
         case .server: L10n.text("GitHub 暂时无法提供更新，请稍后重试。", "GitHub cannot provide updates right now. Please try again later.")
+        case .debugPackageMissing: L10n.text(
+            "调试更新包不存在。请先运行 scripts/build-debug-update.sh 生成 v0.1.4 测试包。",
+            "The debug update package is missing. Run scripts/build-debug-update.sh to generate the v0.1.4 test package."
+        )
         }
     }
 }
@@ -345,7 +349,7 @@ public final class AppUpdateService {
     }
 
     func setSimulatesAvailableUpdate(_ enabled: Bool) {
-        guard isDebugSimulationAvailable else { return }
+        guard isDebugSimulationAvailable, !isInstalling else { return }
         AppGroup.standardDefaults.set(enabled, forKey: Self.simulateAvailableKey)
         simulatesAvailableUpdate = enabled
         clearCachedRelease()
@@ -381,19 +385,34 @@ public final class AppUpdateService {
 
         var replacementStarted = false
         do {
-            guard let repository,
-                  let asset = release.installer(for: .current, repository: repository) else {
-                throw AppUpdateInstallError.missingArchive
+            let asset: GitHubReleaseAsset
+            if simulatesAvailableUpdate, isDebugSimulationAvailable,
+               let localAsset = release.assets.first(where: { $0.downloadURL.isFileURL }) {
+                asset = localAsset
+            } else {
+                guard let repository,
+                      let normalAsset = release.installer(for: .current, repository: repository) else {
+                    throw AppUpdateInstallError.missingArchive
+                }
+                asset = normalAsset
             }
+            let isDebugAsset = asset.downloadURL.isFileURL
             installState = .downloading
-            let archive = try await AppUpdateInstaller.download(asset, into: stagingDirectory)
+            let archive: URL
+            if isDebugAsset {
+                archive = try AppUpdateInstaller.copyLocalAsset(asset, into: stagingDirectory)
+            } else {
+                archive = try await AppUpdateInstaller.download(asset, into: stagingDirectory)
+            }
             installState = .verifying
+            let allowDevelopmentSignature = isDebugAsset && simulatesAvailableUpdate && isDebugSimulationAvailable
 
             let prepared = try await Task.detached(priority: .userInitiated) {
                 try AppUpdateInstaller.prepare(
                     archiveURL: archive,
                     expectedTag: release.tagName,
-                    stagingDirectory: stagingDirectory
+                    stagingDirectory: stagingDirectory,
+                    allowDevelopmentSignature: allowDevelopmentSignature
                 )
             }.value
             installState = .installing
@@ -413,6 +432,16 @@ public final class AppUpdateService {
         upToDateNoticePending = false
         let previousState = state
         state = .checking
+        if simulatesAvailableUpdate, isDebugSimulationAvailable {
+            if let release = simulatedRelease() {
+                markChecked()
+                clearCachedRelease()
+                state = .available(release)
+            } else {
+                state = .failed(.debugPackageMissing)
+            }
+            return
+        }
         guard let repository else {
             state = silentFailure ? previousState : .failed(.configuration)
             return
@@ -456,6 +485,58 @@ public final class AppUpdateService {
         } catch is CancellationError { state = silentFailure ? previousState : .idle }
         catch let error as UpdateCheckError { state = silentFailure ? previousState : .failed(error) }
         catch { state = silentFailure ? previousState : .failed(.network) }
+    }
+
+    private func simulatedRelease() -> GitHubRelease? {
+        let architecture = ReleaseArchitecture.current.rawValue
+        let url = FileManager.default.homeDirectoryForCurrentUser
+            .appendingPathComponent("Library/Application Support/MiaoRight/DebugUpdate/MiaoRight-v0.1.4-\(architecture).zip")
+        guard let attributes = try? FileManager.default.attributesOfItem(atPath: url.path),
+              let size = (attributes[.size] as? NSNumber)?.intValue else {
+            return nil
+        }
+        let notes = """
+        ## 中文
+
+        ### 新增
+
+        - 这是调试模拟的 v0.1.4 更新，不会发布到 GitHub。
+        - 菜单栏会显示“更新到 v0.1.4”，可直接安装本地测试包。
+        - 更新日志来自模拟内容。
+
+        ### 修复
+
+        - 无。
+
+        ## English
+
+        ### Added
+
+        - This is a simulated v0.1.4 update and is not published to GitHub.
+        - The menu shows “Update to v0.1.4” and installs the local test package directly.
+        - These release notes are simulated.
+
+        ### Fixed
+
+        - None.
+        """
+        let pageURL = repository?.releasesURL ?? URL(string: "https://github.com/legjs/MiaoRight/releases")!
+        return GitHubRelease(
+            name: "MiaoRight 0.1.4 (Debug)",
+            tagName: "v0.1.4",
+            pageURL: pageURL,
+            notes: notes,
+            publishedAt: ISO8601DateFormatter().string(from: Date()),
+            draft: false,
+            prerelease: false,
+            assets: [
+                GitHubReleaseAsset(
+                    name: "MiaoRight-v0.1.4-\(architecture).zip",
+                    downloadURL: url,
+                    size: size
+                )
+            ]
+        )
     }
 
     private func markChecked(at date: Date = .now) {

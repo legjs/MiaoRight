@@ -28,8 +28,8 @@ struct AppUpdatePreferencesView: View {
                     title: L10n.text("调试：模拟发现新版本", "Debug: Simulate an Available Update"),
                     icon: "hammer",
                     detail: L10n.text(
-                        "仅开发签名版本可用。开启后会把当前已发布的最新版本视为可更新，用于测试菜单、直接安装和更新日志；安装会使用真实发布包。",
-                        "Available only in development-signed builds. Treats the latest published release as an update for testing the menu, direct install, and release notes. Installation uses the real release package."
+                        "仅开发签名版本可用。开启后使用本地 v0.1.4 测试包，菜单和更新页显示 v0.1.4，并用模拟内容展示更新日志；如提示缺少调试包，先运行 scripts/build-debug-update.sh。",
+                        "Available only in development-signed builds. Uses a local v0.1.4 test package, shows v0.1.4 in the menu and update page, and displays simulated release notes. If the package is missing, run scripts/build-debug-update.sh first."
                     )
                 ) {
                     Toggle(
@@ -41,12 +41,13 @@ struct AppUpdatePreferencesView: View {
                     )
                     .labelsHidden()
                     .toggleStyle(.switch)
+                    .disabled(updates.isInstalling)
                 }
             }
             if updates.simulatesAvailableUpdate {
                 Text(L10n.text(
-                    "调试模拟已开启。更新目标为当前已发布的最新版本，安装会替换 /Applications/MiaoRight.app。",
-                    "Debug simulation is on. The target is the latest published release; installing replaces /Applications/MiaoRight.app."
+                    "调试模拟已开启：菜单显示更新到 v0.1.4，使用本地开发签名测试包直接安装，不会发布到 GitHub。",
+                    "Debug simulation is on. The menu shows Update to v0.1.4, the local development-signed test package installs directly, and nothing is published to GitHub."
                 ))
                 .font(.system(size: 11))
                 .foregroundStyle(.orange)
@@ -84,8 +85,10 @@ struct AppUpdatePreferencesView: View {
                     .font(.system(size: 11)).foregroundStyle(.secondary)
             }
             ReleaseNotesView(markdown: release.notes)
-            if let repository = updates.repository,
-               let installer = release.installer(for: .current, repository: repository) {
+            let repository = updates.repository
+            let currentInstaller = currentInstaller(for: release)
+
+            if let installer = currentInstaller {
                 if updates.canInstallInPlace {
                     HStack(spacing: 12) {
                         Button(L10n.text("下载、安装并重新启动", "Download, Install, and Relaunch")) {
@@ -103,12 +106,21 @@ struct AppUpdatePreferencesView: View {
                     .font(.system(size: 11)).foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
                     if !updates.isProductionInstallation {
-                        Text(L10n.text(
-                            "当前是开发签名版本。安装发布包后会切换为生产签名，系统权限和登录项需要重新确认一次。",
-                            "This is a development-signed build. Installing the release switches to the production signature and requires confirming system permissions and the login item once."
-                        ))
-                        .font(.system(size: 11)).foregroundStyle(.orange)
-                        .fixedSize(horizontal: false, vertical: true)
+                        if updates.simulatesAvailableUpdate {
+                            Text(L10n.text(
+                                "调试模拟使用本地开发签名的 v0.1.4 测试包，不会切换生产签名。",
+                                "The debug simulation uses a local development-signed v0.1.4 package and does not switch to the production signature."
+                            ))
+                            .font(.system(size: 11)).foregroundStyle(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                        } else {
+                            Text(L10n.text(
+                                "当前是开发签名版本。安装发布包后会切换为生产签名，系统权限和登录项需要重新确认一次。",
+                                "This is a development-signed build. Installing the release switches to the production signature and requires confirming system permissions and the login item once."
+                            ))
+                            .font(.system(size: 11)).foregroundStyle(.orange)
+                            .fixedSize(horizontal: false, vertical: true)
+                        }
                     }
                 } else {
                     HStack(spacing: 12) {
@@ -116,7 +128,7 @@ struct AppUpdatePreferencesView: View {
                             .buttonStyle(.borderedProminent)
                         Button(L10n.text("打开发行页面", "Open Release Page")) { NSWorkspace.shared.open(release.pageURL) }
                             .buttonStyle(.borderless)
-                        if let checksums = release.checksums(repository: repository) {
+                        if let repository, let checksums = release.checksums(repository: repository) {
                             Button("SHA-256") { NSWorkspace.shared.open(checksums.downloadURL) }
                                 .buttonStyle(.borderless)
                         }
@@ -140,13 +152,24 @@ struct AppUpdatePreferencesView: View {
         }.padding(.vertical, 16)
     }
 
+    private func currentInstaller(for release: GitHubRelease) -> GitHubReleaseAsset? {
+        if updates.simulatesAvailableUpdate, updates.isDebugSimulationAvailable {
+            let name = "MiaoRight-\(release.tagName)-\(ReleaseArchitecture.current.rawValue).zip"
+            return release.assets.first { $0.name == name }
+        }
+        guard let repository = updates.repository else { return nil }
+        return release.installer(for: .current, repository: repository)
+    }
+
     @ViewBuilder
     private var installStatus: some View {
         switch updates.installState {
         case .idle:
             EmptyView()
         case .downloading:
-            installProgress(L10n.text("正在下载更新…", "Downloading update…"))
+            installProgress(updates.simulatesAvailableUpdate
+                ? L10n.text("正在准备调试更新包…", "Preparing the debug update package…")
+                : L10n.text("正在下载更新…", "Downloading update…"))
         case .verifying:
             installProgress(L10n.text("正在校验更新包…", "Verifying update…"))
         case .installing:
