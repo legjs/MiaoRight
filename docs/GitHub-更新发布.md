@@ -39,7 +39,7 @@ gh secret set MIAORIGHT_SIGNING_P12_PASSWORD
 
 工作流会把证书导入临时钥匙串，并用无交互权限和默认钥匙串完成签名。自签身份不需要加入系统信任；查询身份时必须检查所有匹配项，不能只依赖 `find-identity -v`。缺少任一 Secret 或找不到证书时，构建直接失败。构建后的 App 和扩展必须显示 `Authority=MiaoRight Release`，签名要求应包含固定的 `certificate leaf` 指纹。这样同一 Bundle ID 的后续版本可以沿用首次获得的空间权限。自签证书仍无法通过 Apple 公证，首次安装时可能需要在系统中手动允许打开。
 
-发布完成后同步更新 `website/download.html` 中的版本号、DMG 链接和 ZIP 链接，以及 `website/install.html` 的架构说明。下载页面向首次安装时使用 DMG；应用内更新继续使用版本化 ZIP。旧的 `v0.1.1` 只有 ZIP，后续版本才会同时提供两种格式。
+发布完成后同步更新 `website/download.html` 中的版本号、DMG 链接和 ZIP 链接，以及该页安装引导中的架构说明。下载页面向首次安装时使用 DMG；应用内更新继续使用版本化 ZIP。旧的 `v0.1.1` 只有 ZIP，后续版本才会同时提供两种格式。
 
 每个稳定标签必须提供 `docs/release-notes/<tag>.md`，并同步更新累计式 [CHANGELOG.md](../CHANGELOG.md) 与 [CHANGELOG.zh-CN.md](../CHANGELOG.zh-CN.md)。发布工作流会把版本文件写为 GitHub Release 正文，并检查两个 changelog 是否包含当前版本；任一缺失时发布会失败。格式遵循 Keep a Changelog 与 [release notes 规范](release-notes/README.md)，分类使用 Added / Changed / Deprecated / Removed / Fixed / Security 及对应中文标题。App 更新页会按当前界面语言提取对应段落并显示分类和项目符号。
 

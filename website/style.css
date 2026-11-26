@@ -30,7 +30,7 @@
 }
 * { margin: 0; padding: 0; box-sizing: border-box; }
 html { scroll-behavior: smooth; }
-section[id] { scroll-margin-top: 52px; }
+section[id] { scroll-margin-top: 68px; }
 body {
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro SC", "PingFang SC", "Helvetica Neue", sans-serif;
   background: var(--bg);
@@ -54,21 +54,27 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--blue); outline-
   border-bottom: 1px solid var(--hairline);
 }
 .topbar-inner {
-  max-width: 980px; margin: 0 auto; padding: 0 24px;
-  height: 52px; display: flex; align-items: center; gap: 28px;
+  max-width: 1040px; margin: 0 auto; padding: 0 24px;
+  height: 56px; display: flex; align-items: center; gap: 24px;
 }
-.wordmark { display: flex; align-items: center; gap: 9px; font-size: 15px; font-weight: 600; letter-spacing: 0.01em; }
-.wordmark svg { display: block; }
-.topbar nav { display: flex; gap: 24px; margin-left: auto; }
-.topbar nav a { font-size: 13px; color: var(--ink-2); transition: color .18s; }
+.wordmark { display: flex; align-items: center; gap: 9px; font-size: 15px; font-weight: 600; letter-spacing: 0.01em; white-space: nowrap; }
+.wordmark svg { display: block; flex: none; }
+.wordmark .brand-en { color: var(--ink-2); font-weight: 500; }
+.topbar nav { display: flex; align-items: center; gap: 20px; margin-left: auto; }
+.topbar nav a { font-size: 13px; color: var(--ink-2); transition: color .18s; white-space: nowrap; }
 .topbar nav a:hover { color: var(--ink); }
-.topbar .version { font-size: 12px; color: var(--ink-3); }
-.wordmark { white-space: nowrap; }
-.topbar nav a { white-space: nowrap; }
+.topbar nav a[aria-current="page"] { color: var(--ink); font-weight: 500; }
+.lang-switch { display: inline-flex; align-items: center; justify-content: center; min-width: 34px; height: 26px; margin-left: 2px; padding: 0 9px; border: 1px solid var(--hairline); border-radius: 999px; font-size: 12px !important; color: var(--ink-2); }
+.lang-switch:hover { border-color: var(--blue); color: var(--blue); }
+.lang-switch .lang-short { display: none; }
 @media (max-width: 720px) {
-  .topbar-inner { gap: 16px; }
-  .topbar nav { gap: 16px; margin-left: auto; }
-  .topbar .version { display: none; }
+  .topbar-inner { gap: 12px; padding: 0 16px; }
+  .topbar nav { gap: 12px; }
+  .topbar nav a { font-size: 12px; }
+  .wordmark .brand-en { display: none; }
+  .lang-switch { min-width: 30px; height: 24px; padding: 0 7px; }
+  .lang-switch .lang-full { display: none; }
+  .lang-switch .lang-short { display: inline; }
 }
 
 /* ---------- 英雄区 ---------- */
@@ -188,7 +194,7 @@ section.feature .lede {
 
 /* 剪贴板面板 */
 .clipboard-panel {
-  width: 320px; margin: 0 auto; text-align: left;
+  width: min(320px, 100%); margin: 0 auto; text-align: left;
   background: var(--glass-menu);
   -webkit-backdrop-filter: saturate(180%) blur(28px);
   backdrop-filter: saturate(180%) blur(28px);
@@ -280,7 +286,7 @@ footer .mark { font-size: 13px; font-weight: 600; }
 .archive-file-list > div { padding: 8px 10px; border-radius: 5px; overflow-wrap: anywhere; }
 .archive-file-selected { background: var(--blue); color: #fff; }
 .archive-preview-pane { min-width: 0; background: #fff; }
-.download-main { max-width: 620px; margin: 0 auto; padding: 72px 24px 80px; }
+.download-main { max-width: 720px; margin: 0 auto; padding: 72px 24px 80px; }
 .download-main h1 { font-size: clamp(36px, 6vw, 48px); line-height: 1.2; letter-spacing: -.025em; }
 .download-sub { margin: 14px 0 30px; color: var(--ink-2); }
 .download-box { padding: 28px; border: 1px solid var(--hairline); border-radius: 16px; background: var(--surface); }
@@ -298,8 +304,8 @@ input:focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; }
 .download-links small { color: var(--ink-2); font-size: 12px; }
 .download-note { margin-top: 22px; font-size: 13px; color: var(--ink-2); }
 .download-note a { color: var(--blue); text-decoration: underline; }
-.install-help { margin-top: 36px; }
-.install-help h2 { font-size: 20px; margin-bottom: 12px; }
+.install-help { margin-top: 52px; }
+.install-help h2 { font-size: 28px; margin-bottom: 12px; }
 .install-help ol { padding-left: 22px; font-size: 14px; color: var(--ink-2); }
 .install-help li { margin: 10px 0; }
 [hidden] { display: none !important; }
@@ -307,10 +313,7 @@ input:focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; }
   .hero { padding: 54px 20px 180px; }
   .topbar-inner { gap: 12px; }
   .topbar nav { gap: 12px; }
-  .topbar nav a { font-size: 12px; }
-  .topbar nav .vault-nav { display: none; }
-  .topbar nav .install-nav { display: none; }
-  .task { align-items: flex-start; flex-direction: column; gap: 6px; }
+  .topbar nav a { font-size: 12px; }  .task { align-items: flex-start; flex-direction: column; gap: 6px; }
   .vault-tabs .caps span { padding: 6px 9px; }
   .download-box { padding: 22px; }
   .chip-options { flex-direction: column; }
@@ -323,8 +326,8 @@ input:focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; }
 .guide-caption { margin-top: 10px; color: var(--ink-2); font-size: 12px; }
 .install-help .install-steps { list-style: none; counter-reset: install; padding: 0; color: var(--ink); }
 .install-steps > li { counter-increment: install; position: relative; border-top: 1px solid var(--hairline); margin: 30px 0 0; padding-top: 25px; scroll-margin-top: 72px; }
-.install-steps > li > h3 { font-size: 19px; display: flex; align-items: baseline; gap: 10px; margin-bottom: 12px; line-height: 1.5; }
-.install-steps > li > h3::before { content: counter(install); color: var(--blue); font-size: 16px; flex: none; }
+.install-steps > li > h3 { font-size: 19px; display: flex; align-items: center; gap: 10px; margin-bottom: 12px; line-height: 1.5; }
+.install-steps > li > h3::before { content: counter(install); display: inline-grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: var(--blue); color: #fff; font-size: 13px; font-weight: 600; flex: none; }
 .install-steps p { font-size: 14px; color: var(--ink-2); line-height: 1.85; margin-top: 12px; }
 .install-steps strong { font-weight: 600; color: var(--ink); }
 .install-help a { color: var(--blue); text-decoration: underline; text-underline-offset: 3px; }
@@ -366,4 +369,20 @@ input:focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; }
   .install-transfer small { font-size: 10px; }
   .diagram-content { padding: 14px; }
   .diagram-action { padding: 6px 9px; }
+}
+
+/* Install guide on the download page */
+.guide-toc { display: flex; flex-wrap: wrap; gap: 8px; margin: 18px 0 0; }
+.guide-toc a { padding: 6px 12px; border: 1px solid var(--hairline); border-radius: 999px; font-size: 12.5px; color: var(--ink-2); text-decoration: none; }
+.guide-toc a:hover { border-color: var(--blue); color: var(--blue); }
+.download-next { margin-top: 20px; }
+.install-help { border-top: 1px solid var(--hairline); padding-top: 32px; }
+.install-help .guide-intro { max-width: 680px; }
+@media (max-width: 640px) {
+  .guide-toc a { font-size: 12px; padding: 5px 10px; }
+}
+
+@media (max-width: 420px) {
+  .topbar nav a:first-child,
+  .topbar nav a[target="_blank"] { display: none; }
 }
