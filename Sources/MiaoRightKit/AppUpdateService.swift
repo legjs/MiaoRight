@@ -260,6 +260,7 @@ public final class AppUpdateService {
     private var preferencesRequested = false
     private(set) var automaticallyChecksForUpdates: Bool
     private(set) var lastCheckedAt: Date?
+    private(set) var lastUpToDateAt: Date?
     private(set) var canInstallInPlace: Bool
     private(set) var isProductionInstallation: Bool
     let repository: UpdateRepository?
@@ -379,6 +380,7 @@ public final class AppUpdateService {
 
     private func performCheck(silentFailure: Bool) async {
         guard !isChecking else { return }
+        lastUpToDateAt = nil
         let previousState = state
         state = .checking
         guard let repository else {
@@ -412,6 +414,7 @@ public final class AppUpdateService {
                 state = .available(release)
             } else {
                 clearCachedRelease()
+                lastUpToDateAt = .now
                 state = .upToDate
             }
         } catch is CancellationError { state = silentFailure ? previousState : .idle }

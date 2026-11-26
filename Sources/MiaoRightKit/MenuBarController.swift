@@ -13,6 +13,9 @@ final class MenuBarController: NSObject, NSMenuDelegate {
         menu.delegate = self
         return menu
     }()
+    private var updateItem: NSMenuItem?
+    private var updateNotesItem: NSMenuItem?
+    private var updateRefreshTimer: Timer?
 
     override private init() {
         super.init()
@@ -60,12 +63,15 @@ final class MenuBarController: NSObject, NSMenuDelegate {
 
     private func removeStatusItem() {
         guard let item = statusItem else { return }
+        stopUpdateRefresh()
         NSStatusBar.system.removeStatusItem(item)
         statusItem = nil
         logger.info("Menu bar icon disabled")
     }
 
     private func rebuildMenu() {
+        updateItem = nil
+        updateNotesItem = nil
         menu.removeAllItems()
 
         // 打开主窗口
@@ -98,31 +104,26 @@ final class MenuBarController: NSObject, NSMenuDelegate {
 
         menu.addItem(.separator())
 
-        let updates = AppUpdateService.shared
-        if case .available(let release) = updates.state {
-            let notesItem = NSMenuItem(
-                title: L10n.text(
-                    "查看新版本 \(release.tagName) 的更新日志…",
-                    "View What's New in \(release.tagName)…"
-                ),
-                action: #selector(showUpdateNotes),
-                keyEquivalent: ""
-            )
-            notesItem.target = self
-            menu.addItem(notesItem)
-        }
-
-        let checking = updates.state == .checking
-        let checkItem = NSMenuItem(
-            title: checking
-                ? L10n.text("正在检查更新…", "Checking for Updates…")
-                : L10n.text("检查更新…", "Check for Updates…"),
-            action: #selector(checkForUpdates),
+        let updateItem = NSMenuItem(
+            title: L10n.text("检查更新…", "Check for Updates…"),
+            action: #selector(performUpdateAction),
             keyEquivalent: ""
         )
-        checkItem.target = self
-        checkItem.isEnabled = !checking
-        menu.addItem(checkItem)
+        updateItem.target = self
+        menu.addItem(updateItem)
+        self.updateItem = updateItem
+
+        let notesItem = NSMenuItem(
+            title: "",
+            action: #selector(showUpdateNotes),
+            keyEquivalent: ""
+        )
+        notesItem.target = self
+        notesItem.isHidden = true
+        menu.addItem(notesItem)
+        self.updateNotesItem = notesItem
+
+        refreshUpdateItems()
 
         menu.addItem(.separator())
 
@@ -141,6 +142,96 @@ final class MenuBarController: NSObject, NSMenuDelegate {
 
     func menuWillOpen(_ menu: NSMenu) {
         rebuildMenu() // 每次打开重建,确保语言切换后文字正确
+        startUpdateRefresh()
+    }
+
+    func menuDidClose(_ menu: NSMenu) {
+        stopUpdateRefresh()
+    }
+
+    private func startUpdateRefresh() {
+        stopUpdateRefresh()
+        let timer = Timer(
+            timeInterval: 0.5,
+            target: self,
+            selector: #selector(timerDidFireForUpdateRefresh(_:)),
+            userInfo: nil,
+            repeats: true
+        )
+        RunLoop.main.add(timer, forMode: .common)
+        updateRefreshTimer = timer
+    }
+
+    private func stopUpdateRefresh() {
+        updateRefreshTimer?.invalidate()
+        updateRefreshTimer = nil
+    }
+
+    @objc private func timerDidFireForUpdateRefresh(_ timer: Timer) {
+        refreshUpdateItems()
+    }
+
+    private func refreshUpdateItems() {
+        guard let updateItem, let updateNotesItem else { return }
+        let previousTitle = updateItem.title
+        let previousEnabled = updateItem.isEnabled
+        let previousNotesTitle = updateNotesItem.title
+        let previousNotesHidden = updateNotesItem.isHidden
+        let updates = AppUpdateService.shared
+        updateNotesItem.isHidden = true
+
+        switch updates.state {
+        case .checking:
+            updateItem.title = L10n.text("正在检查更新…", "Checking for Updates…")
+            updateItem.isEnabled = false
+        case .available(let release):
+            updateNotesItem.isHidden = false
+            updateNotesItem.title = L10n.text(
+                "查看 \(release.tagName) 更新日志…",
+                "View \(release.tagName) Release Notes…"
+            )
+            if updates.isInstalling {
+                updateItem.title = L10n.text(
+                    "正在更新到 \(release.tagName)…",
+                    "Updating to \(release.tagName)…"
+                )
+                updateItem.isEnabled = false
+            } else if updates.canInstallInPlace {
+                updateItem.title = L10n.text(
+                    "更新到 \(release.tagName)…",
+                    "Update to \(release.tagName)…"
+                )
+                updateItem.isEnabled = true
+            } else {
+                updateItem.title = L10n.text(
+                    "查看 \(release.tagName) 更新…",
+                    "View \(release.tagName) Update…"
+                )
+                updateItem.isEnabled = true
+            }
+        case .upToDate:
+            if let checkedAt = updates.lastUpToDateAt,
+               Date().timeIntervalSince(checkedAt) < 4 {
+                updateItem.title = L10n.text("你的版本已最新", "You're Up to Date")
+                updateItem.isEnabled = false
+            } else {
+                updateItem.title = L10n.text("检查更新…", "Check for Updates…")
+                updateItem.isEnabled = true
+            }
+        case .failed:
+            updateItem.title = L10n.text("检查更新失败，点按重试…", "Check Failed — Try Again…")
+            updateItem.isEnabled = true
+        case .idle, .noRelease:
+            updateItem.title = L10n.text("检查更新…", "Check for Updates…")
+            updateItem.isEnabled = true
+        }
+
+        if updateItem.title != previousTitle || updateItem.isEnabled != previousEnabled {
+            updateItem.menu?.itemChanged(updateItem)
+        }
+        if updateNotesItem.title != previousNotesTitle || updateNotesItem.isHidden != previousNotesHidden {
+            updateNotesItem.menu?.itemChanged(updateNotesItem)
+        }
     }
 
     @MainActor
@@ -180,8 +271,19 @@ final class MenuBarController: NSObject, NSMenuDelegate {
         FinderControl.restartFinder()
     }
 
-    @objc private func checkForUpdates() {
-        AppUpdateService.shared.checkFromMenu()
+    @objc private func performUpdateAction() {
+        let updates = AppUpdateService.shared
+        switch updates.state {
+        case .available(let release):
+            updates.showUpdatePreferences()
+            if updates.canInstallInPlace {
+                Task { await updates.installUpdate(release) }
+            }
+        case .checking:
+            break
+        case .idle, .upToDate, .noRelease, .failed:
+            updates.checkFromMenu()
+        }
     }
 
     @objc private func showUpdateNotes() {
