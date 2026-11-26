@@ -16,6 +16,7 @@ final class MenuBarController: NSObject, NSMenuDelegate {
     private var updateItem: NSMenuItem?
     private var updateNotesItem: NSMenuItem?
     private var updateRefreshTimer: Timer?
+    private var upToDateNoticeUntil: Date?
 
     override private init() {
         super.init()
@@ -178,13 +179,18 @@ final class MenuBarController: NSObject, NSMenuDelegate {
         let previousNotesTitle = updateNotesItem.title
         let previousNotesHidden = updateNotesItem.isHidden
         let updates = AppUpdateService.shared
+        if updates.state == .upToDate, updates.consumeUpToDateNotice() {
+            upToDateNoticeUntil = Date().addingTimeInterval(4)
+        }
         updateNotesItem.isHidden = true
 
         switch updates.state {
         case .checking:
+            upToDateNoticeUntil = nil
             updateItem.title = L10n.text("正在检查更新…", "Checking for Updates…")
             updateItem.isEnabled = false
         case .available(let release):
+            upToDateNoticeUntil = nil
             updateNotesItem.isHidden = false
             updateNotesItem.title = L10n.text(
                 "查看 \(release.tagName) 更新日志…",
@@ -210,18 +216,20 @@ final class MenuBarController: NSObject, NSMenuDelegate {
                 updateItem.isEnabled = true
             }
         case .upToDate:
-            if let checkedAt = updates.lastUpToDateAt,
-               Date().timeIntervalSince(checkedAt) < 4 {
+            if let until = upToDateNoticeUntil, Date() < until {
                 updateItem.title = L10n.text("你的版本已最新", "You're Up to Date")
                 updateItem.isEnabled = false
             } else {
+                upToDateNoticeUntil = nil
                 updateItem.title = L10n.text("检查更新…", "Check for Updates…")
                 updateItem.isEnabled = true
             }
         case .failed:
+            upToDateNoticeUntil = nil
             updateItem.title = L10n.text("检查更新失败，点按重试…", "Check Failed — Try Again…")
             updateItem.isEnabled = true
         case .idle, .noRelease:
+            upToDateNoticeUntil = nil
             updateItem.title = L10n.text("检查更新…", "Check for Updates…")
             updateItem.isEnabled = true
         }

@@ -258,9 +258,9 @@ public final class AppUpdateService {
     private(set) var installState: InstallState = .idle
     private(set) var preferencesRequestID = 0
     private var preferencesRequested = false
+    private var upToDateNoticePending = false
     private(set) var automaticallyChecksForUpdates: Bool
     private(set) var lastCheckedAt: Date?
-    private(set) var lastUpToDateAt: Date?
     private(set) var canInstallInPlace: Bool
     private(set) var isProductionInstallation: Bool
     let repository: UpdateRepository?
@@ -304,6 +304,11 @@ public final class AppUpdateService {
     func consumePreferencesRequest() -> Bool {
         defer { preferencesRequested = false }
         return preferencesRequested
+    }
+
+    func consumeUpToDateNotice() -> Bool {
+        defer { upToDateNoticePending = false }
+        return upToDateNoticePending
     }
 
     func check() async {
@@ -380,7 +385,7 @@ public final class AppUpdateService {
 
     private func performCheck(silentFailure: Bool) async {
         guard !isChecking else { return }
-        lastUpToDateAt = nil
+        upToDateNoticePending = false
         let previousState = state
         state = .checking
         guard let repository else {
@@ -414,7 +419,7 @@ public final class AppUpdateService {
                 state = .available(release)
             } else {
                 clearCachedRelease()
-                lastUpToDateAt = .now
+                upToDateNoticePending = true
                 state = .upToDate
             }
         } catch is CancellationError { state = silentFailure ? previousState : .idle }
