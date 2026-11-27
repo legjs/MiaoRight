@@ -160,8 +160,16 @@ class MiaoRightAppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationShouldHandleReopen(_: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
         if !flag {
+            if consumeUpdateRelaunchSuppression() { return true }
             WindowActionStorage.shared.showMainWindow()
         }
+        return true
+    }
+
+    private func consumeUpdateRelaunchSuppression() -> Bool {
+        let defaults = AppGroup.standardDefaults
+        guard defaults.bool(forKey: AppUpdateService.relaunchPendingKey) else { return false }
+        defaults.set(false, forKey: AppUpdateService.relaunchPendingKey)
         return true
     }
 }

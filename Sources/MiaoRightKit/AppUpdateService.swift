@@ -245,6 +245,7 @@ public final class AppUpdateService {
     static let lastCheckedAtKey = "appUpdateLastCheckedAt"
     static let cachedReleaseKey = "appUpdateCachedRelease"
     static let checkInterval: TimeInterval = 24 * 60 * 60
+    public static let relaunchPendingKey = "appUpdateRelaunchPending"
     enum State: Equatable {
         case idle, checking, upToDate, noRelease
         case available(GitHubRelease)
@@ -414,6 +415,7 @@ public final class AppUpdateService {
             installState = .installing
             try AppUpdateInstaller.launchReplacement(prepared, currentPID: getpid())
             replacementStarted = true
+            AppGroup.standardDefaults.set(true, forKey: Self.relaunchPendingKey)
             NSApplication.shared.terminate(nil)
         } catch is CancellationError {
             try? FileManager.default.removeItem(at: stagingDirectory)
