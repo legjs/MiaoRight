@@ -9,7 +9,7 @@ struct AppUpdatePreferencesView: View {
         VStack(alignment: .leading, spacing: 0) {
             PreferenceRow(title: L10n.text("软件更新", "Software Update"), icon: "arrow.triangle.2.circlepath", detail: detail) {
                 Button(updates.isChecking ? L10n.text("正在检查…", "Checking…") : L10n.text("检查更新", "Check for Updates")) {
-                    Task { await updates.check() }
+                    Task { await updates.checkAndPresentPrompt() }
                 }.disabled(updates.isChecking)
             }
             PreferenceRow(title: L10n.text("自动检查更新", "Automatically Check for Updates"), icon: "clock.arrow.circlepath", detail: automaticCheckDetail) {

@@ -296,7 +296,7 @@ final class MenuBarController: NSObject, NSMenuDelegate {
     }
 
     @objc private func showUpdateNotes() {
-        AppUpdateService.shared.showUpdatePreferences()
+        AppUpdateService.shared.showAvailableUpdatePrompt()
     }
 
     @objc private func quitApp() {

@@ -12,6 +12,10 @@ The format follows [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.1.0/
 - The menu bar can install an available release directly and offers a separate release-notes shortcut.
 - Added a development-only update simulation switch with a local v0.1.4 test package and simulated release notes for testing the menu, direct installation, and release-notes view.
 
+### Changed
+
+- Manual update checks now show a dedicated dialog with release notes and an update button; checks with no update show an up-to-date alert.
+
 ### Removed
 
 - Removed manual ZIP selection from the app update page. Updates always download the matching release asset.

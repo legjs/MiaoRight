@@ -310,8 +310,30 @@ public final class AppUpdateService {
     }
 
     public func checkFromMenu() {
-        showUpdatePreferences()
-        Task { await check() }
+        Task { await checkAndPresentPrompt() }
+    }
+
+    func showAvailableUpdatePrompt() {
+        guard !AppGroup.isIsolated, case .available(let release) = state else { return }
+        AppUpdatePromptPresenter.shared.presentAvailable(release)
+    }
+
+    func checkAndPresentPrompt() async {
+        guard !AppGroup.isIsolated else { return }
+        await check()
+        guard !isChecking else { return }
+        switch state {
+        case .available(let release):
+            AppUpdatePromptPresenter.shared.presentAvailable(release)
+        case .upToDate:
+            AppUpdatePromptPresenter.shared.presentUpToDate()
+        case .failed(let error):
+            AppUpdatePromptPresenter.shared.presentFailure(error)
+        case .noRelease:
+            AppUpdatePromptPresenter.shared.presentNoRelease()
+        case .checking, .idle:
+            break
+        }
     }
 
     func showUpdatePreferences() {
