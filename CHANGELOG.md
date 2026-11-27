@@ -15,6 +15,8 @@ The format follows [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.1.0/
 ### Changed
 
 - Manual update checks now show a dedicated dialog with release notes and an update button; checks with no update show an up-to-date alert.
+- The app now launches silently without opening the settings window; the settings window appears only when explicitly requested from the menu bar or Dock.
+- The menu bar update action opens the update dialog directly instead of the settings window, and release notes appear only in the dialog.
 
 ### Removed
 

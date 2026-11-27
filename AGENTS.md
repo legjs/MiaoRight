@@ -59,7 +59,7 @@ open build/MiaoRight.app        # ⚠️ 必须用 open 启动,直接执行二�
 - **压缩解压**:ZIP、7Z、TAR.GZ、旧组合动作与新建 Excel/PPT 的 ZIP 打包统一走 `SevenZipArchive`。官方 arm64 与 x86_64 的 `7zz` 固定在 `ThirdParty/7zip`，构建前校验 SHA-256，按目标架构复制到 `Contents/Helpers` 并单独签名；许可和对应源码随包保留。先写入独立暂存目录，成功后发布；解压统一到旁边的新文件夹，不覆盖旧文件。TAR.GZ 分两步处理 TAR/gzip，ZIP 使用 Deflate；ZIP/7Z 解压密码通过 stdin 传递，不持久化。不得恢复系统 zip/ditto/tar 或依赖用户安装 Homebrew/Python 工具。
 - **压缩包预览**由 Quick Look 预览扩展独立读取目录，并显示在 Finder 的系统快速预览中。App 内不提供压缩包预览入口或快捷键。扩展只读，条目太多或读取超时会显示部分内容。目录加密的压缩包通过原有解压入口输入密码。
 - **跨进程协作**:扩展把执行请求写入 App Group 的 `pending_execution.json` → 主 App 的 `ScriptExecutor` 监听通知后认领执行;工作流请求带 `workflowId`
-- **单实例主窗口**:SwiftUI 使用 `WindowGroup(id: "main")` 保证冷启动自动出现窗口，并通过 `CommandGroup(replacing: .newItem)` 移除“新建窗口”命令。“打开设置”统一打开同一个主窗口并切到「通用」页；`WindowActionStorage.showMainWindow()` 用 `openingMainWindow` 合并并发开窗请求，避免重复窗口。不要恢复 SwiftUI 独立 Settings 场景或 New Window 菜单。
+- **单实例主窗口**:SwiftUI 使用 `WindowGroup(id: "main")` 保证主窗口唯一，冷启动时主窗口立即自动隐藏，应用以菜单栏形态静默运行；只有点击「设置…」、Dock 图标或右键设置入口时才通过 `WindowActionStorage.showMainWindow()` 显示主窗口并切到「通用」页，`openingMainWindow` 合并并发开窗请求避免重复窗口。菜单栏更新按钮直接弹更新对话框，不再打开设置页。不要恢复 SwiftUI 独立 Settings 场景或 New Window 菜单。
 - **菜单顺序**:Finder 与按需预览共用 `QuickMenuPlan`。核心顺序为复制路径、应用、终端、剪切、粘贴，再到更多操作；不按使用频率重排。`ActionUsage.record()` 仍记录成功执行，不能据此恢复自动置顶或最近使用主页面
 - **双语**:界面字符串一律 `L10n.text("中文", "English")`;动作名/描述经 `ActionNames` 映射(数据键为中文);语言偏好存 App Group,扩展构建菜单时读取
 - **工作流兼容**:`WorkflowStore` 保留旧工作流数据模型，`WorkflowMigrator` 将已有 workflows.json 迁移为组合动作，执行统一走 `PipelineEngine`。当前主窗口没有新建编排入口；不得因隐藏入口而清空用户配置

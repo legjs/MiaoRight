@@ -84,7 +84,6 @@ struct AppUpdatePreferencesView: View {
                 Text(L10n.text("发布于 \(formatDate(date))", "Published \(formatDate(date))"))
                     .font(.system(size: 11)).foregroundStyle(.secondary)
             }
-            ReleaseNotesView(markdown: release.notes)
             let repository = updates.repository
             let currentInstaller = currentInstaller(for: release)
 

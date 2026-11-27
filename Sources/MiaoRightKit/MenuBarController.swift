@@ -283,11 +283,8 @@ final class MenuBarController: NSObject, NSMenuDelegate {
     @objc private func performUpdateAction() {
         let updates = AppUpdateService.shared
         switch updates.state {
-        case .available(let release):
-            updates.showUpdatePreferences()
-            if updates.canInstallInPlace {
-                Task { await updates.installUpdate(release) }
-            }
+        case .available:
+            updates.showAvailableUpdatePrompt()
         case .checking:
             break
         case .idle, .upToDate, .noRelease, .failed:

@@ -38,6 +38,7 @@ public final class WindowActionStorage {
     public var openWindow: ((String) -> Void)?
     weak var mainWindow: NSWindow?
     private var openingMainWindow = false
+    public var suppressAutomaticMainWindow = false
 
     public func capture(_ action: OpenWindowAction) {
         openWindow = { id in
@@ -55,6 +56,7 @@ public final class WindowActionStorage {
 
     public func showMainWindow() {
         guard !AppGroup.isIsolated else { return }
+        suppressAutomaticMainWindow = false
         let window = mainWindow ?? NSApp.windows.first(where: {
             $0.canBecomeMain &&
                 $0.contentView != nil &&

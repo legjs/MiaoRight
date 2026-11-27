@@ -9,6 +9,35 @@ private enum CrossProcessNotifications {
 
 @MainActor
 class MiaoRightAppDelegate: NSObject, NSApplicationDelegate {
+    private var launchWindowDeadline = Date()
+
+    func applicationWillFinishLaunching(_: Notification) {
+        WindowActionStorage.shared.suppressAutomaticMainWindow = true
+        for name in [NSWindow.didBecomeKeyNotification, NSWindow.didBecomeMainNotification] {
+            NotificationCenter.default.addObserver(self, selector: #selector(mainWindowDidBecomeVisible(_:)), name: name, object: nil)
+        }
+        launchWindowDeadline = Date().addingTimeInterval(1.2)
+        let timer = Timer(timeInterval: 0.02, target: self, selector: #selector(hideLaunchWindowTick(_:)), userInfo: nil, repeats: true)
+        RunLoop.main.add(timer, forMode: .common)
+    }
+
+    @objc private func mainWindowDidBecomeVisible(_ notification: Notification) {
+        guard WindowActionStorage.shared.suppressAutomaticMainWindow,
+              let window = notification.object as? NSWindow,
+              window.identifier?.rawValue.hasPrefix("main-AppWindow") == true else { return }
+        window.orderOut(nil)
+    }
+
+    @objc private func hideLaunchWindowTick(_ timer: Timer) {
+        guard WindowActionStorage.shared.suppressAutomaticMainWindow, Date() < launchWindowDeadline else {
+            timer.invalidate()
+            return
+        }
+        for window in NSApp.windows where window.identifier?.rawValue.hasPrefix("main-AppWindow") == true && window.isVisible {
+            window.orderOut(nil)
+        }
+    }
+
     func applicationDidFinishLaunching(_: Notification) {
         AppearanceManager.apply()
         if let url = Bundle.main.url(forResource: "AppIcon", withExtension: "icns"), let icon = NSImage(contentsOf: url) {
@@ -21,30 +50,16 @@ class MiaoRightAppDelegate: NSObject, NSApplicationDelegate {
         let savedStateDir = FileManager.default.homeDirectoryForCurrentUser
             .appendingPathComponent("Library/Saved Application State/com.miaoright.app.savedState", isDirectory: true)
         try? FileManager.default.removeItem(at: savedStateDir)
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
-            let mainDisplayBounds = CGDisplayBounds(CGMainDisplayID())
-            for w in NSApp.windows where w.identifier?.rawValue.hasPrefix("main-AppWindow") == true {
-                var frame = w.frame
-                if !mainDisplayBounds.intersects(frame) {
-                    frame.origin.x = mainDisplayBounds.midX - frame.width / 2
-                    frame.origin.y = mainDisplayBounds.midY - frame.height / 2
-                    w.setFrame(frame, display: true)
-                }
-                if !w.isVisible {
-                    w.orderFrontRegardless()
-                }
+        let mainDisplayBounds = CGDisplayBounds(CGMainDisplayID())
+        for w in NSApp.windows where w.identifier?.rawValue.hasPrefix("main-AppWindow") == true {
+            var frame = w.frame
+            if !mainDisplayBounds.intersects(frame) {
+                frame.origin.x = mainDisplayBounds.midX - frame.width / 2
+                frame.origin.y = mainDisplayBounds.midY - frame.height / 2
+                w.setFrame(frame, display: true)
             }
-            WindowActionStorage.shared.showMainWindow()
-        }
-        // LSUIElement-style menu bar apps may not create a WindowGroup window at
-        // launch. Create the native fallback directly if SwiftUI has not produced
-        // a visible main window after the scene has had time to materialize.
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
-            let hasVisibleMainWindow = NSApp.windows.contains {
-                $0.identifier?.rawValue.contains("main") == true && $0.isVisible
-            }
-            if !hasVisibleMainWindow {
-                MiaoRightApp.presentFallbackMainWindow()
+            if w.isVisible {
+                w.orderOut(nil)
             }
         }
 
