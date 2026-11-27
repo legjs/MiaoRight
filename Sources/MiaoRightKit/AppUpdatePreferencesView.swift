@@ -23,37 +23,6 @@ struct AppUpdatePreferencesView: View {
                 .labelsHidden()
                 .toggleStyle(.switch)
             }
-            if updates.isDebugSimulationAvailable {
-                PreferenceRow(
-                    title: L10n.text("调试：模拟发现新版本", "Debug: Simulate an Available Update"),
-                    icon: "hammer",
-                    detail: L10n.text(
-                        "仅开发签名版本可用。开启后使用本地 v0.1.4 测试包，菜单和更新页显示 v0.1.4，并用模拟内容展示更新日志；如提示缺少调试包，先运行 scripts/build-debug-update.sh。",
-                        "Available only in development-signed builds. Uses a local v0.1.4 test package, shows v0.1.4 in the menu and update page, and displays simulated release notes. If the package is missing, run scripts/build-debug-update.sh first."
-                    )
-                ) {
-                    Toggle(
-                        L10n.text("模拟发现新版本", "Simulate an Available Update"),
-                        isOn: Binding(
-                            get: { updates.simulatesAvailableUpdate },
-                            set: { updates.setSimulatesAvailableUpdate($0) }
-                        )
-                    )
-                    .labelsHidden()
-                    .toggleStyle(.switch)
-                    .disabled(updates.isInstalling)
-                }
-            }
-            if updates.simulatesAvailableUpdate {
-                Text(L10n.text(
-                    "调试模拟已开启：菜单显示更新到 v0.1.4，使用本地开发签名测试包直接安装，不会发布到 GitHub。",
-                    "Debug simulation is on. The menu shows Update to v0.1.4, the local development-signed test package installs directly, and nothing is published to GitHub."
-                ))
-                .font(.system(size: 11))
-                .foregroundStyle(.orange)
-                .fixedSize(horizontal: false, vertical: true)
-                .padding(.top, 8)
-            }
             if case .available(let release) = updates.state {
                 availableRelease(release)
             }
@@ -67,10 +36,8 @@ struct AppUpdatePreferencesView: View {
 
     @ViewBuilder
     private func availableRelease(_ release: GitHubRelease) -> some View {
-        let title = updates.simulatesAvailableUpdate
-            ? L10n.text("调试模拟：\(release.tagName) 可更新", "Debug simulation: \(release.tagName) is available")
-            : (release.name.flatMap { $0.isEmpty ? nil : $0 }
-                ?? L10n.text("发现新版本 \(release.tagName)", "Version \(release.tagName) is available"))
+        let title = release.name.flatMap { $0.isEmpty ? nil : $0 }
+            ?? L10n.text("发现新版本 \(release.tagName)", "Version \(release.tagName) is available")
         VStack(alignment: .leading, spacing: 12) {
             HStack(alignment: .firstTextBaseline, spacing: 10) {
                 Text(title)
@@ -105,21 +72,12 @@ struct AppUpdatePreferencesView: View {
                     .font(.system(size: 11)).foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
                     if !updates.isProductionInstallation {
-                        if updates.simulatesAvailableUpdate {
-                            Text(L10n.text(
-                                "调试模拟使用本地开发签名的 v0.1.4 测试包，不会切换生产签名。",
-                                "The debug simulation uses a local development-signed v0.1.4 package and does not switch to the production signature."
-                            ))
-                            .font(.system(size: 11)).foregroundStyle(.secondary)
-                            .fixedSize(horizontal: false, vertical: true)
-                        } else {
-                            Text(L10n.text(
-                                "当前是开发签名版本。安装发布包后会切换为生产签名，系统权限和登录项需要重新确认一次。",
-                                "This is a development-signed build. Installing the release switches to the production signature and requires confirming system permissions and the login item once."
-                            ))
-                            .font(.system(size: 11)).foregroundStyle(.orange)
-                            .fixedSize(horizontal: false, vertical: true)
-                        }
+                        Text(L10n.text(
+                            "当前是开发签名版本。安装发布包后会切换为生产签名，系统权限和登录项需要重新确认一次。",
+                            "This is a development-signed build. Installing the release switches to the production signature and requires confirming system permissions and the login item once."
+                        ))
+                        .font(.system(size: 11)).foregroundStyle(.orange)
+                        .fixedSize(horizontal: false, vertical: true)
                     }
                 } else {
                     HStack(spacing: 12) {
@@ -152,10 +110,6 @@ struct AppUpdatePreferencesView: View {
     }
 
     private func currentInstaller(for release: GitHubRelease) -> GitHubReleaseAsset? {
-        if updates.simulatesAvailableUpdate, updates.isDebugSimulationAvailable {
-            let name = "MiaoRight-\(release.tagName)-\(ReleaseArchitecture.current.rawValue).zip"
-            return release.assets.first { $0.name == name }
-        }
         guard let repository = updates.repository else { return nil }
         return release.installer(for: .current, repository: repository)
     }
@@ -166,9 +120,7 @@ struct AppUpdatePreferencesView: View {
         case .idle:
             EmptyView()
         case .downloading:
-            installProgress(updates.simulatesAvailableUpdate
-                ? L10n.text("正在准备调试更新包…", "Preparing the debug update package…")
-                : L10n.text("正在下载更新…", "Downloading update…"))
+            installProgress(L10n.text("正在下载更新…", "Downloading update…"))
         case .verifying:
             installProgress(L10n.text("正在校验更新包…", "Verifying update…"))
         case .installing:
@@ -199,12 +151,6 @@ struct AppUpdatePreferencesView: View {
             "No stable release is publicly readable. For a private repository, sign in to GitHub and open the release page in your browser."
         )
         case .available(let release):
-            if updates.simulatesAvailableUpdate {
-                return L10n.text(
-                    "调试模拟：当前 \(AppUpdateService.currentVersion)，把 \(release.tagName) 视为可更新",
-                    "Debug simulation: \(AppUpdateService.currentVersion) treated as updatable to \(release.tagName)"
-                )
-            }
             return L10n.text("当前 \(AppUpdateService.currentVersion)，最新 \(release.tagName)", "Installed: \(AppUpdateService.currentVersion); latest: \(release.tagName)")
         case .failed(let error): return error.message
         }

@@ -187,11 +187,6 @@ private struct AppUpdateAvailableView: View {
             Text(L10n.text("当前版本 \(AppUpdateService.currentVersion)", "Installed \(AppUpdateService.currentVersion)"))
                 .font(.system(size: 11))
                 .foregroundStyle(.secondary)
-            if updates.simulatesAvailableUpdate {
-                Text(L10n.text("调试模拟：使用本地 v0.1.4 测试包", "Debug simulation: local v0.1.4 test package"))
-                    .font(.system(size: 11))
-                    .foregroundStyle(.orange)
-            }
         }
         .padding(20)
     }
@@ -209,9 +204,7 @@ private struct AppUpdateAvailableView: View {
         case .downloading:
             HStack(spacing: 8) {
                 ProgressView().controlSize(.small)
-                Text(updates.simulatesAvailableUpdate
-                    ? L10n.text("正在准备调试更新包…", "Preparing the debug update package…")
-                    : L10n.text("正在下载更新…", "Downloading update…"))
+                Text(L10n.text("正在下载更新…", "Downloading update…"))
                     .font(.system(size: 11))
                     .foregroundStyle(.secondary)
             }
