@@ -18,6 +18,12 @@ public struct QuickMenuSection: Equatable, Sendable {
 }
 
 public enum QuickMenuPlan {
+    public static var compressionChoices: [(title: String, icon: String, parameter: String)] {
+        [
+            (L10n.text("普通压缩…", "Compress…"), "archivebox", "standard"),
+            (L10n.text("加密压缩…", "Encrypt and Compress…"), "lock", "encrypted")
+        ]
+    }
     public static let applicationBundleIDs: [String: [String]] = [
         "在终端中打开": ["com.apple.Terminal"], "在 iTerm2 中打开": ["com.googlecode.iterm2"],
         "在 Warp 中打开": ["dev.warp.Warp-Stable"], "在 VS Code 中打开": ["com.microsoft.VSCode"],
@@ -95,10 +101,14 @@ public enum QuickMenuPlan {
         for name in [ActionID.cut, ActionID.paste] {
             append(actions.filter { $0.name == name }, icon: name == ActionID.cut ? "scissors" : "doc.on.clipboard")
         }
+        append(actions.filter { $0.name == "压缩…" }, icon: "archivebox")
+        append(actions.filter { $0.name == "解压到当前文件夹" }, icon: "arrow.up.doc")
         for kind in QuickFileShortcut.Kind.allCases {
             append(actions.filter { QuickFileShortcut(content: $0.content)?.kind == kind }, title: kind.menuTitle, icon: kind.icon)
         }
-        append(actions.filter { !consumed.contains($0.id) }, title: L10n.text("更多操作", "More Actions"), icon: "ellipsis.circle")
+        let destinationNames = Set(["移动到…", "复制到…"])
+        append(actions.filter { !consumed.contains($0.id) && !destinationNames.contains($0.name) },
+               title: L10n.text("更多操作", "More Actions"), icon: "ellipsis.circle")
         return result
     }
 }

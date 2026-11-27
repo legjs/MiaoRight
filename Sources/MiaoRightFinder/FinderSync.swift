@@ -149,6 +149,20 @@ class FinderSync: FIFinderSync {
             let item = NSMenuItem(title: title, action: #selector(executeScript(_:)), keyEquivalent: "")
             item.tag = currentScripts.count
             currentScripts.append(script)
+            if entry.name == "压缩…" {
+                let submenu = NSMenu(title: title)
+                submenu.autoenablesItems = false
+                for choice in QuickMenuPlan.compressionChoices {
+                    let action = choice.parameter == "encrypted" ? #selector(executeEncryptedCompression(_:)) : #selector(executeScript(_:))
+                    let option = NSMenuItem(title: choice.title, action: action, keyEquivalent: "")
+                    option.target = self
+                    option.tag = item.tag
+                    option.image = NSImage(systemSymbolName: choice.icon, accessibilityDescription: nil)
+                    submenu.addItem(option)
+                }
+                item.action = nil
+                item.submenu = submenu
+            }
             item.isEnabled = script.name != ActionID.paste || CutClipboard.load() != nil
             item.image = NSImage(systemSymbolName: entry.icon, accessibilityDescription: nil)
             if script.name == ActionID.deletePermanently {
@@ -162,6 +176,9 @@ class FinderSync: FIFinderSync {
                 submenu.autoenablesItems = false
                 let isApps = section.actions.allSatisfy { QuickMenuPlan.isApplication(name: $0.name, content: $0.content) }
                 for entry in section.actions { append(entry, to: submenu, appTitle: isApps) }
+                if let kind = QuickFileShortcut.Kind(menuTitle: title) {
+                    appendOtherLocationItem(to: submenu, kind: kind, selectionCount: selectionCount)
+                }
                 let item = NSMenuItem(title: title, action: nil, keyEquivalent: "")
                 item.image = NSImage(systemSymbolName: section.icon, accessibilityDescription: nil)
                 item.submenu = submenu
@@ -202,18 +219,36 @@ class FinderSync: FIFinderSync {
     /// `currentScripts` (the applicable list); `executeScript(_:)` looks the
     /// script up by `currentScripts[sender.tag]`.
     private func makeScriptItem(_ script: ExtensionScript, index: Int) -> NSMenuItem {
-        // 「移动到/复制到」动态子菜单:每个常用文件夹一个子项 + 选择其他文件夹…
-
         let item = NSMenuItem(title: ActionNames.name(script.name), action: #selector(executeScript(_:)), keyEquivalent: "")
         item.tag = index
         item.image = tintedSFSymbol(name: script.icon, accessibilityDescription: script.name)
         return item
     }
 
+    /// "Other Location..." entry for Move To/Copy To: always lets the user pick any folder.
+    private func appendOtherLocationItem(to submenu: NSMenu, kind: QuickFileShortcut.Kind, selectionCount: Int) {
+        let scriptName = kind == .move ? "移动到…" : "复制到…"
+        guard let script = currentScripts.first(where: { $0.name == scriptName }) else { return }
+        let item = NSMenuItem(
+            title: L10n.text("其他位置…", "Other Location…"),
+            action: #selector(executeScript(_:)),
+            keyEquivalent: ""
+        )
+        item.tag = currentScripts.firstIndex(where: { $0.id == script.id }) ?? -1
+        item.isEnabled = selectionCount > 0
+        item.image = tintedSFSymbol(name: "folder.badge.plus", accessibilityDescription: nil)
+        submenu.addItem(.separator())
+        submenu.addItem(item)
+    }
+
 
 
     @objc func executeScript(_ sender: AnyObject?) {
         submitExecution(from: sender, parameter: nil)
+    }
+
+    @objc private func executeEncryptedCompression(_ sender: AnyObject?) {
+        submitExecution(from: sender, parameter: "encrypted")
     }
 
 

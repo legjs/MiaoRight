@@ -116,6 +116,17 @@ public final class ScriptStore {
         hasLoaded = true
         loadCategories()
         loadScripts()
+        ensureDestinationActionsAvailable()
+    }
+
+    /// Older installs keep Move To/Copy To disabled, but the context menu
+    /// relies on them as the entry point for choosing an arbitrary folder.
+    private func ensureDestinationActionsAvailable() {
+        let destinationNames = Set(["移动到…", "复制到…"])
+        for library in ScriptLibrary.looseScripts where destinationNames.contains(library.name) {
+            guard let script = scripts.first(where: { $0.name == library.name }), !script.isEnabled else { continue }
+            setLibraryScript(library, isEnabled: true)
+        }
     }
 
     // MARK: - CRUD Operations
@@ -239,6 +250,11 @@ public final class ScriptStore {
             }
             addMissingLibraryScriptsIfNeeded()
             migrateOpenWithToQuickOpenIfNeeded()
+            removeRetiredShowInfoAction()
+            removeRetiredLegacyArchiveActions()
+            removeRetiredExtractAction()
+            ensureExtractHereActionAvailable()
+            ensureCompressionActionAvailable()
         } catch {
             storeLogger.error("Failed to decode scripts: \(error.localizedDescription)")
             // Save corrupted file for recovery
@@ -458,6 +474,51 @@ public final class ScriptStore {
             saveScripts()
             notifyExtension()
         }
+    }
+
+    private func removeRetiredShowInfoAction() {
+        let count = scripts.count
+        scripts.removeAll { $0.name == "显示简介" }
+        if scripts.count != count {
+            saveScripts()
+            notifyExtension()
+        }
+    }
+
+    private func removeRetiredLegacyArchiveActions() {
+        let retiredNames = Set(["在 Finder 中显示", "创建 TAR.GZ", "压缩为 ZIP", "压缩为 7Z", "解压 TAR.GZ", "解压 7Z"])
+        let count = scripts.count
+        scripts.removeAll { retiredNames.contains($0.name) }
+        if scripts.count != count {
+            saveScripts()
+            notifyExtension()
+        }
+    }
+
+    private func removeRetiredExtractAction() {
+        let count = scripts.count
+        scripts.removeAll { $0.name == "解压" }
+        if scripts.count != count {
+            saveScripts()
+            notifyExtension()
+        }
+    }
+
+    /// Compress… is the single top-level entry and opens the confirmation form.
+    private func ensureCompressionActionAvailable() {
+        guard let library = ScriptLibrary.allScripts.first(where: { $0.name == "压缩…" }) else { return }
+        guard let script = scripts.first(where: { $0.name == "压缩…" }), !script.isEnabled else { return }
+        setLibraryScript(library, isEnabled: true)
+    }
+
+    /// Extract to Current Folder covers every archive type, so the context menu
+    /// should always offer it when an archive is selected.
+    private func ensureExtractHereActionAvailable() {
+        guard let library = ScriptLibrary.allScripts.first(where: { $0.name == "解压到当前文件夹" }) else { return }
+        guard let script = scripts.first(where: { $0.name == "解压到当前文件夹" }) else { return }
+        let canonical = canonicalScript(from: library, id: script.id, isEnabled: true, categoryId: script.categoryId, existing: script)
+        guard scripts.first(where: { $0.id == script.id }) != canonical else { return }
+        setLibraryScript(library, isEnabled: true)
     }
 
     /// One-time, idempotent upgrade migration: stamp each built-in action that

@@ -131,13 +131,13 @@ final class SevenZipArchiveTests: XCTestCase {
         XCTAssertFalse(try FileManager.default.contentsOfDirectory(atPath: root.path).contains { $0.hasPrefix(".miaoright-7z-") })
     }
 
-    func testArchiveActionsUseNativeRuntimeAnd7ZFilter() throws {
-        let compress = try XCTUnwrap(ScriptLibrary.libraryScript(named: "压缩为 7Z"))
-        let extract = try XCTUnwrap(ScriptLibrary.libraryScript(named: "解压 7Z"))
-        XCTAssertEqual(NativeAction(script: compress.toScript()), .compressTo7Z)
-        XCTAssertEqual(NativeAction(script: extract.toScript()), .extract7Z)
-        XCTAssertEqual(extract.fileExtensions, ["7z"])
-        XCTAssertFalse(ScriptLibrary.defaultEnabledActions.contains(extract.name))
+    func testArchiveActionsUseNativeRuntimeAndSupportedFormats() throws {
+        let compress = try XCTUnwrap(ScriptLibrary.libraryScript(named: "压缩…"))
+        let extract = try XCTUnwrap(ScriptLibrary.libraryScript(named: "解压到当前文件夹"))
+        XCTAssertEqual(NativeAction(script: compress.toScript()), .compressionOptions)
+        XCTAssertEqual(NativeAction(script: extract.toScript()), .extractZIPHere)
+        XCTAssertEqual(extract.fileExtensions, ArchiveInput.menuExtensions)
+        XCTAssertTrue(ScriptLibrary.defaultEnabledActions.contains(extract.name))
     }
 
     func testZIPAndTARGZRemainReadableBySystemTools() throws {

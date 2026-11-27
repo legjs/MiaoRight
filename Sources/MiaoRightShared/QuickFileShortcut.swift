@@ -20,9 +20,14 @@ public struct QuickFileShortcut: Equatable, Sendable {
             switch self {
             case .openFolder: "folder"
             case .copy: "doc.on.doc"
-            case .move: "folder.badge.arrowshape.forward"
+            case .move: "arrow.up.forward.square"
             case .template: "doc.badge.plus"
             }
+        }
+
+        public init?(menuTitle: String) {
+            guard let match = Kind.allCases.first(where: { $0.menuTitle == menuTitle }) else { return nil }
+            self = match
         }
     }
 

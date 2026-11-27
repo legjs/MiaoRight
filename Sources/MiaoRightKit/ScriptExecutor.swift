@@ -326,7 +326,8 @@ public final class ScriptExecutor: @unchecked Sendable {
         if let action = NativeAction(script: script), action == .compressionOptions || action == .batchRenamePreview || action == .addToVault {
             await MainActor.run {
                 switch action {
-                case .compressionOptions: FileTaskPresentation.shared.present(.compress, urls: paths.map { URL(fileURLWithPath: $0) })
+                case .compressionOptions:
+                    FileTaskPresentation.shared.present(.compress, urls: paths.map { URL(fileURLWithPath: $0) }, encrypted: parameter == "encrypted")
                 case .batchRenamePreview: FileTaskPresentation.shared.present(.rename, urls: paths.map { URL(fileURLWithPath: $0) })
                 default: VaultTaskPresentation.shared.present(urls: paths.map { URL(fileURLWithPath: $0) })
                 }
@@ -334,8 +335,39 @@ public final class ScriptExecutor: @unchecked Sendable {
             return
         }
         let id = UUID()
+        if NativeAction(script: script) == .extractZIPHere, !AppGroup.isIsolated {
+            await extractWithProgress(script: script, paths: paths, parameter: parameter, id: id)
+            return
+        }
         await FileTaskContext.$executionID.withValue(id) {
             await executeTracked(script: script, withPaths: paths, parameter: parameter, executionID: id)
+        }
+    }
+
+    @MainActor
+    private func extractWithProgress(script: Script, paths: [String], parameter: String?, id: UUID) async {
+        let presentation = FileTaskPresentation.shared
+        guard !presentation.isBusy else { return }
+        presentation.isBusy = true
+        presentation.extractionProgress = nil
+        let showProgress = Task {
+            do { try await Task.sleep(for: .milliseconds(500)) } catch { return }
+            presentation.showExtractionProgress()
+        }
+        defer {
+            showProgress.cancel()
+            presentation.closeExtractionProgress()
+            presentation.isBusy = false
+        }
+        await SevenZipArchive.$extractionProgress.withValue({ fraction in
+            Task { @MainActor in
+                guard !showProgress.isCancelled else { return }
+                presentation.extractionProgress = fraction
+            }
+        }) {
+            await FileTaskContext.$executionID.withValue(id) {
+                await executeTracked(script: script, withPaths: paths, parameter: parameter, executionID: id)
+            }
         }
     }
 

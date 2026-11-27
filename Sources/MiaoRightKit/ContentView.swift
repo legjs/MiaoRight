@@ -527,6 +527,13 @@ private struct QuickMenuPreview: View {
                             Label(section.title == L10n.text("用应用打开", "Open with App") ? QuickMenuPlan.applicationTitle(item) : QuickMenuPlan.title(item), systemImage: item.icon)
                                 .font(.system(size: 12)).padding(.leading, section.title == nil ? 0 : 18)
                                 .foregroundStyle(item.name == ActionID.paste && CutClipboard.load() == nil ? Color.secondary : Color.primary)
+                            if item.name == "压缩…" {
+                                ForEach(QuickMenuPlan.compressionChoices.map(\.parameter), id: \.self) { parameter in
+                                    if let choice = QuickMenuPlan.compressionChoices.first(where: { $0.parameter == parameter }) {
+                                        Label(choice.title, systemImage: choice.icon).font(.system(size: 12)).padding(.leading, 18)
+                                    }
+                                }
+                            }
                         }
                     }
                     if SharedDefaults.showOpenMainWindowMenuItem() { Label(L10n.text("打开妙右设置…", "Open MiaoRight Settings…"), systemImage: "gearshape").font(.system(size: 12)) }

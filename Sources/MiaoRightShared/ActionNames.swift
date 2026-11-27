@@ -103,7 +103,7 @@ public enum ActionNames {
         "SHA512 哈希": "SHA512 Hash",
         "生成 .sha256 校验文件": "Generate .sha256 Checksum",
         "压缩为 ZIP": "Compress to ZIP",
-        "解压到当前文件夹": "Extract ZIP Here",
+        "解压到当前文件夹": "Extract Here",
         "创建 TAR.GZ": "Create TAR.GZ",
         "解压 TAR.GZ": "Extract TAR.GZ",
         "压缩为 7Z": "Compress to 7Z",

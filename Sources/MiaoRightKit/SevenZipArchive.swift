@@ -3,6 +3,7 @@ import MiaoRightShared
 
 /// 官方 7zz 随 App 打包；只在独立暂存目录中处理，成功后才公布结果。
 struct SevenZipArchive: Sendable {
+    @TaskLocal static var extractionProgress: (@Sendable (Double) -> Void)?
     enum Format: String, CaseIterable {
         case sevenZip = "7z", zip, tarGzip = "tar.gz"
 
@@ -28,7 +29,7 @@ struct SevenZipArchive: Sendable {
         self.executableURL = executableURL
     }
 
-    func compress(_ urls: [URL], format: Format = .sevenZip, at destination: URL? = nil, password: String? = nil) throws -> URL {
+    func compress(_ urls: [URL], format: Format = .sevenZip, at destination: URL? = nil, password: String? = nil, preferredName: String? = nil, outputFolder: URL? = nil) throws -> URL {
         guard let first = urls.first else { throw failure(L10n.text("没有选中文件。", "No files selected.")) }
         let parent = first.deletingLastPathComponent().standardizedFileURL
         guard urls.allSatisfy({ $0.deletingLastPathComponent().standardizedFileURL == parent }) else {
@@ -43,7 +44,14 @@ struct SevenZipArchive: Sendable {
             }
         }
         let encryption = secret == nil ? [] : ["-p", format == .zip ? "-mem=AES256" : "-mhe=on"]
-        let outputParent = destination?.deletingLastPathComponent() ?? parent
+        let outputParent = destination?.deletingLastPathComponent() ?? outputFolder ?? parent
+        let resolvedOutput = outputParent.resolvingSymlinksInPath().standardizedFileURL.path
+        guard !urls.contains(where: { input in
+            let path = input.resolvingSymlinksInPath().standardizedFileURL.path
+            return resolvedOutput == path || resolvedOutput.hasPrefix(path + "/")
+        }) else {
+            throw failure(L10n.text("请选择所选文件夹以外的保存位置。", "Choose a save location outside the selected folders."))
+        }
         let staging = try makeStagingDirectory(in: outputParent)
         defer { try? FileManager.default.removeItem(at: staging) }
         let archive = staging.appendingPathComponent("archive." + format.rawValue)
@@ -58,9 +66,9 @@ struct SevenZipArchive: Sendable {
             // TAR.GZ 必须先打包 TAR，再压缩单个 TAR；不能把多个文件直接送给 gzip。
             try requireSuccess(run(["a", "-tgzip"] + quietArguments + ["--", archive.path, intermediate.lastPathComponent], in: staging), compressing: true)
         }
-        let name = urls.count == 1
+        let name = preferredName ?? (urls.count == 1
             ? (format == .sevenZip ? first.lastPathComponent : first.deletingPathExtension().lastPathComponent)
-            : L10n.text("归档", "Archive")
+            : L10n.text("归档", "Archive"))
         let output = destination ?? NativeActionExecutor.uniqueDestinationURL(in: outputParent, preferredName: name, pathExtension: format.rawValue)
         // 显式目标同样不覆盖已有文件（例如新建 Office 文档时发生重名竞争）。
         try FileManager.default.moveItem(at: archive, to: output)
@@ -146,9 +154,25 @@ struct SevenZipArchive: Sendable {
     }
 
     private func publish(_ contents: URL, archive: URL, name: String) throws -> URL {
-        let destination = NativeActionExecutor.uniqueDestinationURL(
-            in: archive.deletingLastPathComponent(), preferredName: name
+        let parent = archive.deletingLastPathComponent()
+        // Smart unwrap: when the archive holds a single top-level directory,
+        // move that directory out directly; otherwise wrap all top-level items
+        // in a folder named after the archive.
+        let topLevel = try FileManager.default.contentsOfDirectory(
+            at: contents, includingPropertiesForKeys: [.isDirectoryKey, .isSymbolicLinkKey]
         )
+        if topLevel.count == 1,
+           let only = topLevel.first,
+           let values = try? only.resourceValues(forKeys: [.isDirectoryKey, .isSymbolicLinkKey]),
+           values.isDirectory == true, values.isSymbolicLink != true {
+            let destination = NativeActionExecutor.uniqueDestinationURL(
+                in: parent, preferredName: only.lastPathComponent
+            )
+            try FileManager.default.moveItem(at: only, to: destination)
+            FileOperationJournal.shared.recordOutputs([destination])
+            return destination
+        }
+        let destination = NativeActionExecutor.uniqueDestinationURL(in: parent, preferredName: name)
         try FileManager.default.moveItem(at: contents, to: destination)
         FileOperationJournal.shared.recordOutputs([destination])
         return destination
@@ -184,7 +208,8 @@ struct SevenZipArchive: Sendable {
         defer { try? log.close() }
         let process = Process()
         process.executableURL = executableURL
-        process.arguments = arguments
+        let progress = Self.extractionProgress
+        process.arguments = progress == nil ? arguments : arguments.map { $0 == "-bsp0" ? "-bsp2" : $0 }.filter { $0 != "-bd" }
         process.currentDirectoryURL = directory
         // 写入文件避免大量错误输出塞满 Pipe 后卡住进程。
         var outputFile: FileHandle?
@@ -206,6 +231,24 @@ struct SevenZipArchive: Sendable {
         try input.fileHandleForWriting.close()
         try process.run()
         try input.fileHandleForReading.close()
+        if let progress, let reader = try? FileHandle(forReadingFrom: logURL) {
+            defer { try? reader.close() }
+            var lastPercent = -1
+            while process.isRunning {
+                if let end = try? reader.seekToEnd(), end > 0 {
+                    _ = try? reader.seek(toOffset: end > 4096 ? end - 4096 : 0)
+                    if let data = try? reader.read(upToCount: 4096) {
+                        let tail = String(decoding: data, as: UTF8.self)
+                        if let match = tail.matches(of: /(?:^|[\r\n\u{8}]) *([0-9]{1,3})%/).last,
+                           let percent = Int(match.1), (0...100).contains(percent), percent != lastPercent {
+                            lastPercent = percent
+                            progress(Double(percent) / 100)
+                        }
+                    }
+                }
+                Thread.sleep(forTimeInterval: 0.15)
+            }
+        }
         process.waitUntilExit()
         let end = try log.seekToEnd()
         try log.seek(toOffset: end > 16_384 ? end - 16_384 : 0)

@@ -6,6 +6,21 @@ The format follows [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.1.0/
 
 ## [Unreleased]
 
+## [0.1.9] - 2026-11-27
+
+### Added
+
+- Added separate standard and encrypted compression dialogs with archive naming, format selection, and a folder picker.
+- Added a progress window for longer extractions and an Other Location option to the Copy To and Move To submenus.
+
+### Changed
+
+- Moved compression and Extract Here to the top level of the Finder context menu. Extract Here recognizes supported archive formats and unwraps a single top-level folder.
+
+### Fixed
+
+- Restored the Move To icon and removed duplicate or redundant Finder menu items.
+
 ## [0.1.8] - 2026-11-27
 
 ### Added

@@ -500,9 +500,6 @@ extension ScriptLibrary {
     static let powerUserScripts: [LibraryScript] = [
         LibraryScript(name: "压缩…", type: .bash, content: "# Runs natively via MiaoRight (Compression options).", icon: "archivebox", appliesTo: .allItems, category: .share,
                       description: "选择 ZIP、7Z 或 TAR.GZ 格式，可为 ZIP / 7Z 设置密码"),
-        LibraryScript(name: "解压", type: .bash, content: "# Runs natively via MiaoRight (Extract archive).", icon: "archivebox", appliesTo: .filesOnly,
-                      fileExtensions: ArchiveInput.menuExtensions, extensionMatchMode: .any, category: .utilities,
-                      description: "自动识别 ZIP、7Z、RAR、TAR、GZ、BZ2、XZ，支持常见首个分卷"),
         LibraryScript(name: "批量重命名…", type: .bash, content: "# Runs natively via MiaoRight (Batch rename preview).", icon: "pencil", appliesTo: .allItems, category: .organize,
                       description: "预览文字替换、前后缀与编号，检查冲突后再执行", confirmBeforeRun: true),
         LibraryScript(name: "加入保险箱", type: .bash, content: "# Runs natively via MiaoRight (Add to vault).", icon: "lock.shield", appliesTo: .allItems, category: .organize,
@@ -557,62 +554,14 @@ extension ScriptLibrary {
             description: "在旁边生成 .sha256 校验文件"
         ),
         LibraryScript(
-            name: "压缩为 ZIP",
-            type: .bash,
-            content: "# Runs natively via MiaoRight (Compress to ZIP).",
-            icon: "doc.zipper",
-            appliesTo: .allItems,
-            category: .share,
-            description: "把所选文件压缩为 ZIP"
-        ),
-        LibraryScript(
             name: "解压到当前文件夹",
             type: .bash,
             content: "# Runs natively via MiaoRight (Extract ZIP here).",
             icon: "arrow.up.doc",
             appliesTo: .filesOnly,
-            fileExtensions: ["zip"],
+            fileExtensions: ArchiveInput.menuExtensions, extensionMatchMode: .any,
             category: .utilities,
-            description: "把 ZIP 解压到旁边的新文件夹，支持输入密码"
-        ),
-        LibraryScript(
-            name: "创建 TAR.GZ",
-            type: .bash,
-            content: "# Runs natively via MiaoRight (Create TAR.GZ).",
-            icon: "archivebox",
-            appliesTo: .allItems,
-            category: .utilities,
-            description: "创建 .tar.gz 压缩包"
-        ),
-        LibraryScript(
-            name: "解压 TAR.GZ",
-            type: .bash,
-            content: "# Runs natively via MiaoRight (Extract TAR.GZ here).",
-            icon: "arrow.down.doc",
-            appliesTo: .filesOnly,
-            fileExtensions: ["tar.gz", "tgz"],
-            extensionMatchMode: .any,
-            category: .utilities,
-            description: "把 TAR.GZ / TGZ 解压到旁边的新文件夹"
-        ),
-        LibraryScript(
-            name: "压缩为 7Z",
-            type: .bash,
-            content: "# Runs natively via MiaoRight (Compress to 7Z).",
-            icon: "archivebox.fill",
-            appliesTo: .allItems,
-            category: .share,
-            description: "使用内置工具压缩为 7Z，无需额外安装"
-        ),
-        LibraryScript(
-            name: "解压 7Z",
-            type: .bash,
-            content: "# Runs natively via MiaoRight (Extract 7Z).",
-            icon: "arrow.up.doc",
-            appliesTo: .filesOnly,
-            fileExtensions: ["7z"],
-            category: .utilities,
-            description: "把 7Z 解压到旁边的新文件夹，支持输入密码"
+            description: "自动识别 ZIP、7Z、RAR、TAR、GZ、BZ2、XZ；单个顶层目录直接解出，多项内容放入同名文件夹，支持输入密码"
         ),
         LibraryScript(
             name: "锁定文件",

@@ -704,7 +704,7 @@ extension NativeActionExecutor {
     }
 
     static func extractZIPHere(_ urls: [URL]) throws -> String {
-        try extractArchives(urls, format: .zip)
+        try extractArchives(urls, format: nil)
     }
 
     static func extractTARGZ(_ urls: [URL]) throws -> String {

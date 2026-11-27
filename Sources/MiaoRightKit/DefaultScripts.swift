@@ -119,7 +119,8 @@ enum ScriptLibrary {
 
     /// 首次安装默认开启的动作(其余动作可在库中按需开启)。
     static let defaultEnabledActions: Set<String> = [
-        "复制路径", "在终端中打开", ActionID.cut, ActionID.paste
+        "复制路径", "在终端中打开", ActionID.cut, ActionID.paste, "移动到…", "复制到…",
+        "压缩…", "解压到当前文件夹"
     ]
 
     // MARK: - 顶层动作(剪切/粘贴/移动到/复制到/隔空投送/彻底删除)
@@ -337,42 +338,6 @@ enum ScriptLibrary {
             maxSelection: 1,
             category: .utilities,
             description: "在终端中打开当前位置"
-        ),
-        LibraryScript(
-            name: "显示简介",
-            type: .bash,
-            content: """
-            INFO=$(stat -f "大小: %z 字节%n创建: %SB%n修改: %Sm%n权限: %Sp" -- "$1")
-            BASENAME=$(basename -- "$1")
-            osascript - "$INFO" "$BASENAME" <<'APPLESCRIPT'
-            on run argv
-                set fileInfo to item 1 of argv
-                set fileName to item 2 of argv
-                display dialog fileInfo with title ("简介: " & fileName) buttons {"好"} default button "好"
-            end run
-            APPLESCRIPT
-            """,
-            icon: "info.circle",
-            appliesTo: .filesOnly,
-            maxSelection: 1,
-            category: .utilities,
-            description: "查看文件大小、创建/修改时间和权限"
-        ),
-        LibraryScript(
-            name: "在 Finder 中显示",
-            type: .applescript,
-            content: """
-            set targetFile to POSIX file (item 1 of argv)
-            tell application "Finder"
-                reveal targetFile
-                activate
-            end tell
-            """,
-            icon: "folder.badge.questionmark",
-            appliesTo: .allItems,
-            maxSelection: 1,
-            category: .utilities,
-            description: "在新的 Finder 窗口中显示该项"
         ),
         LibraryScript(
             name: "创建带时间戳的副本",
