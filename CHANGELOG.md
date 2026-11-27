@@ -6,6 +6,13 @@ The format follows [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.1.0/
 
 ## [Unreleased]
 
+## [0.1.7] - 2026-11-27
+
+### Changed
+
+- Moved General to the first tab in the settings navigation.
+- Removed the language switcher from the update dialog release notes; notes follow the app language.
+
 ### Fixed
 
 - Fixed the settings window opening automatically right after an in-place update relaunch; the app now restarts silently into the menu bar.

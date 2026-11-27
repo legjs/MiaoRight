@@ -51,38 +51,18 @@ enum ReleaseNotesParser {
 
 struct ReleaseNotesView: View {
     let markdown: String?
-    @State private var prefersEnglish = L10n.isEnglish
 
     private var blocks: [ReleaseNoteBlock] {
         guard let markdown else { return [] }
-        return ReleaseNotesParser.blocks(from: markdown, english: prefersEnglish)
-    }
-
-    private var hasBothLanguages: Bool {
-        guard let markdown else { return false }
-        return markdown.localizedCaseInsensitiveContains("## 中文")
-            && markdown.localizedCaseInsensitiveContains("## english")
+        return ReleaseNotesParser.blocks(from: markdown, english: L10n.isEnglish)
     }
 
     var body: some View {
         if !blocks.isEmpty {
             VStack(alignment: .leading, spacing: 7) {
-                HStack(alignment: .firstTextBaseline) {
-                    Text(prefersEnglish ? "What’s New" : "本次更新")
-                        .font(.system(size: 12, weight: .semibold))
-                    Spacer(minLength: 12)
-                    if hasBothLanguages {
-                        Picker("", selection: $prefersEnglish) {
-                            Text("中文").tag(false)
-                            Text("English").tag(true)
-                        }
-                        .pickerStyle(.segmented)
-                        .controlSize(.mini)
-                        .labelsHidden()
-                        .frame(width: 120)
-                    }
-                }
-                .padding(.bottom, 1)
+                Text(L10n.text("本次更新", "What’s New"))
+                    .font(.system(size: 12, weight: .semibold))
+                    .padding(.bottom, 1)
                 ForEach(blocks) { block in
                     switch block.kind {
                     case .heading:

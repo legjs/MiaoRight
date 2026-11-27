@@ -4,7 +4,7 @@ import SwiftUI
 import UniformTypeIdentifiers
 
 enum PreferencePage: String, CaseIterable, Identifiable {
-    case menu, clipboard, vault, general
+    case general, menu, clipboard, vault
     var id: String { rawValue }
     var title: String {
         switch self {
