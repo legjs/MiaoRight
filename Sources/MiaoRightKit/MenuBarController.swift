@@ -197,10 +197,14 @@ final class MenuBarController: NSObject, NSMenuDelegate {
                 "View \(release.tagName) Release Notes…"
             )
             if updates.isInstalling {
-                updateItem.title = L10n.text(
+                var title = L10n.text(
                     "正在更新到 \(release.tagName)…",
                     "Updating to \(release.tagName)…"
                 )
+                if let fraction = updates.downloadProgress {
+                    title += " \(Int(fraction * 100))%"
+                }
+                updateItem.title = title
                 updateItem.isEnabled = false
             } else if updates.canInstallInPlace {
                 updateItem.title = L10n.text(

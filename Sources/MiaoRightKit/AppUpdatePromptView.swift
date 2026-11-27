@@ -146,7 +146,7 @@ private struct AppUpdateAvailableView: View {
     let onClose: () -> Void
 
     @State private var updates = AppUpdateService.shared
-    @State private var isInstalling = false
+    @State private var showsBackgroundNotice = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -172,6 +172,17 @@ private struct AppUpdateAvailableView: View {
         }
         .frame(width: 560, height: 580)
         .background(Color(nsColor: .windowBackgroundColor))
+        .alert(
+            L10n.text("更新将在后台继续", "The Update Will Continue in the Background"),
+            isPresented: $showsBackgroundNotice
+        ) {
+            Button(L10n.text("好", "OK")) { onClose() }
+        } message: {
+            Text(L10n.text(
+                "更新包已下载完成，妙右会在安装完成后自动重启。",
+                "The update package is downloaded. MiaoRight relaunches automatically once the installation finishes."
+            ))
+        }
     }
 
     private var header: some View {
@@ -202,11 +213,17 @@ private struct AppUpdateAvailableView: View {
         case .idle:
             EmptyView()
         case .downloading:
-            HStack(spacing: 8) {
-                ProgressView().controlSize(.small)
-                Text(L10n.text("正在下载更新…", "Downloading update…"))
-                    .font(.system(size: 11))
-                    .foregroundStyle(.secondary)
+            VStack(alignment: .leading, spacing: 6) {
+                HStack(spacing: 8) {
+                    ProgressView().controlSize(.small)
+                    Text(downloadTitle)
+                        .font(.system(size: 11))
+                        .foregroundStyle(.secondary)
+                }
+                if let fraction = updates.downloadProgress {
+                    ProgressView(value: min(max(fraction, 0), 1))
+                        .controlSize(.small)
+                }
             }
         case .verifying:
             HStack(spacing: 8) {
@@ -241,7 +258,16 @@ private struct AppUpdateAvailableView: View {
                 .foregroundStyle(.secondary)
             }
             HStack(spacing: 10) {
-                Button(L10n.text("稍后", "Later")) { onClose() }
+                Button(L10n.text("稍后", "Later")) {
+                    if updates.installState == .downloading {
+                        updates.cancelInstall()
+                        onClose()
+                    } else if updates.isInstalling {
+                        showsBackgroundNotice = true
+                    } else {
+                        onClose()
+                    }
+                }
                     .keyboardShortcut(.cancelAction)
                 Spacer(minLength: 12)
                 Button(L10n.text("发行页面", "Release Page")) {
@@ -249,14 +275,14 @@ private struct AppUpdateAvailableView: View {
                 }
                 .buttonStyle(.borderless)
                 if updates.canInstallInPlace {
-                    Button(isInstalling || updates.isInstalling
+                    Button(updates.isInstalling
                         ? L10n.text("正在更新…", "Updating…")
                         : L10n.text("更新到 \(release.tagName)", "Update to \(release.tagName)")) {
                         install()
                     }
                     .buttonStyle(.borderedProminent)
                     .keyboardShortcut(.defaultAction)
-                    .disabled(isInstalling || updates.isInstalling)
+                    .disabled(updates.isInstalling)
                 } else {
                     Button(L10n.text("打开发行页面", "Open Release Page")) {
                         NSWorkspace.shared.open(release.pageURL)
@@ -268,13 +294,17 @@ private struct AppUpdateAvailableView: View {
         .padding(20)
     }
 
-    private func install() {
-        isInstalling = true
-        Task {
-            await updates.installUpdate(release)
-            if case .failed = updates.installState {
-                isInstalling = false
-            }
+    private var downloadTitle: String {
+        guard let fraction = updates.downloadProgress, fraction > 0 else {
+            return L10n.text("正在下载更新…", "Downloading update…")
         }
+        return L10n.text(
+            "正在下载更新… \(Int(fraction * 100))%",
+            "Downloading update… \(Int(fraction * 100))%"
+        )
+    }
+
+    private func install() {
+        updates.installUpdate(release)
     }
 }

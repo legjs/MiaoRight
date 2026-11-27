@@ -58,7 +58,7 @@ struct AppUpdatePreferencesView: View {
                 if updates.canInstallInPlace {
                     HStack(spacing: 12) {
                         Button(L10n.text("下载、安装并重新启动", "Download, Install, and Relaunch")) {
-                            Task { await updates.installUpdate(release) }
+                            updates.installUpdate(release)
                         }
                         .buttonStyle(.borderedProminent)
                         .disabled(updates.isInstalling)
@@ -120,7 +120,13 @@ struct AppUpdatePreferencesView: View {
         case .idle:
             EmptyView()
         case .downloading:
-            installProgress(L10n.text("正在下载更新…", "Downloading update…"))
+            VStack(alignment: .leading, spacing: 6) {
+                installProgress(L10n.text("正在下载更新…", "Downloading update…"))
+                if let fraction = updates.downloadProgress, fraction > 0 {
+                    ProgressView(value: min(max(fraction, 0), 1))
+                        .controlSize(.small)
+                }
+            }
         case .verifying:
             installProgress(L10n.text("正在校验更新包…", "Verifying update…"))
         case .installing:

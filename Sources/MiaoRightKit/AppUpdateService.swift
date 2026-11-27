@@ -256,6 +256,7 @@ public final class AppUpdateService {
     }
     private(set) var state: State = .idle
     private(set) var installState: InstallState = .idle
+    private(set) var downloadProgress: Double?
     private(set) var preferencesRequestID = 0
     private var preferencesRequested = false
     private var upToDateNoticePending = false
@@ -265,6 +266,7 @@ public final class AppUpdateService {
     private(set) var isProductionInstallation: Bool
     private(set) var isProductionSigned: Bool
     let repository: UpdateRepository?
+    private var installTask: Task<Void, Never>?
     static var currentVersion: String { Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "0.0.0" }
     var isChecking: Bool { state == .checking }
 
@@ -361,8 +363,14 @@ public final class AppUpdateService {
         }
     }
 
-    func installUpdate(_ release: GitHubRelease) async {
-        await performInstall(release: release)
+    func installUpdate(_ release: GitHubRelease) {
+        guard !isInstalling else { return }
+        installTask = Task { await performInstall(release: release) }
+    }
+
+    func cancelInstall() {
+        guard installState == .downloading else { return }
+        installTask?.cancel()
     }
 
     private func performInstall(release: GitHubRelease) async {
@@ -387,7 +395,13 @@ public final class AppUpdateService {
                 throw AppUpdateInstallError.missingArchive
             }
             installState = .downloading
-            let archive = try await AppUpdateInstaller.download(asset, into: stagingDirectory)
+            downloadProgress = 0
+            let progressHandler: @Sendable (Double) -> Void = { fraction in
+                Task { @MainActor in
+                    AppUpdateService.shared.downloadProgress = fraction
+                }
+            }
+            let archive = try await AppUpdateInstaller.download(asset, into: stagingDirectory, progress: progressHandler)
             installState = .verifying
 
             let prepared = try await Task.detached(priority: .userInitiated) {
@@ -401,6 +415,10 @@ public final class AppUpdateService {
             try AppUpdateInstaller.launchReplacement(prepared, currentPID: getpid())
             replacementStarted = true
             NSApplication.shared.terminate(nil)
+        } catch is CancellationError {
+            try? FileManager.default.removeItem(at: stagingDirectory)
+            downloadProgress = nil
+            installState = .idle
         } catch {
             if !replacementStarted {
                 try? FileManager.default.removeItem(at: stagingDirectory)

@@ -113,15 +113,22 @@ enum AppUpdateInstaller {
         return url
     }
 
-    static func download(_ asset: GitHubReleaseAsset, into stagingDirectory: URL) async throws -> URL {
+    static func download(
+        _ asset: GitHubReleaseAsset,
+        into stagingDirectory: URL,
+        progress: (@Sendable (Double) -> Void)? = nil
+    ) async throws -> URL {
         var request = URLRequest(url: asset.downloadURL, cachePolicy: .reloadIgnoringLocalCacheData, timeoutInterval: 120)
         request.setValue("application/octet-stream", forHTTPHeaderField: "Accept")
         request.setValue("MiaoRight-Update-Installer", forHTTPHeaderField: "User-Agent")
 
-        let downloadedURL: URL
+        let archiveURL = stagingDirectory.appendingPathComponent(asset.name)
         let response: URLResponse
+        let byteStream: URLSession.AsyncBytes
         do {
-            (downloadedURL, response) = try await URLSession.shared.download(for: request)
+            (byteStream, response) = try await URLSession.shared.bytes(for: request)
+        } catch is CancellationError {
+            throw CancellationError()
         } catch {
             throw AppUpdateInstallError.downloadFailed
         }
@@ -129,9 +136,45 @@ enum AppUpdateInstaller {
             throw AppUpdateInstallError.downloadFailed
         }
 
-        let archiveURL = stagingDirectory.appendingPathComponent(asset.name)
+        FileManager.default.createFile(atPath: archiveURL.path, contents: nil, attributes: [.posixPermissions: 0o600])
+        guard let fileHandle = try? FileHandle(forWritingTo: archiveURL) else {
+            throw AppUpdateInstallError.downloadFailed
+        }
+        defer { try? fileHandle.close() }
+
+        let totalBytes = Int64(max(asset.size, 0))
+        var receivedBytes: Int64 = 0
+        var buffer = Data()
+        buffer.reserveCapacity(256 * 1024)
         do {
-            try FileManager.default.moveItem(at: downloadedURL, to: archiveURL)
+            for try await byte in byteStream {
+                try Task.checkCancellation()
+                buffer.append(byte)
+                if buffer.count >= 256 * 1024 {
+                    fileHandle.write(buffer)
+                    receivedBytes += Int64(buffer.count)
+                    buffer.removeAll(keepingCapacity: true)
+                    if let progress {
+                        progress(totalBytes > 0 ? min(Double(receivedBytes) / Double(totalBytes), 1) : 0)
+                    }
+                }
+            }
+            if !buffer.isEmpty {
+                fileHandle.write(buffer)
+                receivedBytes += Int64(buffer.count)
+            }
+            if let progress {
+                progress(1)
+            }
+        } catch is CancellationError {
+            try? FileManager.default.removeItem(at: archiveURL)
+            throw CancellationError()
+        } catch {
+            try? FileManager.default.removeItem(at: archiveURL)
+            throw AppUpdateInstallError.downloadFailed
+        }
+
+        do {
             let attributes = try FileManager.default.attributesOfItem(atPath: archiveURL.path)
             let size = (attributes[.size] as? NSNumber)?.int64Value ?? 0
             guard (asset.size == 0 || size == Int64(asset.size)), isZIPFile(archiveURL) else {

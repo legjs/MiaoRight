@@ -6,6 +6,17 @@ The format follows [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.1.0/
 
 ## [Unreleased]
 
+### Added
+
+- The update dialog shows live download progress with a percentage and a progress bar, mirrored in the menu bar item.
+- The update dialog can switch release notes between Chinese and English.
+
+### Changed
+
+- Later cancels an ongoing update download; once the package is ready, closing the dialog explains the update continues and MiaoRight relaunches automatically.
+
+## [0.1.5] - 2026-11-27
+
 ## [0.1.4] - 2026-11-27
 
 ### Added
