@@ -228,6 +228,13 @@ final class MenuBarController: NSObject, NSMenuDelegate {
                 updateItem.title = L10n.text("检查更新…", "Check for Updates…")
                 updateItem.isEnabled = true
             }
+        case .skipped(let release):
+            upToDateNoticeUntil = nil
+            updateItem.title = L10n.text(
+                "已跳过 \(release.tagName)，点按检查更新…",
+                "Skipped \(release.tagName) — Check Again…"
+            )
+            updateItem.isEnabled = true
         case .failed:
             upToDateNoticeUntil = nil
             updateItem.title = L10n.text("检查更新失败，点按重试…", "Check Failed — Try Again…")
@@ -290,7 +297,7 @@ final class MenuBarController: NSObject, NSMenuDelegate {
             updates.showAvailableUpdatePrompt()
         case .checking:
             break
-        case .idle, .upToDate, .noRelease, .failed:
+        case .idle, .upToDate, .noRelease, .skipped, .failed:
             updates.checkFromMenu()
         }
     }

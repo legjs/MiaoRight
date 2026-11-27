@@ -26,6 +26,15 @@ struct AppUpdatePreferencesView: View {
             if case .available(let release) = updates.state {
                 availableRelease(release)
             }
+            if let skipped = updates.skippedTag {
+                HStack(spacing: 10) {
+                    Text(L10n.text("已跳过 \(skipped)", "Skipped \(skipped)"))
+                        .font(.system(size: 11)).foregroundStyle(.secondary)
+                    Button(L10n.text("取消跳过", "Stop Skipping")) { updates.clearSkippedRelease() }
+                        .buttonStyle(.borderless).font(.system(size: 11))
+                }
+                .padding(.top, 10)
+            }
             installStatus
             if showsRepositoryLink, let repository = updates.repository {
                 Button(L10n.text("查看 GitHub 发行页面", "View GitHub Releases")) { NSWorkspace.shared.open(repository.releasesURL) }
@@ -158,6 +167,8 @@ struct AppUpdatePreferencesView: View {
         )
         case .available(let release):
             return L10n.text("当前 \(AppUpdateService.currentVersion)，最新 \(release.tagName)", "Installed: \(AppUpdateService.currentVersion); latest: \(release.tagName)")
+        case .skipped(let release):
+            return L10n.text("已跳过 \(release.tagName)，等待更新的版本", "Skipped \(release.tagName); waiting for a newer version")
         case .failed(let error): return error.message
         }
     }

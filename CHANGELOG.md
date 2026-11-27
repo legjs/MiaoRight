@@ -6,6 +6,17 @@ The format follows [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.1.0/
 
 ## [Unreleased]
 
+## [0.1.8] - 2026-11-27
+
+### Added
+
+- Added Skip This Version to the update dialog, with a Stop Skipping control in the update preferences and automatic reminders once a newer version ships.
+- Update downloads now retry up to three times before reporting a failure.
+
+### Changed
+
+- The download failure message now explains the network cause and points to the DMG on the release page.
+
 ## [0.1.7] - 2026-11-27
 
 ### Changed

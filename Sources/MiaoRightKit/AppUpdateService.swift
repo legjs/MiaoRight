@@ -246,9 +246,11 @@ public final class AppUpdateService {
     static let cachedReleaseKey = "appUpdateCachedRelease"
     static let checkInterval: TimeInterval = 24 * 60 * 60
     public static let relaunchPendingKey = "appUpdateRelaunchPending"
+    static let skippedTagKey = "appUpdateSkippedTag"
     enum State: Equatable {
         case idle, checking, upToDate, noRelease
         case available(GitHubRelease)
+        case skipped(GitHubRelease)
         case failed(UpdateCheckError)
     }
     enum InstallState: Equatable {
@@ -263,6 +265,7 @@ public final class AppUpdateService {
     private var upToDateNoticePending = false
     private(set) var automaticallyChecksForUpdates: Bool
     private(set) var lastCheckedAt: Date?
+    private(set) var skippedTag: String?
     private(set) var canInstallInPlace: Bool
     private(set) var isProductionInstallation: Bool
     private(set) var isProductionSigned: Bool
@@ -277,6 +280,7 @@ public final class AppUpdateService {
         automaticallyChecksForUpdates = defaults.object(forKey: Self.automaticChecksKey) as? Bool ?? true
         let timestamp = defaults.double(forKey: Self.lastCheckedAtKey)
         lastCheckedAt = timestamp > 0 ? Date(timeIntervalSince1970: timestamp) : nil
+        skippedTag = defaults.string(forKey: Self.skippedTagKey)
         let installsInApplications = AppUpdateInstaller.isInstalledInApplications
         canInstallInPlace = installsInApplications
         let productionSigned = AppUpdateInstaller.isCurrentProductionSigned
@@ -292,7 +296,7 @@ public final class AppUpdateService {
            let latest = AppVersion(release.tagName),
            let current = AppVersion(Self.currentVersion),
            latest > current {
-            state = .available(release)
+            state = release.tagName == skippedTag ? .skipped(release) : .available(release)
         }
     }
 
@@ -312,6 +316,8 @@ public final class AppUpdateService {
         switch state {
         case .available(let release):
             AppUpdatePromptPresenter.shared.presentAvailable(release)
+        case .skipped(let release):
+            AppUpdatePromptPresenter.shared.presentSkipped(release)
         case .upToDate:
             AppUpdatePromptPresenter.shared.presentUpToDate()
         case .failed(let error):
@@ -357,6 +363,20 @@ public final class AppUpdateService {
         Task { await checkIfDue() }
     }
 
+    func skipRelease(_ release: GitHubRelease) {
+        AppGroup.standardDefaults.set(release.tagName, forKey: Self.skippedTagKey)
+        skippedTag = release.tagName
+        if case .available(let current) = state, current.tagName == release.tagName {
+            state = .skipped(release)
+        }
+    }
+
+    func clearSkippedRelease() {
+        AppGroup.standardDefaults.removeObject(forKey: Self.skippedTagKey)
+        skippedTag = nil
+        Task { await check() }
+    }
+
     var isInstalling: Bool {
         switch installState {
         case .downloading, .verifying, .installing: true
@@ -396,13 +416,30 @@ public final class AppUpdateService {
                 throw AppUpdateInstallError.missingArchive
             }
             installState = .downloading
-            downloadProgress = 0
             let progressHandler: @Sendable (Double) -> Void = { fraction in
                 Task { @MainActor in
                     AppUpdateService.shared.downloadProgress = fraction
                 }
             }
-            let archive = try await AppUpdateInstaller.download(asset, into: stagingDirectory, progress: progressHandler)
+            var archive: URL?
+            var lastDownloadError: Error?
+            for attempt in 1...3 {
+                downloadProgress = 0
+                do {
+                    archive = try await AppUpdateInstaller.download(asset, into: stagingDirectory, progress: progressHandler)
+                    break
+                } catch is CancellationError {
+                    throw CancellationError()
+                } catch {
+                    lastDownloadError = error
+                    if attempt < 3 {
+                        try? await Task.sleep(for: .seconds(2))
+                    }
+                }
+            }
+            guard let archive else {
+                throw lastDownloadError ?? AppUpdateInstallError.downloadFailed
+            }
             installState = .verifying
 
             let prepared = try await Task.detached(priority: .userInitiated) {
@@ -462,8 +499,14 @@ public final class AppUpdateService {
             markChecked()
             let offersUpdate = latest > current
             if offersUpdate {
-                cache(release)
-                state = .available(release)
+                if release.tagName == skippedTag {
+                    clearCachedRelease()
+                    upToDateNoticePending = false
+                    state = .skipped(release)
+                } else {
+                    cache(release)
+                    state = .available(release)
+                }
             } else {
                 clearCachedRelease()
                 upToDateNoticePending = true

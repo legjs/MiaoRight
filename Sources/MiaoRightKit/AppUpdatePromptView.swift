@@ -62,6 +62,25 @@ final class AppUpdatePromptPresenter: NSObject, NSWindowDelegate {
         )
     }
 
+    func presentSkipped(_ release: GitHubRelease) {
+        guard !AppGroup.isIsolated else { return }
+        dismiss()
+        let alert = NSAlert()
+        alert.alertStyle = .informational
+        alert.messageText = L10n.text("已跳过 \(release.tagName)", "\(release.tagName) Is Skipped")
+        alert.informativeText = L10n.text(
+            "这个版本已被跳过。新版本发布时会再次提示，也可以立即取消跳过。",
+            "This version is skipped. You will be notified again when a newer version arrives, or you can stop skipping now."
+        )
+        alert.addButton(withTitle: L10n.text("取消跳过", "Stop Skipping"))
+        alert.addButton(withTitle: L10n.text("关闭", "Close"))
+        centerAlert(alert)
+        NSApp.activate(ignoringOtherApps: true)
+        if alert.runModal() == .alertFirstButtonReturn {
+            AppUpdateService.shared.clearSkippedRelease()
+        }
+    }
+
     func presentFailure(_ error: UpdateCheckError) {
         guard !AppGroup.isIsolated else { return }
         dismiss()
@@ -269,6 +288,12 @@ private struct AppUpdateAvailableView: View {
                     }
                 }
                     .keyboardShortcut(.cancelAction)
+                Button(L10n.text("跳过此版本", "Skip This Version")) {
+                    updates.skipRelease(release)
+                    onClose()
+                }
+                .buttonStyle(.borderless)
+                .disabled(updates.isInstalling)
                 Spacer(minLength: 12)
                 Button(L10n.text("发行页面", "Release Page")) {
                     NSWorkspace.shared.open(release.pageURL)

@@ -31,8 +31,8 @@ enum AppUpdateInstallError: LocalizedError, Equatable {
             L10n.text("没有可安装的更新包。", "No update archive is available.")
         case .downloadFailed:
             L10n.text(
-                "无法直接下载更新。请打开发行页面下载 ZIP，再选择该 ZIP 安装。",
-                "Could not download the update directly. Download the ZIP from the release page, then choose it to install."
+                "下载更新失败，请检查网络后重试。如果网络访问 GitHub 较慢，可以在发行页面手动下载 DMG 安装。",
+                "The update download failed. Check your connection and try again. If GitHub is slow on your network, you can download the DMG from the release page instead."
             )
         case .invalidArchive:
             L10n.text(
