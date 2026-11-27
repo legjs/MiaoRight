@@ -8,39 +8,39 @@
 	<string>妙右</string>
 	<key>CFBundleExecutable</key>
 	<string>MiaoRight</string>
+	<key>CFBundleIconFile</key>
+	<string>AppIcon.icns</string>
 	<key>CFBundleIdentifier</key>
 	<string>com.miaoright.app</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
-	<key>CFBundleName</key>
-	<string>MiaoRight</string>
-	<key>CFBundleIconFile</key>
-	<string>AppIcon.icns</string>
-	<key>CFBundlePackageType</key>
-	<string>APPL</string>
-	<key>CFBundleShortVersionString</key>
-	<string>0.1.3</string>
-	<key>CFBundleVersion</key>
-	<string>104</string>
-	<key>MiaoRightUpdateRepository</key>
-	<string>legjs/MiaoRight</string>
-	<key>MiaoRightReleaseSigningCertificateSHA1</key>
-	<string>caa0c3b678a217e14206af09ee216b57d4ddda16</string>
 	<key>CFBundleLocalizations</key>
 	<array>
 		<string>zh-Hans</string>
 		<string>en</string>
 	</array>
-	<key>LSMinimumSystemVersion</key>
-	<string>14.0</string>
+	<key>CFBundleName</key>
+	<string>MiaoRight</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>0.1.4</string>
+	<key>CFBundleVersion</key>
+	<string>105</string>
 	<key>LSApplicationCategoryType</key>
 	<string>public.app-category.utilities</string>
-	<key>NSPrincipalClass</key>
-	<string>NSApplication</string>
-	<key>NSHumanReadableCopyright</key>
-	<string>Copyright © 2026 legjs and MiaoRight contributors. MIT License.</string>
+	<key>LSMinimumSystemVersion</key>
+	<string>14.0</string>
+	<key>MiaoRightReleaseSigningCertificateSHA1</key>
+	<string>caa0c3b678a217e14206af09ee216b57d4ddda16</string>
+	<key>MiaoRightUpdateRepository</key>
+	<string>legjs/MiaoRight</string>
 	<key>NSAppleEventsUsageDescription</key>
 	<string>妙右 需要向你选择的动作提供自动化能力(例如调用 Finder、通知等)。</string>
+	<key>NSHumanReadableCopyright</key>
+	<string>Copyright © 2026 legjs and MiaoRight contributors. MIT License.</string>
+	<key>NSPrincipalClass</key>
+	<string>NSApplication</string>
 	<key>UIPrefersShowingLanguageSettings</key>
 	<true/>
 </dict>

@@ -6,11 +6,12 @@ The format follows [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.1.0/
 
 ## [Unreleased]
 
+## [0.1.4] - 2026-11-27
+
 ### Added
 
 - Added a live update status to the menu bar icon menu for checking, up-to-date, failure, and available-update states.
 - The menu bar can install an available release directly and offers a separate release-notes shortcut.
-- Added a development-only update simulation switch with a local v0.1.4 test package and simulated release notes for testing the menu, direct installation, and release-notes view.
 
 ### Changed
 
@@ -21,6 +22,7 @@ The format follows [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.1.0/
 ### Removed
 
 - Removed manual ZIP selection from the app update page. Updates always download the matching release asset.
+- Removed the development-only update simulation switch and the local debug update package helper.
 
 ## [0.1.3] - 2026-11-25
 
