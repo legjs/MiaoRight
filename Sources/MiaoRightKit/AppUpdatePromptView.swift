@@ -29,10 +29,24 @@ final class AppUpdatePromptPresenter: NSObject, NSWindowDelegate {
         window.contentViewController = controller
         window.isReleasedWhenClosed = false
         window.delegate = self
-        window.center()
+        window.level = .floating
+        window.collectionBehavior = [.moveToActiveSpace, .fullScreenAuxiliary]
+        window.hidesOnDeactivate = false
+        window.isMovableByWindowBackground = true
+        if let screen = screenForPrompt() {
+            let visible = screen.visibleFrame
+            let size = window.frame.size
+            window.setFrameOrigin(NSPoint(
+                x: visible.midX - size.width / 2,
+                y: visible.midY - size.height / 2
+            ))
+        } else {
+            window.center()
+        }
         self.window = window
-        NSApp.activate()
+        NSApp.activate(ignoringOtherApps: true)
         window.makeKeyAndOrderFront(nil)
+        window.orderFrontRegardless()
     }
 
     func presentUpToDate() {
@@ -57,7 +71,8 @@ final class AppUpdatePromptPresenter: NSObject, NSWindowDelegate {
         alert.informativeText = error.message
         alert.addButton(withTitle: L10n.text("重试", "Try Again"))
         alert.addButton(withTitle: L10n.text("关闭", "Close"))
-        NSApp.activate()
+        centerAlert(alert)
+        NSApp.activate(ignoringOtherApps: true)
         if alert.runModal() == .alertFirstButtonReturn {
             Task { await AppUpdateService.shared.checkAndPresentPrompt() }
         }
@@ -92,8 +107,37 @@ final class AppUpdatePromptPresenter: NSObject, NSWindowDelegate {
         alert.messageText = title
         alert.informativeText = message
         alert.addButton(withTitle: button)
-        NSApp.activate()
+        centerAlert(alert)
+        NSApp.activate(ignoringOtherApps: true)
         alert.runModal()
+    }
+
+    private func screenForPrompt() -> NSScreen? {
+        if let mainWindow = NSApp.mainWindow, mainWindow.isVisible, let screen = mainWindow.screen {
+            return screen
+        }
+        if let mainWindow = NSApp.windows.first(where: {
+            $0.isVisible && $0.identifier?.rawValue.contains("main") == true
+        }), let screen = mainWindow.screen {
+            return screen
+        }
+        if let mouseScreen = NSScreen.screens.first(where: {
+            NSMouseInRect(NSEvent.mouseLocation, $0.frame, false)
+        }) {
+            return mouseScreen
+        }
+        return NSScreen.main
+    }
+
+    private func centerAlert(_ alert: NSAlert) {
+        alert.layout()
+        guard let screen = screenForPrompt() else { return }
+        let visible = screen.visibleFrame
+        let size = alert.window.frame.size
+        alert.window.setFrameOrigin(NSPoint(
+            x: visible.midX - size.width / 2,
+            y: visible.midY - size.height / 2
+        ))
     }
 }
 
